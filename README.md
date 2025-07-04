@@ -1,4 +1,4 @@
-# Laravel Trends
+# DevCorpTrends
 
 技術コミュニティでの企業影響力を定点観測するエンジニアリングオフィス向けWebサイト
 

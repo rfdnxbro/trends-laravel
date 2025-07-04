@@ -28,12 +28,18 @@ on:
 jobs:
   sync-wiki:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: newrelic/wiki-sync-action@main
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          source: docs/wiki
-          destination: wiki
+          fetch-depth: 0
+      - name: Sync to Wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        with:
+          path: docs/wiki/
+          token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ### 将来のワークフロー計画

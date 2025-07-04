@@ -20,6 +20,7 @@
 - **テストフレームワーク**: PHPUnit
 - **実行タイミング**: PR作成時、mainブランチへのプッシュ時
 - **テストカバレッジ**: 95%の目標達成確認
+- **スクレイピングテスト**: スクレイピングJobの実行テスト
 
 ### コード品質チェック
 
@@ -80,12 +81,33 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:6
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Setup PHP
       - name: Install dependencies
       - name: Run tests
       - name: Code style check
       - name: Static analysis
+      - name: Test scraping jobs
+        run: |
+          php artisan queue:work --once --queue=scraping
+          php artisan test --filter=ScrapingJobTest
 ```
 
 ## 現在の開発フロー
@@ -106,6 +128,10 @@ vendor/bin/phpstan analyse
 
 # フロントエンドビルド
 npm run production
+
+# スクレイピング機能チェック
+php artisan queue:work --once --queue=scraping
+php artisan horizon:status
 ```
 
 ## 本番環境
@@ -123,18 +149,22 @@ npm run production
 - [ ] PR作成時の自動テスト
 - [ ] コードスタイルチェック
 - [ ] 静的解析
+- [ ] スクレイピングJobのテスト
 
 ### フェーズ2: デプロイメント自動化
 
 - [ ] 自動デプロイメント
 - [ ] デプロイ後の動作確認
 - [ ] ロールバック機能
+- [ ] スクレイピングスケジューラの起動確認
 
 ### フェーズ3: 監視とアラート
 
 - [ ] アプリケーション監視
 - [ ] エラーアラート
 - [ ] パフォーマンスメトリクス
+- [ ] スクレイピング失敗時のアラート
+- [ ] Horizonキューの監視
 
 ## 関連ドキュメント
 

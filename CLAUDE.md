@@ -13,24 +13,24 @@
 
 ## 詳細ドキュメント
 詳細な情報は `docs/wiki` ディレクトリのwikiを参照：
-- [プロジェクト概要](docs/wiki/Project-Overview.md)
-- [技術スタック](docs/wiki/Tech-Stack.md)
-- [開発環境](docs/wiki/Development-Environment.md)
-- [開発フロー](docs/wiki/Development-Flow.md)
+- [プロジェクト概要](docs/wiki/プロジェクト概要.md)
+- [技術スタック](docs/wiki/技術スタック.md)
+- [開発環境](docs/wiki/開発環境.md)
+- [開発フロー](docs/wiki/開発フロー.md)
 - [CI/CD](docs/wiki/CI-CD.md)
 
 ## Claude Code への指示
 
 ### 必ず参照すべきケース
-- 技術スタックの選択理由や設定: [Tech-Stack.md](docs/wiki/Tech-Stack.md)
-- 開発環境のセットアップ: [Development-Environment.md](docs/wiki/Development-Environment.md)
-- ブランチ戦略やレビューフロー: [Development-Flow.md](docs/wiki/Development-Flow.md)
+- 技術スタックの選択理由や設定: [技術スタック.md](docs/wiki/技術スタック.md)
+- 開発環境のセットアップ: [開発環境.md](docs/wiki/開発環境.md)
+- ブランチ戦略やレビューフロー: [開発フロー.md](docs/wiki/開発フロー.md)
 - CI/CDの現状と将来計画: [CI-CD.md](docs/wiki/CI-CD.md)
 
 ### コマンドの確認
 開発コマンドは下記のファイルに記載されています：
-- セットアップ: [Development-Environment.md](docs/wiki/Development-Environment.md)
-- テストと品質チェック: [Development-Flow.md](docs/wiki/Development-Flow.md)
+- セットアップ: [開発環境.md](docs/wiki/開発環境.md)
+- テストと品質チェック: [開発フロー.md](docs/wiki/開発フロー.md)
 - CI/CDワークフロー: [CI-CD.md](docs/wiki/CI-CD.md)
 
 ## 重要な開発コマンド

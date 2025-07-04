@@ -1,0 +1,27 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/wiki/**'
+  workflow_dispatch:
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync wiki
+        uses: newrelic/wiki-sync-action@main
+        with:
+          source: docs/wiki
+          destination: wiki
+          token: ${{ secrets.GITHUB_TOKEN }}
+          gitAuthorName: 'github-actions[bot]'
+          gitAuthorEmail: 'github-actions[bot]@users.noreply.github.com'

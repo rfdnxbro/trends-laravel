@@ -2,40 +2,39 @@
 
 ## 言語設定
 - ターミナルでのやり取りは日本語で行う
-- 出力されるドキュメント、コメント、メッセージはすべて日本語をベースとする
 - コード内の変数名や関数名は英語を使用するが、説明や文書化は日本語で行う
 
-## プロジェクト情報
+## プロジェクト基本情報
 - Laravel trends プロジェクト
+- 目的: 技術コミュニティでの企業影響力を定点観測
+- ターゲット: エンジニアリングオフィス・採用担当者
 - 開発言語: PHP (Laravel)
 - 本番環境: Laravel Cloud
-- データベース: PostgreSQL
 
-## 技術スタック
-- フロントエンド: React
-- CSS: Tailwind CSS
-- ビルドツール: Laravel Mix
-- PHPバージョン: 最新LTS
-- Laravelバージョン: 最新LTS
+## 詳細ドキュメント
+詳細な情報は `docs/wiki` ディレクトリのwikiを参照：
+- [プロジェクト概要](docs/wiki/Project-Overview.md)
+- [技術スタック](docs/wiki/Tech-Stack.md)
+- [開発環境](docs/wiki/Development-Environment.md)
+- [開発フロー](docs/wiki/Development-Flow.md)
+- [CI/CD](docs/wiki/CI-CD.md)
 
-## 開発環境
+## Claude Code への指示
+
+### 必ず参照すべきケース
+- 技術スタックの選択理由や設定: [Tech-Stack.md](docs/wiki/Tech-Stack.md)
+- 開発環境のセットアップ: [Development-Environment.md](docs/wiki/Development-Environment.md)
+- ブランチ戦略やレビューフロー: [Development-Flow.md](docs/wiki/Development-Flow.md)
+- CI/CDの現状と将来計画: [CI-CD.md](docs/wiki/CI-CD.md)
+
+### コマンドの確認
+開発コマンドは下記のファイルに記載されています：
+- セットアップ: [Development-Environment.md](docs/wiki/Development-Environment.md)
+- テストと品質チェック: [Development-Flow.md](docs/wiki/Development-Flow.md)
+- CI/CDワークフロー: [CI-CD.md](docs/wiki/CI-CD.md)
+
+## 重要な開発コマンド
 - ローカル開発: `php artisan serve`
-- テストフレームワーク: PHPUnit
-- テストカバレッジ目標: 95%
-- コードスタイル: Laravel Pint
-- 静的解析: PHPStan
-
-## 開発フロー
-- 開発はブランチを切って作業する
-- 必ずプルリクエストのレビューを通す
-- その後GitHub上でmergeを行う
-
-## CI/CD
-- GitHub Actions を使用
-- デプロイ前に自動テストを実行
-- テストが通らない場合はデプロイを停止
-
-## ドキュメント管理
-- プロジェクトドキュメントは `docs/wiki` ディレクトリにMarkdown形式で作成
-- コミットした仕様からclaude codeが重要な点のみピックアップして記述
-- GitHub ActionsでGitHub wikiに自動反映
+- テスト実行: `php artisan test`
+- コードスタイル: `vendor/bin/pint`
+- 静的解析: `vendor/bin/phpstan analyse`

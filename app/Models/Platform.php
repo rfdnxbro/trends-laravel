@@ -22,10 +22,10 @@ class Platform extends Model
         return $this->hasMany(Article::class);
     }
 
-    public function scrapingLogs(): HasMany
-    {
-        return $this->hasMany(ScrapingLog::class);
-    }
+    // public function scrapingLogs(): HasMany
+    // {
+    //     return $this->hasMany(ScrapingLog::class);
+    // }
 
     public function scopeActive($query)
     {

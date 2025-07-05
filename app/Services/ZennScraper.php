@@ -8,11 +8,11 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 
-class QiitaScraper extends BaseScraper
+class ZennScraper extends BaseScraper
 {
-    protected string $baseUrl = 'https://qiita.com';
+    protected string $baseUrl = 'https://zenn.dev';
 
-    protected string $trendUrl = 'https://qiita.com';
+    protected string $trendUrl = 'https://zenn.dev';
 
     protected int $requestsPerMinute = 20;
 
@@ -29,11 +29,11 @@ class QiitaScraper extends BaseScraper
 
     public function scrapeTrendingArticles(): array
     {
-        Log::info('Qiitaトレンド記事のスクレイピングを開始');
+        Log::info('Zennトレンド記事のスクレイピングを開始');
 
         $articles = $this->scrape($this->trendUrl);
 
-        Log::info('Qiitaスクレイピング完了', [
+        Log::info('Zennスクレイピング完了', [
             'articles_count' => count($articles),
         ]);
 
@@ -47,19 +47,20 @@ class QiitaScraper extends BaseScraper
         $articles = [];
 
         // デバッグ: HTMLの一部をログに出力
-        Log::debug('Qiita HTML preview', [
+        Log::debug('Zenn HTML preview', [
             'html_length' => strlen($html),
             'html_preview' => substr($html, 0, 1000),
         ]);
 
-        // 複数のセレクタパターンを試す
+        // ZennのTechセクション内の記事を取得（16記事を上限とする、CSS Modules対応）
         $selectors = [
+            '[class*="ArticleList_item"]',  // CSS ModulesのArticleListアイテム
+            '[class*="ArticleListItem"]',  // ArticleListItemを含むクラス
             'article',  // 汎用的なarticleタグ
-            '.style-1uma8mh',  // 新しいスタイルクラス
-            '.style-1w7apwp',  // 別のスタイルクラス
-            '[class*="ArticleCard"]',  // ArticleCardを含むクラス
-            '[data-testid*="article"]',  // data-testid属性
-            'div[class*="style-"]',  // スタイルクラスを持つdiv
+            '[data-testid="article-list-item"]',  // テストID付きリストアイテム
+            'a[href*="/articles/"]',  // 記事リンク
+            '.View_container',  // Zennのコンテナクラス
+            'div[class*="View"]',  // Viewを含むクラス
         ];
 
         foreach ($selectors as $selector) {
@@ -68,14 +69,29 @@ class QiitaScraper extends BaseScraper
             Log::debug("Found {$elements->count()} elements with selector: {$selector}");
 
             if ($elements->count() > 0) {
-                $elements->each(function (Crawler $node) use (&$articles) {
+                $articleCount = 0;
+                $elements->each(function (Crawler $node) use (&$articles, &$articleCount) {
+                    if ($articleCount >= 16) {
+                        return false; // 16記事で停止
+                    }
                     try {
+                        Log::debug('Zenn 記事ノードHTML', [
+                            'html' => substr($node->html(), 0, 500),
+                        ]);
+                        
                         $title = $this->extractTitle($node);
                         $url = $this->extractUrl($node);
                         $likesCount = $this->extractLikesCount($node);
                         $author = $this->extractAuthor($node);
                         $authorUrl = $this->extractAuthorUrl($node);
                         $publishedAt = $this->extractPublishedAt($node);
+
+                        Log::debug('Zenn 抽出結果', [
+                            'title' => $title,
+                            'url' => $url,
+                            'likes_count' => $likesCount,
+                            'author' => $author,
+                        ]);
 
                         if ($title && $url) {
                             $articles[] = [
@@ -86,11 +102,12 @@ class QiitaScraper extends BaseScraper
                                 'author_url' => $authorUrl,
                                 'published_at' => $publishedAt,
                                 'scraped_at' => now(),
-                                'platform' => 'qiita',
+                                'platform' => 'zenn',
                             ];
+                            $articleCount++; // 記事追加時にカウンターをインクリメント
                         }
                     } catch (\Exception $e) {
-                        Log::warning('Qiita記事の解析中にエラー', [
+                        Log::warning('Zenn記事の解析中にエラー', [
                             'error' => $e->getMessage(),
                             'html' => $node->html(),
                         ]);
@@ -106,19 +123,26 @@ class QiitaScraper extends BaseScraper
     protected function extractTitle(Crawler $node): ?string
     {
         try {
-            // 複数のセレクタパターンを試す
+            // Zenn特有のタイトルセレクタパターンを試す
             $selectors = [
-                'h2 a',
-                'h1 a',
-                'a[href*="/items/"]',
-                '.style-2vm86z',
-                '[class*="title"]',
+                'h1',  // 記事のメインタイトル
+                'h2',  // 記事のサブタイトル
+                'h3',  // 記事のヘッダー
+                'a[href*="/articles/"]',  // 記事リンクのテキスト
+                '.View_title',  // Zennのタイトルクラス
+                '[class*="Title"]',  // Titleを含むクラス
+                'p',  // 段落内のタイトル
             ];
 
             foreach ($selectors as $selector) {
                 $titleElement = $node->filter($selector);
                 if ($titleElement->count() > 0) {
                     $title = trim($titleElement->text());
+                    Log::debug("Zenn タイトル抽出デバッグ", [
+                        'selector' => $selector,
+                        'title' => $title,
+                        'html' => $titleElement->html()
+                    ]);
                     if (! empty($title)) {
                         return $title;
                     }
@@ -134,19 +158,20 @@ class QiitaScraper extends BaseScraper
     protected function extractUrl(Crawler $node): ?string
     {
         try {
-            // 複数のセレクタパターンを試す
+            // ZennのURL抽出セレクタパターンを試す
             $selectors = [
-                'h2 a',
-                'h1 a',
-                'a[href*="/items/"]',
-                'a',
+                'a[href*="/articles/"]',  // 記事リンク（最優先）
+                'h1 a',  // h1内のリンク
+                'h2 a',  // h2内のリンク
+                'h3 a',  // h3内のリンク
+                'a',  // 一般的なリンク
             ];
 
             foreach ($selectors as $selector) {
                 $linkElement = $node->filter($selector);
                 if ($linkElement->count() > 0) {
                     $href = $linkElement->attr('href');
-                    if ($href && strpos($href, '/items/') !== false) {
+                    if ($href && strpos($href, '/articles/') !== false) {
                         return strpos($href, 'http') === 0 ? $href : $this->baseUrl.$href;
                     }
                 }
@@ -161,13 +186,16 @@ class QiitaScraper extends BaseScraper
     protected function extractLikesCount(Crawler $node): int
     {
         try {
-            // 複数のセレクタパターンを試す
+            // Zennのいいね数抽出セレクタパターンを試す
             $selectors = [
                 '[data-testid="like-count"]',
-                '[aria-label*="LGTM"]',
                 '[aria-label*="いいね"]',
-                '.style-*[aria-label*="LGTM"]',
+                '[aria-label*="like"]',
+                '[class*="Like"]',
+                '[class*="like"]',
                 'span[aria-label]',
+                '.View_likeCount',
+                'button[aria-label*="いいね"]',
             ];
 
             foreach ($selectors as $selector) {
@@ -192,25 +220,52 @@ class QiitaScraper extends BaseScraper
     protected function extractAuthor(Crawler $node): ?string
     {
         try {
-            // 複数のセレクタパターンを試す
+            // Zennの著者抽出セレクタパターンを試す（CSS Modules対応）
             $selectors = [
-                'a[href*="/@"]',
-                '[data-hyperapp-app="UserIcon"] a',
-                '.style-j198x4',
-                '.style-y87z4f',
-                '.style-i9qys6',
-                'a[href^="/"]',
+                '[class*="userName"]',  // userNameを含むクラス（CSS Modules）
+                '[class*="ArticleList_userName"]',  // 具体的なクラス名
+                'a[href*="/@"]',  // @付きユーザーリンク
+                '[data-testid="author-link"]',
+                '[class*="Author"]',
+                '[class*="author"]',
+                '.View_author',
+                'img[alt]',  // アバター画像のalt属性
+                '[class*="User"]',  // Userを含むクラス
+                '[class*="Profile"]',  // Profileを含むクラス
+                'a[href^="/"]',  // 相対パスのリンク
             ];
 
             foreach ($selectors as $selector) {
                 $authorElement = $node->filter($selector);
                 if ($authorElement->count() > 0) {
+                    Log::debug("Zenn 著者抽出デバッグ", [
+                        'selector' => $selector,
+                        'count' => $authorElement->count(),
+                        'html' => $authorElement->html(),
+                    ]);
+                    
+                    // hrefがある場合（リンク要素）
                     $href = $authorElement->attr('href');
                     if ($href) {
                         // 記事URLでない場合はユーザーURLとみなす
-                        if (strpos($href, '/items/') === false) {
+                        if (strpos($href, '/articles/') === false) {
+                            Log::debug("Found author href: {$href}");
                             return trim($href);
                         }
+                    }
+                    
+                    // alt属性がある場合（画像要素）
+                    $alt = $authorElement->attr('alt');
+                    if ($alt && !empty(trim($alt))) {
+                        Log::debug("Found author alt: {$alt}");
+                        return trim($alt);
+                    }
+                    
+                    // テキストコンテンツがある場合
+                    $text = trim($authorElement->text());
+                    if (!empty($text) && strlen($text) < 50) { // 長すぎるテキストは除外
+                        Log::debug("Found author text: {$text}");
+                        return $text;
                     }
                 }
             }
@@ -239,12 +294,16 @@ class QiitaScraper extends BaseScraper
     protected function extractPublishedAt(Crawler $node): ?string
     {
         try {
-            // 複数のセレクタパターンを試す
+            // Zennの日時抽出セレクタパターンを試す
             $selectors = [
                 'time[datetime]',
                 'time',
                 '[datetime]',
-                '.style-*[title]',
+                '[data-testid="published-date"]',
+                '[class*="Date"]',
+                '[class*="date"]',
+                '.View_date',
+                '[class*="Time"]',
             ];
 
             foreach ($selectors as $selector) {
@@ -270,8 +329,10 @@ class QiitaScraper extends BaseScraper
         }
 
         $username = basename(parse_url($authorUrl, PHP_URL_PATH));
+        // @記号を削除してユーザー名のみを取得
+        $username = ltrim($username, '@');
 
-        return Company::where('qiita_username', $username)->first();
+        return Company::where('zenn_username', $username)->first();
     }
 
     public function normalizeAndSaveData(array $articles): array
@@ -298,7 +359,7 @@ class QiitaScraper extends BaseScraper
 
                 $savedArticles[] = $savedArticle;
 
-                Log::debug('Qiita記事データを保存', [
+                Log::debug('Zenn記事データを保存', [
                     'title' => $article['title'],
                     'author' => $article['author'],
                     'company' => $company?->name,
@@ -306,14 +367,14 @@ class QiitaScraper extends BaseScraper
                 ]);
 
             } catch (\Exception $e) {
-                Log::error('Qiita記事データ保存エラー', [
+                Log::error('Zenn記事データ保存エラー', [
                     'article' => $article,
                     'error' => $e->getMessage(),
                 ]);
             }
         }
 
-        Log::info('Qiitaデータ正規化・保存完了', [
+        Log::info('Zennデータ正規化・保存完了', [
             'total_articles' => count($articles),
             'saved_articles' => count($savedArticles),
         ]);

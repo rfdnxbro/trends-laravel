@@ -5,7 +5,6 @@ namespace Tests\Unit\Services;
 use App\Services\BaseScraper;
 use Exception;
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
@@ -105,7 +104,7 @@ class BaseScraperTest extends TestCase
     {
         // delaySecondsを0にしてsleepを回避
         $this->scraper->setRetryOptions(3, 0);
-        
+
         Http::fake([
             'https://example.com' => Http::sequence()
                 ->push(null, 500)
@@ -143,13 +142,13 @@ class BaseScraperTest extends TestCase
     {
         // レート制限の設定テストのみ（実際のsleep処理は除外）
         $this->scraper->setRateLimit(60);
-        
+
         $reflection = new \ReflectionClass($this->scraper);
         $property = $reflection->getProperty('requestsPerMinute');
         $property->setAccessible(true);
-        
+
         $this->assertEquals(60, $property->getValue($this->scraper));
-        
+
         // 通常のスクレイピングが動作することを確認
         Http::fake([
             'https://example.com' => Http::response(['data' => 'test'], 200),
@@ -183,7 +182,7 @@ class BaseScraperTest extends TestCase
     {
         // delaySecondsを0にしてsleepを回避
         $this->scraper->setRetryOptions(3, 0);
-        
+
         Http::fake([
             'https://example.com' => Http::response(null, 500),
         ]);
@@ -213,7 +212,7 @@ class BaseScraperTest extends TestCase
     {
         // delaySecondsを0にしてsleepを回避
         $this->scraper->setRetryOptions(3, 0);
-        
+
         Http::fake([
             'https://example.com' => Http::response(null, 500),
         ]);

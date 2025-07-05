@@ -2,48 +2,54 @@
 
 namespace App\Console\Commands;
 
-use App\Services\HatenaBookmarkScraper;
+use App\Services\ZennScraper;
 use Illuminate\Console\Command;
 
-class ScrapeHatenaBookmarks extends Command
+class ScrapeZenn extends Command
 {
-    protected $signature = 'scrape:hatena {--dry-run : データを保存せずに取得のみ行う}';
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'scrape:zenn {--dry-run : データを保存せずに取得のみ行う}';
 
-    protected $description = 'はてなブックマーク人気ITエントリーをスクレイピングします';
+    protected $description = 'Zennトレンド記事をスクレイピングします';
 
     public function handle()
     {
-        $this->info('はてなブックマークスクレイピングを開始します...');
+        $this->info('Zennスクレイピングを開始します...');
 
-        $scraper = new HatenaBookmarkScraper;
+        $scraper = new ZennScraper;
 
         try {
             // スクレイピング実行
-            $entries = $scraper->scrapePopularItEntries();
+            $articles = $scraper->scrapeTrendingArticles();
 
-            $this->info('取得したエントリー数: '.count($entries));
+            $this->info('取得した記事数: '.count($articles));
 
             if ($this->option('dry-run')) {
                 $this->warn('--dry-run オプションが指定されているため、データは保存されません');
 
                 // 取得データの表示
-                foreach ($entries as $index => $entry) {
+                foreach ($articles as $index => $article) {
                     $this->line('【'.($index + 1).'】');
-                    $this->line('タイトル: '.$entry['title']);
-                    $this->line('URL: '.$entry['url']);
-                    $this->line('ブックマーク数: '.$entry['bookmark_count']);
-                    $this->line('ドメイン: '.$entry['domain']);
+                    $this->line('タイトル: '.$article['title']);
+                    $this->line('URL: '.$article['url']);
+                    $this->line('いいね数: '.$article['likes_count']);
+                    $this->line('投稿者: '.($article['author'] ?? 'N/A'));
+                    $this->line('投稿日時: '.($article['published_at'] ?? 'N/A'));
                     $this->line('---');
                 }
             } else {
                 // データ保存
-                $savedEntries = $scraper->normalizeAndSaveData($entries);
-                $this->info('保存したエントリー数: '.count($savedEntries));
+                $savedArticles = $scraper->normalizeAndSaveData($articles);
+                $this->info('保存した記事数: '.count($savedArticles));
 
                 // 保存結果の表示
-                foreach ($savedEntries as $article) {
+                foreach ($savedArticles as $article) {
                     $companyName = $article->company ? $article->company->name : 'その他';
-                    $this->line("保存: {$article->title} ({$companyName}) - {$article->bookmark_count}ブックマーク");
+                    $this->line("保存: {$article->title} ({$companyName}) - {$article->likes_count}いいね");
                 }
             }
 

@@ -227,7 +227,6 @@ class QiitaScraperTest extends TestCase
         $this->assertNull($result[0]['author']);
     }
 
-
     private function getMockQiitaHtml(): string
     {
         return '
@@ -256,5 +255,4 @@ class QiitaScraperTest extends TestCase
         </body>
         </html>';
     }
-
 }

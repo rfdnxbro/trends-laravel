@@ -15,8 +15,11 @@ class Article extends Model
         'domain',
         'platform',
         'author_name',
+        'author',
+        'author_url',
         'published_at',
         'bookmark_count',
+        'likes_count',
         'scraped_at',
     ];
 
@@ -24,6 +27,7 @@ class Article extends Model
         'published_at' => 'datetime',
         'scraped_at' => 'datetime',
         'bookmark_count' => 'integer',
+        'likes_count' => 'integer',
     ];
 
     public function company(): BelongsTo

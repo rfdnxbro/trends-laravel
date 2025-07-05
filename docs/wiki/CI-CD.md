@@ -4,16 +4,16 @@
 
 プロジェクトでは**GitHub Actions**を使用してCI/CDパイプラインを構築中です。
 
-## 現在実装済みの機能
+## ✅ 現在実装済みの機能
 
 ### Wiki自動同期
-
 - **対象**: `docs/wiki` ディレクトリ
 - **実行タイミング**: mainブランチへのプッシュ時
 - **同期先**: GitHub Wiki
 - **ワークフローファイル**: `.github/workflows/sync-wiki.yml`
+- **実装状況**: ✅ 完全実装済み
 
-## 今後の実装予定
+## 🚧 今後の実装予定
 
 ### 自動テストパイプライン
 
@@ -37,36 +37,10 @@
 
 ### 現在のwiki同期ワークフロー
 
-```yaml
-# .github/workflows/sync-wiki.yml
-name: Sync Wiki
+**ファイルパス:** `.github/workflows/sync-wiki.yml`
 
-on:
-  push:
-    branches: [main]
-    paths:
-      - 'docs/wiki/**'
-  workflow_dispatch:
-
-jobs:
-  sync-wiki:
-    runs-on: ubuntu-latest
-    
-    permissions:
-      contents: write
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Sync to Wiki
-        uses: Andrew-Chen-Wang/github-wiki-action@v4
-        with:
-          path: docs/wiki/
-          token: ${{ secrets.GITHUB_TOKEN }}
-```
+- **実行タイミング**: mainブランチへの`docs/wiki/**`変更時
+- **機能**: docs/wikiディレクトリをGitHub Wikiに自動同期
 
 ### 今後のテストパイプライン設定例
 

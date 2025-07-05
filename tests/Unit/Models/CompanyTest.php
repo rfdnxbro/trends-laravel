@@ -123,7 +123,7 @@ class CompanyTest extends TestCase
         $this->assertEquals('Active Company', $activeCompanies->first()->name);
     }
 
-    public function test_mass_assignment_protection()
+    public function test_mass_assignment_protectionの確認()
     {
         $data = [
             'name' => $this->faker()->company(),

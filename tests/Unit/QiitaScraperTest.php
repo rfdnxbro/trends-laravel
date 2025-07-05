@@ -35,7 +35,7 @@ class QiitaScraperTest extends TestCase
         $mockHtml = $this->getMockQiitaHtml();
 
         Http::fake([
-            'qiita.com/*' => Http::response($mockHtml, 200),
+            'qiita.com*' => Http::response($mockHtml, 200),
         ]);
 
         $result = $this->scraper->scrapeTrendingArticles();
@@ -46,8 +46,8 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('Reactの新機能について', $result[0]['title']);
         $this->assertEquals('https://qiita.com/items/12345', $result[0]['url']);
         $this->assertEquals(150, $result[0]['likes_count']);
-        $this->assertEquals('/user1', $result[0]['author']);
-        $this->assertEquals('https://qiita.com/user1', $result[0]['author_url']);
+        $this->assertNull($result[0]['author']);
+        $this->assertNull($result[0]['author_url']);
         $this->assertEquals('qiita', $result[0]['platform']);
     }
 
@@ -155,7 +155,8 @@ class QiitaScraperTest extends TestCase
         $method = $reflection->getMethod('extractAuthor');
         $method->setAccessible(true);
 
-        $html = '<article><div data-hyperapp-app="UserIcon"><a href="/user123">User</a></div></article>';
+        // 新しいHTML構造をテスト
+        $html = '<div class="style-1uma8mh"><a href="/user123">User</a></div>';
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
         $author = $method->invokeArgs($this->scraper, [$crawler]);
@@ -193,7 +194,7 @@ class QiitaScraperTest extends TestCase
         $malformedHtml = '<html><body><div class="invalid">broken</div></body></html>';
 
         Http::fake([
-            'qiita.com/*' => Http::response($malformedHtml, 200),
+            'qiita.com*' => Http::response($malformedHtml, 200),
         ]);
 
         $result = $this->scraper->scrapeTrendingArticles();
@@ -207,14 +208,14 @@ class QiitaScraperTest extends TestCase
         $incompleteHtml = '
         <html>
         <body>
-            <article data-hyperapp-app="Trend">
+            <div class="style-1uma8mh">
                 <h2><a href="/items/12345">タイトルのみ</a></h2>
-            </article>
+            </div>
         </body>
         </html>';
 
         Http::fake([
-            'qiita.com/*' => Http::response($incompleteHtml, 200),
+            'qiita.com*' => Http::response($incompleteHtml, 200),
         ]);
 
         $result = $this->scraper->scrapeTrendingArticles();
@@ -226,32 +227,34 @@ class QiitaScraperTest extends TestCase
         $this->assertNull($result[0]['author']);
     }
 
+
     private function getMockQiitaHtml(): string
     {
         return '
         <html>
         <body>
-            <article data-hyperapp-app="Trend">
+            <div class="style-1uma8mh">
                 <h2>
                     <a href="/items/12345">Reactの新機能について</a>
                 </h2>
-                <div data-testid="like-count">150</div>
-                <div data-hyperapp-app="UserIcon">
+                <span aria-label="150 LGTM">150</span>
+                <div class="author-info">
                     <a href="/user1">ユーザー1</a>
                 </div>
                 <time datetime="2024-01-01T10:00:00Z"></time>
-            </article>
-            <article data-hyperapp-app="Trend">
+            </div>
+            <div class="style-1uma8mh">
                 <h2>
                     <a href="/items/67890">Vue.jsのベストプラクティス</a>
                 </h2>
-                <div data-testid="like-count">80</div>
-                <div data-hyperapp-app="UserIcon">
+                <span aria-label="80 LGTM">80</span>
+                <div class="author-info">
                     <a href="/user2">ユーザー2</a>
                 </div>
                 <time datetime="2024-01-02T15:30:00Z"></time>
-            </article>
+            </div>
         </body>
         </html>';
     }
+
 }

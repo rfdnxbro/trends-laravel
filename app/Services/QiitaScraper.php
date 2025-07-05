@@ -12,7 +12,7 @@ class QiitaScraper extends BaseScraper
 {
     protected string $baseUrl = 'https://qiita.com';
 
-    protected string $trendUrl = 'https://qiita.com/trend';
+    protected string $trendUrl = 'https://qiita.com';
 
     protected int $requestsPerMinute = 20;
 
@@ -46,34 +46,59 @@ class QiitaScraper extends BaseScraper
         $crawler = new Crawler($html);
         $articles = [];
 
-        $crawler->filter('article[data-hyperapp-app="Trend"]')->each(function (Crawler $node) use (&$articles) {
-            try {
-                $title = $this->extractTitle($node);
-                $url = $this->extractUrl($node);
-                $likesCount = $this->extractLikesCount($node);
-                $author = $this->extractAuthor($node);
-                $authorUrl = $this->extractAuthorUrl($node);
-                $publishedAt = $this->extractPublishedAt($node);
+        // デバッグ: HTMLの一部をログに出力
+        Log::debug('Qiita HTML preview', [
+            'html_length' => strlen($html),
+            'html_preview' => substr($html, 0, 1000),
+        ]);
 
-                if ($title && $url) {
-                    $articles[] = [
-                        'title' => $title,
-                        'url' => $url,
-                        'likes_count' => $likesCount,
-                        'author' => $author,
-                        'author_url' => $authorUrl,
-                        'published_at' => $publishedAt,
-                        'scraped_at' => now(),
-                        'platform' => 'qiita',
-                    ];
-                }
-            } catch (\Exception $e) {
-                Log::warning('Qiita記事の解析中にエラー', [
-                    'error' => $e->getMessage(),
-                    'html' => $node->html(),
-                ]);
+        // 複数のセレクタパターンを試す
+        $selectors = [
+            'article',  // 汎用的なarticleタグ
+            '.style-1uma8mh',  // 新しいスタイルクラス
+            '.style-1w7apwp',  // 別のスタイルクラス
+            '[class*="ArticleCard"]',  // ArticleCardを含むクラス
+            '[data-testid*="article"]',  // data-testid属性
+            'div[class*="style-"]',  // スタイルクラスを持つdiv
+        ];
+
+        foreach ($selectors as $selector) {
+            Log::debug("Testing selector: {$selector}");
+            $elements = $crawler->filter($selector);
+            Log::debug("Found {$elements->count()} elements with selector: {$selector}");
+            
+            if ($elements->count() > 0) {
+                $elements->each(function (Crawler $node) use (&$articles) {
+                    try {
+                        $title = $this->extractTitle($node);
+                        $url = $this->extractUrl($node);
+                        $likesCount = $this->extractLikesCount($node);
+                        $author = $this->extractAuthor($node);
+                        $authorUrl = $this->extractAuthorUrl($node);
+                        $publishedAt = $this->extractPublishedAt($node);
+
+                        if ($title && $url) {
+                            $articles[] = [
+                                'title' => $title,
+                                'url' => $url,
+                                'likes_count' => $likesCount,
+                                'author' => $author,
+                                'author_url' => $authorUrl,
+                                'published_at' => $publishedAt,
+                                'scraped_at' => now(),
+                                'platform' => 'qiita',
+                            ];
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('Qiita記事の解析中にエラー', [
+                            'error' => $e->getMessage(),
+                            'html' => $node->html(),
+                        ]);
+                    }
+                });
+                break; // 最初に見つかったセレクタを使用
             }
-        });
+        }
 
         return $articles;
     }
@@ -81,9 +106,23 @@ class QiitaScraper extends BaseScraper
     protected function extractTitle(Crawler $node): ?string
     {
         try {
-            $titleElement = $node->filter('h2 a');
-            if ($titleElement->count() > 0) {
-                return trim($titleElement->text());
+            // 複数のセレクタパターンを試す
+            $selectors = [
+                'h2 a',
+                'h1 a',
+                'a[href*="/items/"]',
+                '.style-2vm86z',
+                '[class*="title"]',
+            ];
+
+            foreach ($selectors as $selector) {
+                $titleElement = $node->filter($selector);
+                if ($titleElement->count() > 0) {
+                    $title = trim($titleElement->text());
+                    if (!empty($title)) {
+                        return $title;
+                    }
+                }
             }
         } catch (\Exception $e) {
             Log::debug('タイトル抽出エラー', ['error' => $e->getMessage()]);
@@ -95,11 +134,22 @@ class QiitaScraper extends BaseScraper
     protected function extractUrl(Crawler $node): ?string
     {
         try {
-            $linkElement = $node->filter('h2 a');
-            if ($linkElement->count() > 0) {
-                $href = $linkElement->attr('href');
+            // 複数のセレクタパターンを試す
+            $selectors = [
+                'h2 a',
+                'h1 a',
+                'a[href*="/items/"]',
+                'a',
+            ];
 
-                return $href ? $this->baseUrl.$href : null;
+            foreach ($selectors as $selector) {
+                $linkElement = $node->filter($selector);
+                if ($linkElement->count() > 0) {
+                    $href = $linkElement->attr('href');
+                    if ($href && strpos($href, '/items/') !== false) {
+                        return strpos($href, 'http') === 0 ? $href : $this->baseUrl.$href;
+                    }
+                }
             }
         } catch (\Exception $e) {
             Log::debug('URL抽出エラー', ['error' => $e->getMessage()]);
@@ -111,11 +161,26 @@ class QiitaScraper extends BaseScraper
     protected function extractLikesCount(Crawler $node): int
     {
         try {
-            $likesElement = $node->filter('[data-testid="like-count"]');
-            if ($likesElement->count() > 0) {
-                $likesText = $likesElement->text();
+            // 複数のセレクタパターンを試す
+            $selectors = [
+                '[data-testid="like-count"]',
+                '[aria-label*="LGTM"]',
+                '[aria-label*="いいね"]',
+                '.style-*[aria-label*="LGTM"]',
+                'span[aria-label]',
+            ];
 
-                return (int) preg_replace('/[^0-9]/', '', $likesText);
+            foreach ($selectors as $selector) {
+                $likesElement = $node->filter($selector);
+                if ($likesElement->count() > 0) {
+                    $likesText = $likesElement->attr('aria-label') ?: $likesElement->text();
+                    if ($likesText) {
+                        $number = (int) preg_replace('/[^0-9]/', '', $likesText);
+                        if ($number > 0) {
+                            return $number;
+                        }
+                    }
+                }
             }
         } catch (\Exception $e) {
             Log::debug('いいね数抽出エラー', ['error' => $e->getMessage()]);
@@ -127,9 +192,27 @@ class QiitaScraper extends BaseScraper
     protected function extractAuthor(Crawler $node): ?string
     {
         try {
-            $authorElement = $node->filter('[data-hyperapp-app="UserIcon"] a');
-            if ($authorElement->count() > 0) {
-                return trim($authorElement->attr('href') ?? '');
+            // 複数のセレクタパターンを試す
+            $selectors = [
+                'a[href*="/@"]',
+                '[data-hyperapp-app="UserIcon"] a',
+                '.style-j198x4',
+                '.style-y87z4f',
+                '.style-i9qys6',
+                'a[href^="/"]',
+            ];
+
+            foreach ($selectors as $selector) {
+                $authorElement = $node->filter($selector);
+                if ($authorElement->count() > 0) {
+                    $href = $authorElement->attr('href');
+                    if ($href) {
+                        // 記事URLでない場合はユーザーURLとみなす
+                        if (strpos($href, '/items/') === false) {
+                            return trim($href);
+                        }
+                    }
+                }
             }
         } catch (\Exception $e) {
             Log::debug('著者名抽出エラー', ['error' => $e->getMessage()]);
@@ -141,11 +224,10 @@ class QiitaScraper extends BaseScraper
     protected function extractAuthorUrl(Crawler $node): ?string
     {
         try {
-            $authorElement = $node->filter('[data-hyperapp-app="UserIcon"] a');
-            if ($authorElement->count() > 0) {
-                $href = $authorElement->attr('href');
-
-                return $href ? $this->baseUrl.$href : null;
+            // extractAuthorと同じロジックを使用
+            $author = $this->extractAuthor($node);
+            if ($author) {
+                return strpos($author, 'http') === 0 ? $author : $this->baseUrl.$author;
             }
         } catch (\Exception $e) {
             Log::debug('著者URL抽出エラー', ['error' => $e->getMessage()]);
@@ -157,9 +239,22 @@ class QiitaScraper extends BaseScraper
     protected function extractPublishedAt(Crawler $node): ?string
     {
         try {
-            $timeElement = $node->filter('time');
-            if ($timeElement->count() > 0) {
-                return $timeElement->attr('datetime');
+            // 複数のセレクタパターンを試す
+            $selectors = [
+                'time[datetime]',
+                'time',
+                '[datetime]',
+                '.style-*[title]',
+            ];
+
+            foreach ($selectors as $selector) {
+                $timeElement = $node->filter($selector);
+                if ($timeElement->count() > 0) {
+                    $datetime = $timeElement->attr('datetime') ?: $timeElement->attr('title');
+                    if ($datetime) {
+                        return $datetime;
+                    }
+                }
             }
         } catch (\Exception $e) {
             Log::debug('投稿日時抽出エラー', ['error' => $e->getMessage()]);

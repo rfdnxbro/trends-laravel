@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Company;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CompanySeeder extends Seeder
@@ -14,7 +13,7 @@ class CompanySeeder extends Seeder
     public function run(): void
     {
         $faker = fake('ja_JP');
-        
+
         $realCompanies = [
             [
                 'name' => $faker->company(),
@@ -63,7 +62,7 @@ class CompanySeeder extends Seeder
         for ($i = 0; $i < 20; $i++) {
             $companyName = $faker->company();
             $domain = $faker->unique()->domainName();
-            
+
             Company::firstOrCreate(
                 ['domain' => $domain],
                 [

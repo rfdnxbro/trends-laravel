@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $faker = fake('ja_JP');
-        
+
         User::factory()->create([
             'name' => $faker->name(),
             'email' => $faker->unique()->safeEmail(),

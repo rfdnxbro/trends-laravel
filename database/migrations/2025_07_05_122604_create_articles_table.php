@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('bookmark_count')->default(0);
             $table->timestamp('scraped_at');
             $table->timestamps();
-            
+
             // インデックス作成
             $table->index(['company_id', 'published_at'], 'idx_articles_company_published');
             $table->index(['platform_id', 'scraped_at'], 'idx_articles_platform_scraped');

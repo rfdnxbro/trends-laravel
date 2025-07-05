@@ -66,21 +66,25 @@ return [
     */
 
     'platforms' => [
-        'github' => [
-            'rate_limit' => env('GITHUB_SCRAPING_RATE_LIMIT', 20),
-            'timeout' => env('GITHUB_SCRAPING_TIMEOUT', 60),
-            'api_token' => env('GITHUB_TOKEN'),
+        'hatena_bookmark' => [
+            'rate_limit' => env('HATENA_SCRAPING_RATE_LIMIT', 20),
+            'timeout' => env('HATENA_SCRAPING_TIMEOUT', 30),
+            'base_url' => 'https://b.hatena.ne.jp',
+            'api_url' => 'https://bookmark.hatenaapis.com',
         ],
 
         'qiita' => [
-            'rate_limit' => env('QIITA_SCRAPING_RATE_LIMIT', 30),
+            'rate_limit' => env('QIITA_SCRAPING_RATE_LIMIT', 60),
             'timeout' => env('QIITA_SCRAPING_TIMEOUT', 30),
             'api_token' => env('QIITA_TOKEN'),
+            'api_url' => 'https://qiita.com/api/v2',
         ],
 
         'zenn' => [
             'rate_limit' => env('ZENN_SCRAPING_RATE_LIMIT', 30),
             'timeout' => env('ZENN_SCRAPING_TIMEOUT', 30),
+            'base_url' => 'https://zenn.dev',
+            'api_url' => 'https://zenn.dev/api',
         ],
     ],
 

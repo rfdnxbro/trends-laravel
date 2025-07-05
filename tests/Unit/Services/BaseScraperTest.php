@@ -101,7 +101,7 @@ class BaseScraperTest extends TestCase
         $this->assertArrayHasKey('body', $lastResponse);
     }
 
-    public function test_htt_pエラー時にリトライされる()
+    public function test_httpエラー時にリトライされる()
     {
         // delaySecondsを0にしてsleepを回避
         $this->scraper->setRetryOptions(3, 0);

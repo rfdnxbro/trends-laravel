@@ -59,8 +59,11 @@ class ArticleTest extends TestCase
             'domain',
             'platform',
             'author_name',
+            'author',
+            'author_url',
             'published_at',
             'bookmark_count',
+            'likes_count',
             'scraped_at',
         ];
 
@@ -87,6 +90,7 @@ class ArticleTest extends TestCase
             'published_at' => '2023-01-01 12:00:00',
             'scraped_at' => '2023-01-01 13:00:00',
             'bookmark_count' => '50',
+            'likes_count' => '25',
         ]);
 
         $article->refresh();
@@ -94,6 +98,8 @@ class ArticleTest extends TestCase
         $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $article->scraped_at);
         $this->assertIsInt($article->bookmark_count);
         $this->assertEquals(50, $article->bookmark_count);
+        $this->assertIsInt($article->likes_count);
+        $this->assertEquals(25, $article->likes_count);
     }
 
     public function test_タイムスタンプの確認()

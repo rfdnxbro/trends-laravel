@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('website_url', 500)->nullable()->comment('ウェブサイトURL');
             $table->boolean('is_active')->default(true)->comment('アクティブ状態');
             $table->timestamps();
-            
+
             // インデックス設定
             $table->index('name');
             $table->index('is_active');

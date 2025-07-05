@@ -78,7 +78,7 @@ class ZennScraper extends BaseScraper
                         Log::debug('Zenn 記事ノードHTML', [
                             'html' => substr($node->html(), 0, 500),
                         ]);
-                        
+
                         $title = $this->extractTitle($node);
                         $url = $this->extractUrl($node);
                         $likesCount = $this->extractLikesCount($node);
@@ -138,10 +138,10 @@ class ZennScraper extends BaseScraper
                 $titleElement = $node->filter($selector);
                 if ($titleElement->count() > 0) {
                     $title = trim($titleElement->text());
-                    Log::debug("Zenn タイトル抽出デバッグ", [
+                    Log::debug('Zenn タイトル抽出デバッグ', [
                         'selector' => $selector,
                         'title' => $title,
-                        'html' => $titleElement->html()
+                        'html' => $titleElement->html(),
                     ]);
                     if (! empty($title)) {
                         return $title;
@@ -238,33 +238,36 @@ class ZennScraper extends BaseScraper
             foreach ($selectors as $selector) {
                 $authorElement = $node->filter($selector);
                 if ($authorElement->count() > 0) {
-                    Log::debug("Zenn 著者抽出デバッグ", [
+                    Log::debug('Zenn 著者抽出デバッグ', [
                         'selector' => $selector,
                         'count' => $authorElement->count(),
                         'html' => $authorElement->html(),
                     ]);
-                    
+
                     // hrefがある場合（リンク要素）
                     $href = $authorElement->attr('href');
                     if ($href) {
                         // 記事URLでない場合はユーザーURLとみなす
                         if (strpos($href, '/articles/') === false) {
                             Log::debug("Found author href: {$href}");
+
                             return trim($href);
                         }
                     }
-                    
+
                     // alt属性がある場合（画像要素）
                     $alt = $authorElement->attr('alt');
-                    if ($alt && !empty(trim($alt))) {
+                    if ($alt && ! empty(trim($alt))) {
                         Log::debug("Found author alt: {$alt}");
+
                         return trim($alt);
                     }
-                    
+
                     // テキストコンテンツがある場合
                     $text = trim($authorElement->text());
-                    if (!empty($text) && strlen($text) < 50) { // 長すぎるテキストは除外
+                    if (! empty($text) && strlen($text) < 50) { // 長すぎるテキストは除外
                         Log::debug("Found author text: {$text}");
+
                         return $text;
                     }
                 }

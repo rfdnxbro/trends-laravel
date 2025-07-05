@@ -13,11 +13,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call([
+            PlatformSeeder::class,
+            CompanySeeder::class,
+        ]);
 
+        $faker = fake('ja_JP');
+        
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => $faker->name(),
+            'email' => $faker->unique()->safeEmail(),
         ]);
     }
 }

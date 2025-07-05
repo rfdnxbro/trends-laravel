@@ -67,21 +67,23 @@ class ScrapingConfigTest extends TestCase
         $platforms = config('scraping.platforms');
 
         $this->assertIsArray($platforms);
-        $this->assertArrayHasKey('github', $platforms);
+        $this->assertArrayHasKey('hatena_bookmark', $platforms);
         $this->assertArrayHasKey('qiita', $platforms);
         $this->assertArrayHasKey('zenn', $platforms);
     }
 
-    public function test_git_hub設定が正しく設定されている()
+    public function test_はてなブックマーク設定が正しく設定されている()
     {
-        $github = config('scraping.platforms.github');
+        $hatena = config('scraping.platforms.hatena_bookmark');
 
-        $this->assertIsArray($github);
-        $this->assertArrayHasKey('rate_limit', $github);
-        $this->assertArrayHasKey('timeout', $github);
-        $this->assertArrayHasKey('api_token', $github);
-        $this->assertEquals(20, $github['rate_limit']);
-        $this->assertEquals(60, $github['timeout']);
+        $this->assertIsArray($hatena);
+        $this->assertArrayHasKey('rate_limit', $hatena);
+        $this->assertArrayHasKey('timeout', $hatena);
+        $this->assertArrayHasKey('base_url', $hatena);
+        $this->assertArrayHasKey('api_url', $hatena);
+        $this->assertEquals(20, $hatena['rate_limit']);
+        $this->assertEquals(30, $hatena['timeout']);
+        $this->assertEquals('https://b.hatena.ne.jp', $hatena['base_url']);
     }
 
     public function test_qiita設定が正しく設定されている()
@@ -92,8 +94,10 @@ class ScrapingConfigTest extends TestCase
         $this->assertArrayHasKey('rate_limit', $qiita);
         $this->assertArrayHasKey('timeout', $qiita);
         $this->assertArrayHasKey('api_token', $qiita);
-        $this->assertEquals(30, $qiita['rate_limit']);
+        $this->assertArrayHasKey('api_url', $qiita);
+        $this->assertEquals(60, $qiita['rate_limit']);
         $this->assertEquals(30, $qiita['timeout']);
+        $this->assertEquals('https://qiita.com/api/v2', $qiita['api_url']);
     }
 
     public function test_zenn設定が正しく設定されている()
@@ -103,8 +107,12 @@ class ScrapingConfigTest extends TestCase
         $this->assertIsArray($zenn);
         $this->assertArrayHasKey('rate_limit', $zenn);
         $this->assertArrayHasKey('timeout', $zenn);
+        $this->assertArrayHasKey('base_url', $zenn);
+        $this->assertArrayHasKey('api_url', $zenn);
         $this->assertEquals(30, $zenn['rate_limit']);
         $this->assertEquals(30, $zenn['timeout']);
+        $this->assertEquals('https://zenn.dev', $zenn['base_url']);
+        $this->assertEquals('https://zenn.dev/api', $zenn['api_url']);
     }
 
     public function test_キャッシュ設定が正しく設定されている()

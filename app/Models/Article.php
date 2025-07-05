@@ -12,6 +12,8 @@ class Article extends Model
         'company_id',
         'title',
         'url',
+        'domain',
+        'platform',
         'author_name',
         'published_at',
         'bookmark_count',

@@ -79,8 +79,7 @@ class CompanyRankingHistoryService
     {
         return DB::table('company_rankings')
             ->where('ranking_period', $periodType)
-            ->where('calculated_at', '<=', $calculatedAt)
-            ->orderBy('calculated_at', 'desc')
+            ->where('calculated_at', $calculatedAt)
             ->orderBy('rank_position')
             ->get()
             ->toArray();

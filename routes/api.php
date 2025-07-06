@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\CompanyRankingController;
+use App\Http\Controllers\Api\SearchController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,5 +57,17 @@ Route::middleware(['throttle:60,1'])->group(function () {
 
         // 企業のランキング情報
         Route::get('{company_id}/rankings', [CompanyController::class, 'rankings']);
+    });
+
+    // 検索 API
+    Route::prefix('search')->group(function () {
+        // 企業検索
+        Route::get('companies', [SearchController::class, 'searchCompanies']);
+
+        // 記事検索
+        Route::get('articles', [SearchController::class, 'searchArticles']);
+
+        // 統合検索
+        Route::get('', [SearchController::class, 'search']);
     });
 });

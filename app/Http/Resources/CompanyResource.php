@@ -32,6 +32,7 @@ class CompanyResource extends JsonResource
             'is_active' => $this->is_active,
             'current_rankings' => $this->formatCurrentRankings(),
             'recent_articles' => CompanyArticleResource::collection($this->whenLoaded('articles')),
+            'match_score' => $this->when(isset($this->match_score), $this->match_score),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
@@ -39,13 +40,13 @@ class CompanyResource extends JsonResource
 
     private function formatCurrentRankings(): array
     {
-        if (! $this->currentRankings) {
+        if (! $this->currentRankings || ! is_array($this->currentRankings)) {
             return [];
         }
 
         $rankings = [];
         foreach ($this->currentRankings as $period => $ranking) {
-            if ($ranking) {
+            if ($ranking && is_object($ranking)) {
                 $rankings[] = [
                     'period' => $period,
                     'rank_position' => $ranking->rank_position,

@@ -9,7 +9,7 @@
 - **ベースURL**: `/api/rankings`
 - **認証**: 不要
 - **レート制限**: 60リクエスト/分
-- **キャッシュ**: 5分間（統計情報は10分間）
+- **キャッシュ**: 5分間（CacheTime定数で管理、統計情報は10分間）
 
 ## 期間タイプ
 
@@ -289,21 +289,23 @@ GET /api/rankings/{period}/statistics
 
 ## エラーレスポンス
 
-### 400 Bad Request
+HTTPステータスコードは`Symfony\Component\HttpFoundation\Response`の定数を使用しています。
+
+### 400 Bad Request (HTTP_BAD_REQUEST)
 ```json
 {
   "error": "Invalid period. Must be one of: 1w, 1m, 3m, 6m, 1y, 3y, all"
 }
 ```
 
-### 404 Not Found
+### 404 Not Found (HTTP_NOT_FOUND)
 ```json
 {
   "error": "Company not found"
 }
 ```
 
-### 429 Too Many Requests
+### 429 Too Many Requests (HTTP_TOO_MANY_REQUESTS)
 ```json
 {
   "error": "Rate limit exceeded. Please try again later."
@@ -331,6 +333,13 @@ curl -X GET "https://api.example.com/api/rankings/1y?page=2&per_page=25"
 ```bash
 curl -X GET "https://api.example.com/api/rankings/1m?sort_by=total_score&sort_order=desc"
 ```
+
+## キャッシュ設定
+
+キャッシュ時間は`App\Constants\CacheTime`クラスで一元管理されています：
+
+- `CacheTime::RANKING` - 5分間（ランキング関連API）
+- `CacheTime::STATISTICS` - 10分間（統計情報API）
 
 ## 注意事項
 

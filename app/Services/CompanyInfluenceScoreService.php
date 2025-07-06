@@ -269,4 +269,30 @@ class CompanyInfluenceScoreService
 
         return $statistics;
     }
+
+    /**
+     * 企業の影響力スコア履歴を取得
+     */
+    public function getCompanyScoreHistory(int $companyId, string $period = '1d', int $days = 30): array
+    {
+        $periodEnd = now();
+        $periodStart = now()->subDays($days);
+
+        $scores = CompanyInfluenceScore::where('company_id', $companyId)
+            ->where('period_type', $period)
+            ->whereBetween('calculated_at', [$periodStart, $periodEnd])
+            ->orderBy('calculated_at', 'desc')
+            ->get()
+            ->map(function ($score) {
+                return [
+                    'date' => $score->calculated_at->toDateString(),
+                    'score' => (float) $score->total_score,
+                    'rank_position' => null, // ランキング順位は別途計算が必要
+                    'calculated_at' => $score->calculated_at,
+                ];
+            })
+            ->toArray();
+
+        return $scores;
+    }
 }

@@ -298,4 +298,49 @@ class CompanyRankingService
 
         return $results;
     }
+
+    /**
+     * 企業のランキング履歴を取得
+     */
+    public function getCompanyRankingHistory(int $companyId, int $historyDays = 30): array
+    {
+        $endDate = now();
+        $startDate = $endDate->copy()->subDays($historyDays);
+
+        $history = [];
+        foreach (RankingPeriod::TYPES as $periodType => $days) {
+            $rankings = DB::table('company_rankings as cr')
+                ->join('companies as c', 'cr.company_id', '=', 'c.id')
+                ->select([
+                    'cr.rank_position as current_rank',
+                    'cr.total_score',
+                    'cr.calculated_at',
+                    'c.name as company_name',
+                ])
+                ->where('cr.company_id', $companyId)
+                ->where('cr.ranking_period', $periodType)
+                ->whereBetween('cr.calculated_at', [$startDate, $endDate])
+                ->orderBy('cr.calculated_at', 'desc')
+                ->get()
+                ->map(function ($ranking, $index, $collection) {
+                    $previousRank = $collection->get($index + 1)?->current_rank ?? $ranking->current_rank;
+                    $rankChange = $previousRank - $ranking->current_rank;
+
+                    return [
+                        'period' => $ranking->ranking_period ?? null,
+                        'current_rank' => $ranking->current_rank,
+                        'previous_rank' => $previousRank,
+                        'rank_change' => $rankChange,
+                        'calculated_at' => $ranking->calculated_at,
+                    ];
+                })
+                ->toArray();
+
+            if (! empty($rankings)) {
+                $history[] = $rankings[0]; // 最新のランキング履歴のみ返す
+            }
+        }
+
+        return $history;
+    }
 }

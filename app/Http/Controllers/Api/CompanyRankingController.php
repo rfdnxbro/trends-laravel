@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Constants\CacheTime;
 use App\Constants\RankingPeriod;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompanyRankingResource;
@@ -11,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
 
 class CompanyRankingController extends Controller
 {
@@ -38,7 +40,7 @@ class CompanyRankingController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'error' => RankingPeriod::getErrorMessage(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $page = $request->get('page', 1);
@@ -47,9 +49,8 @@ class CompanyRankingController extends Controller
         $sortOrder = $request->get('sort_order', 'asc');
 
         $cacheKey = "company_ranking_{$period}_{$page}_{$perPage}_{$sortBy}_{$sortOrder}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($period, $page, $perPage, $sortBy, $sortOrder) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period, $page, $perPage, $sortBy, $sortOrder) {
             $rankings = $this->rankingService->getRankingForPeriod($period, $perPage * 10);
 
             if (empty($rankings)) {
@@ -101,13 +102,12 @@ class CompanyRankingController extends Controller
             return response()->json([
                 'error' => 'Invalid parameters',
                 'details' => $validator->errors(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $cacheKey = "company_ranking_top_{$period}_{$limit}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($period, $limit) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period, $limit) {
             $rankings = $this->rankingService->getRankingForPeriod($period, $limit);
 
             return response()->json([
@@ -134,16 +134,15 @@ class CompanyRankingController extends Controller
             return response()->json([
                 'error' => 'Invalid company ID',
                 'details' => $validator->errors(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $includeHistory = $request->boolean('include_history', false);
         $historyDays = $request->get('history_days', 30);
 
         $cacheKey = "company_ranking_company_{$companyId}_{$includeHistory}_{$historyDays}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($companyId, $includeHistory, $historyDays) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($companyId, $includeHistory, $historyDays) {
             $rankings = $this->rankingService->getCompanyRankings($companyId);
 
             $response = [
@@ -187,9 +186,8 @@ class CompanyRankingController extends Controller
     public function statistics(): JsonResponse
     {
         $cacheKey = 'company_ranking_statistics';
-        $cacheTime = 600; // 10分
 
-        return Cache::remember($cacheKey, $cacheTime, function () {
+        return Cache::remember($cacheKey, CacheTime::STATISTICS, function () {
             $statistics = $this->rankingService->getRankingStatistics();
 
             return response()->json([
@@ -210,15 +208,14 @@ class CompanyRankingController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'error' => RankingPeriod::getErrorMessage(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $limit = min($request->get('limit', 10), 50);
 
         $cacheKey = "company_ranking_risers_{$period}_{$limit}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($period, $limit) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period, $limit) {
             $risers = $this->historyService->getTopRankingRisers($period, $limit);
 
             return response()->json([
@@ -244,15 +241,14 @@ class CompanyRankingController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'error' => RankingPeriod::getErrorMessage(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $limit = min($request->get('limit', 10), 50);
 
         $cacheKey = "company_ranking_fallers_{$period}_{$limit}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($period, $limit) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period, $limit) {
             $fallers = $this->historyService->getTopRankingFallers($period, $limit);
 
             return response()->json([
@@ -278,13 +274,12 @@ class CompanyRankingController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'error' => RankingPeriod::getErrorMessage(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $cacheKey = "company_ranking_change_stats_{$period}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($period) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period) {
             $stats = $this->historyService->getRankingChangeStatistics($period);
 
             return response()->json([

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Company;
 use App\Models\CompanyRanking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class CompanyRankingApiTest extends TestCase
@@ -40,7 +41,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/periods');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [],
             ]);
@@ -50,7 +51,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     '*' => [
@@ -86,7 +87,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m?page=1&per_page=5');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('meta.per_page', '5')
             ->assertJsonPath('meta.current_page', '1');
     }
@@ -95,7 +96,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m?sort_by=total_score&sort_order=desc');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
 
         $data = $response->json('data');
         $this->assertTrue($data[0]['total_score'] >= $data[1]['total_score']);
@@ -105,7 +106,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/invalid');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
             ]);
@@ -115,7 +116,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m/top/5');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     '*' => [
@@ -151,7 +152,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m/top/200');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -163,7 +164,7 @@ class CompanyRankingApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/rankings/company/{$company->id}");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -188,7 +189,7 @@ class CompanyRankingApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/rankings/company/{$company->id}?include_history=true");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -202,7 +203,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/company/99999');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -213,7 +214,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/statistics');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [],
             ]);
@@ -223,7 +224,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m/risers');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [],
                 'meta' => [
@@ -238,7 +239,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m/risers?limit=5');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('meta.limit', '5');
     }
 
@@ -246,7 +247,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m/fallers');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [],
                 'meta' => [
@@ -261,7 +262,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m/statistics');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [],
             ]);
@@ -273,9 +274,9 @@ class CompanyRankingApiTest extends TestCase
             $response = $this->getJson('/api/rankings/periods');
 
             if ($i < 60) {
-                $response->assertStatus(200);
+                $response->assertStatus(Response::HTTP_OK);
             } else {
-                $response->assertStatus(429);
+                $response->assertStatus(Response::HTTP_TOO_MANY_REQUESTS);
                 break;
             }
         }
@@ -286,8 +287,8 @@ class CompanyRankingApiTest extends TestCase
         $response1 = $this->getJson('/api/rankings/1m');
         $response2 = $this->getJson('/api/rankings/1m');
 
-        $response1->assertStatus(200);
-        $response2->assertStatus(200);
+        $response1->assertStatus(Response::HTTP_OK);
+        $response2->assertStatus(Response::HTTP_OK);
 
         $this->assertEquals($response1->json(), $response2->json());
     }
@@ -296,7 +297,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m?per_page=3&page=2');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('meta.current_page', '2')
             ->assertJsonPath('meta.per_page', '3')
             ->assertJsonPath('meta.total', 10);
@@ -306,7 +307,7 @@ class CompanyRankingApiTest extends TestCase
     {
         $response = $this->getJson('/api/rankings/1m');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
 
         $data = $response->json('data');
         $this->assertNotEmpty($data);

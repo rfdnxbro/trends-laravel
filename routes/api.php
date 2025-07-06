@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\CompanyRankingController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,5 +41,20 @@ Route::middleware(['throttle:60,1'])->group(function () {
 
         // 特定企業のランキング
         Route::get('company/{company_id}', [CompanyRankingController::class, 'company']);
+    });
+
+    // 企業詳細 API
+    Route::prefix('companies')->group(function () {
+        // 企業詳細情報
+        Route::get('{company_id}', [CompanyController::class, 'show']);
+
+        // 企業の記事一覧
+        Route::get('{company_id}/articles', [CompanyController::class, 'articles']);
+
+        // 企業の影響力スコア履歴
+        Route::get('{company_id}/scores', [CompanyController::class, 'scores']);
+
+        // 企業のランキング情報
+        Route::get('{company_id}/rankings', [CompanyController::class, 'rankings']);
     });
 });

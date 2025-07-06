@@ -300,7 +300,7 @@ class CompanyRankingApiTest extends TestCase
         $response->assertStatus(200)
                  ->assertJsonPath('meta.current_page', '2')
                  ->assertJsonPath('meta.per_page', '3')
-                 ->assertJsonPath('meta.total', '10');
+                 ->assertJsonPath('meta.total', 10);
     }
 
     public function testApiResponseStructure()

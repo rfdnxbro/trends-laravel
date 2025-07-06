@@ -6,17 +6,26 @@ import App from './components/App';
 
 const queryClient = new QueryClient();
 
-const container = document.getElementById('root');
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('root');
 
-if (container) {
-    const root = createRoot(container);
-    root.render(
-        <React.StrictMode>
-            <QueryClientProvider client={queryClient}>
-                <BrowserRouter>
-                    <App />
-                </BrowserRouter>
-            </QueryClientProvider>
-        </React.StrictMode>
-    );
-}
+    if (container) {
+        try {
+            const root = createRoot(container);
+            root.render(
+                <React.StrictMode>
+                    <QueryClientProvider client={queryClient}>
+                        <BrowserRouter>
+                            <App />
+                        </BrowserRouter>
+                    </QueryClientProvider>
+                </React.StrictMode>
+            );
+            console.log('React アプリケーションが正常に初期化されました');
+        } catch (error) {
+            console.error('React アプリケーションの初期化に失敗:', error);
+        }
+    } else {
+        console.error('root 要素が見つかりません');
+    }
+});

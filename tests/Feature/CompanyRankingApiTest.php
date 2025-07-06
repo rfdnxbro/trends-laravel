@@ -6,12 +6,11 @@ use App\Constants\RankingPeriod;
 use App\Models\Company;
 use App\Models\CompanyRanking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class CompanyRankingApiTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -89,8 +88,8 @@ class CompanyRankingApiTest extends TestCase
         $response = $this->getJson('/api/rankings/1m?page=1&per_page=5');
 
         $response->assertStatus(200)
-                 ->assertJsonPath('meta.per_page', 5)
-                 ->assertJsonPath('meta.current_page', 1);
+                 ->assertJsonPath('meta.per_page', '5')
+                 ->assertJsonPath('meta.current_page', '1');
     }
 
     public function testGetRankingByPeriodWithSorting()
@@ -241,7 +240,7 @@ class CompanyRankingApiTest extends TestCase
         $response = $this->getJson('/api/rankings/1m/risers?limit=5');
 
         $response->assertStatus(200)
-                 ->assertJsonPath('meta.limit', 5);
+                 ->assertJsonPath('meta.limit', '5');
     }
 
     public function testGetRankingFallers()
@@ -299,9 +298,9 @@ class CompanyRankingApiTest extends TestCase
         $response = $this->getJson('/api/rankings/1m?per_page=3&page=2');
 
         $response->assertStatus(200)
-                 ->assertJsonPath('meta.current_page', 2)
-                 ->assertJsonPath('meta.per_page', 3)
-                 ->assertJsonPath('meta.total', 10);
+                 ->assertJsonPath('meta.current_page', '2')
+                 ->assertJsonPath('meta.per_page', '3')
+                 ->assertJsonPath('meta.total', '10');
     }
 
     public function testApiResponseStructure()

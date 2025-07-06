@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\CompanyRankingController;
 |
 */
 
-Route::middleware(['throttle:api'])->group(function () {
+Route::middleware(['throttle:60,1'])->group(function () {
     // 企業ランキング API
     Route::prefix('rankings')->group(function () {
         // 期間タイプ一覧

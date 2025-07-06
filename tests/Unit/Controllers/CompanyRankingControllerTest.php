@@ -147,6 +147,12 @@ class CompanyRankingControllerTest extends TestCase
                 return $callback();
             });
 
+        // バリデーションをスキップするためのモック
+        \Validator::shouldReceive('make')
+            ->andReturn(\Mockery::mock(\Illuminate\Validation\Validator::class, function ($mock) {
+                $mock->shouldReceive('fails')->andReturn(false);
+            }));
+
         $response = $this->controller->getCompanyRanking($request, 1);
 
         $this->assertEquals(200, $response->getStatusCode());

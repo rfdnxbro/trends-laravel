@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('total_bookmarks')->default(0);
             $table->timestamp('calculated_at');
             $table->timestamps();
-            
+
             $table->index(['company_id', 'period_type', 'period_start'], 'idx_influence_company_period');
         });
     }

@@ -2,27 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Company;
-use App\Models\CompanyInfluenceScore;
+use App\Constants\RankingPeriod;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CompanyRankingService
 {
-    /**
-     * 期間タイプの定義
-     */
-    private const PERIOD_TYPES = [
-        '1w' => 7,
-        '1m' => 30,
-        '3m' => 90,
-        '6m' => 180,
-        '1y' => 365,
-        '3y' => 1095,
-        'all' => null,
-    ];
-
     private CompanyInfluenceScoreService $scoreService;
 
     public function __construct(CompanyInfluenceScoreService $scoreService)
@@ -38,7 +24,7 @@ class CompanyRankingService
         $referenceDate = $referenceDate ?? now();
         $results = [];
 
-        foreach (self::PERIOD_TYPES as $periodType => $days) {
+        foreach (RankingPeriod::TYPES as $periodType => $days) {
             $results[$periodType] = $this->generateRankingForPeriod($periodType, $referenceDate);
         }
 
@@ -85,7 +71,7 @@ class CompanyRankingService
      */
     private function calculatePeriodDates(string $periodType, Carbon $referenceDate): array
     {
-        $days = self::PERIOD_TYPES[$periodType] ?? null;
+        $days = RankingPeriod::getDays($periodType);
         $endDate = $referenceDate->copy()->endOfDay();
 
         if ($days === null) {
@@ -201,7 +187,7 @@ class CompanyRankingService
     {
         $rankings = [];
 
-        foreach (self::PERIOD_TYPES as $periodType => $days) {
+        foreach (RankingPeriod::TYPES as $periodType => $days) {
             $ranking = DB::table('company_rankings as cr')
                 ->join('companies as c', 'cr.company_id', '=', 'c.id')
                 ->select([
@@ -260,7 +246,7 @@ class CompanyRankingService
     {
         $statistics = [];
 
-        foreach (self::PERIOD_TYPES as $periodType => $days) {
+        foreach (RankingPeriod::TYPES as $periodType => $days) {
             $stats = DB::table('company_rankings')
                 ->where('ranking_period', $periodType)
                 ->selectRaw('
@@ -298,7 +284,7 @@ class CompanyRankingService
 
         // 各期間タイプのジョブを並行実行
         $jobs = [];
-        foreach (self::PERIOD_TYPES as $periodType => $days) {
+        foreach (RankingPeriod::TYPES as $periodType => $days) {
             $jobs[] = function () use ($periodType, $referenceDate) {
                 return $this->generateRankingForPeriod($periodType, $referenceDate);
             };
@@ -306,7 +292,7 @@ class CompanyRankingService
 
         // 並行処理実行（Laravel Jobsを使用）
         foreach ($jobs as $index => $job) {
-            $periodType = array_keys(self::PERIOD_TYPES)[$index];
+            $periodType = RankingPeriod::getValidPeriods()[$index];
             $results[$periodType] = $job();
         }
 

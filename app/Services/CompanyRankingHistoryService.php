@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\CompanyRanking;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -25,18 +24,18 @@ class CompanyRankingHistoryService
         ]);
 
         $changes = [];
-        
+
         // 現在のランキングを取得
         $currentRankings = $this->getCurrentRankings($periodType, $calculatedAt);
-        
+
         // 前回のランキングを取得
         $previousRankings = $this->getPreviousRankings($periodType, $calculatedAt);
-        
+
         // 順位変動を計算
         foreach ($currentRankings as $current) {
             $companyId = $current->company_id;
             $currentRank = $current->rank_position;
-            
+
             // 前回の順位を取得
             $previousRank = null;
             foreach ($previousRankings as $previous) {
@@ -45,10 +44,10 @@ class CompanyRankingHistoryService
                     break;
                 }
             }
-            
+
             // 順位変動を計算
             $change = $this->calculateRankingChange($currentRank, $previousRank);
-            
+
             if ($change !== null) {
                 $changes[] = [
                     'company_id' => $companyId,
@@ -60,15 +59,15 @@ class CompanyRankingHistoryService
                 ];
             }
         }
-        
+
         // 履歴データをデータベースに保存
         $this->saveRankingHistory($changes);
-        
+
         Log::info('Ranking history recorded', [
             'period_type' => $periodType,
             'changes_count' => count($changes),
         ]);
-        
+
         return $changes;
     }
 
@@ -95,11 +94,11 @@ class CompanyRankingHistoryService
             ->where('ranking_period', $periodType)
             ->where('calculated_at', '<', $calculatedAt)
             ->max('calculated_at');
-            
-        if (!$previousCalculatedAt) {
+
+        if (! $previousCalculatedAt) {
             return [];
         }
-        
+
         return DB::table('company_rankings')
             ->where('ranking_period', $periodType)
             ->where('calculated_at', $previousCalculatedAt)
@@ -117,12 +116,12 @@ class CompanyRankingHistoryService
             // 初回ランクイン
             return null;
         }
-        
+
         if ($currentRank === null) {
             // ランク圏外
             return null;
         }
-        
+
         // 順位変動を計算（上昇は負の値、下降は正の値）
         return $previousRank - $currentRank;
     }
@@ -187,7 +186,7 @@ class CompanyRankingHistoryService
             ->where('period_type', $periodType)
             ->max('calculated_at');
 
-        if (!$latestCalculatedAt) {
+        if (! $latestCalculatedAt) {
             return [];
         }
 
@@ -220,7 +219,7 @@ class CompanyRankingHistoryService
             ->where('period_type', $periodType)
             ->max('calculated_at');
 
-        if (!$latestCalculatedAt) {
+        if (! $latestCalculatedAt) {
             return [];
         }
 
@@ -253,7 +252,7 @@ class CompanyRankingHistoryService
             ->where('period_type', $periodType)
             ->max('calculated_at');
 
-        if (!$latestCalculatedAt) {
+        if (! $latestCalculatedAt) {
             return [];
         }
 
@@ -289,16 +288,16 @@ class CompanyRankingHistoryService
     public function cleanupOldHistory(): int
     {
         $cutoffDate = now()->subDays(self::HISTORY_RETENTION_DAYS);
-        
+
         $deletedCount = DB::table('company_ranking_history')
             ->where('calculated_at', '<', $cutoffDate)
             ->delete();
-        
+
         Log::info('Old ranking history cleaned up', [
             'deleted_count' => $deletedCount,
             'cutoff_date' => $cutoffDate->toDateString(),
         ]);
-        
+
         return $deletedCount;
     }
 

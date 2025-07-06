@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('rank_change')->nullable();
             $table->timestamp('calculated_at');
             $table->timestamps();
-            
+
             $table->index(['company_id', 'period_type'], 'idx_history_company_period');
             $table->index(['period_type', 'calculated_at'], 'idx_history_period_calculated');
             $table->index(['calculated_at'], 'idx_history_calculated_at');

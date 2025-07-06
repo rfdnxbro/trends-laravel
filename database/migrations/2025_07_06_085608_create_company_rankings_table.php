@@ -23,7 +23,7 @@ return new class extends Migration
             $table->date('period_end');
             $table->timestamp('calculated_at');
             $table->timestamps();
-            
+
             $table->index(['ranking_period', 'rank_position'], 'idx_rankings_period_rank');
             $table->index(['company_id', 'ranking_period'], 'idx_rankings_company_period');
         });

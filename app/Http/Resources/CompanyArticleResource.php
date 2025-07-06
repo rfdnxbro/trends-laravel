@@ -34,13 +34,14 @@ class CompanyArticleResource extends JsonResource
                     return $this->company->domain;
                 }),
             ],
-            'platform_details' => $this->when($this->relationLoaded('platform') && $this->platform, function () {
+            'platform_details' => $this->when($this->relationLoaded('platform') && is_object($this->platform), function () {
                 return [
                     'id' => $this->platform->id,
                     'name' => $this->platform->name,
                     'base_url' => $this->platform->base_url,
                 ];
             }),
+            'match_score' => $this->when(isset($this->match_score), $this->match_score),
             'scraped_at' => $this->scraped_at,
         ];
     }

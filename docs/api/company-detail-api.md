@@ -213,7 +213,9 @@ GET /api/companies/{company_id}/rankings
 
 ## エラーレスポンス
 
-### 400 Bad Request
+HTTPステータスコードは`Symfony\Component\HttpFoundation\Response`の定数を使用しています。
+
+### 400 Bad Request (HTTP_BAD_REQUEST)
 ```json
 {
   "error": "企業IDが無効です",
@@ -223,14 +225,14 @@ GET /api/companies/{company_id}/rankings
 }
 ```
 
-### 404 Not Found
+### 404 Not Found (HTTP_NOT_FOUND)
 ```json
 {
   "error": "企業が見つかりません"
 }
 ```
 
-### 429 Too Many Requests
+### 429 Too Many Requests (HTTP_TOO_MANY_REQUESTS)
 ```json
 {
   "error": "Rate limit exceeded. Please try again later."

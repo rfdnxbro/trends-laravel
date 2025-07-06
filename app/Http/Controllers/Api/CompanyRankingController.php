@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
 
 class CompanyRankingController extends Controller
 {
@@ -39,7 +40,7 @@ class CompanyRankingController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'error' => RankingPeriod::getErrorMessage(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $page = $request->get('page', 1);
@@ -101,7 +102,7 @@ class CompanyRankingController extends Controller
             return response()->json([
                 'error' => 'Invalid parameters',
                 'details' => $validator->errors(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $cacheKey = "company_ranking_top_{$period}_{$limit}";
@@ -133,7 +134,7 @@ class CompanyRankingController extends Controller
             return response()->json([
                 'error' => 'Invalid company ID',
                 'details' => $validator->errors(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $includeHistory = $request->boolean('include_history', false);
@@ -207,7 +208,7 @@ class CompanyRankingController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'error' => RankingPeriod::getErrorMessage(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $limit = min($request->get('limit', 10), 50);
@@ -240,7 +241,7 @@ class CompanyRankingController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'error' => RankingPeriod::getErrorMessage(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $limit = min($request->get('limit', 10), 50);
@@ -273,7 +274,7 @@ class CompanyRankingController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'error' => RankingPeriod::getErrorMessage(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $cacheKey = "company_ranking_change_stats_{$period}";

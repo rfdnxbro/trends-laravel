@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
 
 class CompanyController extends Controller
 {
@@ -41,7 +42,7 @@ class CompanyController extends Controller
             return response()->json([
                 'error' => '企業IDが無効です',
                 'details' => $validator->errors(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $cacheKey = "company_detail_{$companyId}";
@@ -54,7 +55,7 @@ class CompanyController extends Controller
             if (! $company) {
                 return response()->json([
                     'error' => '企業が見つかりません',
-                ], 404);
+                ], Response::HTTP_NOT_FOUND);
             }
 
             // 現在のランキング情報を取得
@@ -79,7 +80,7 @@ class CompanyController extends Controller
             return response()->json([
                 'error' => '企業IDが無効です',
                 'details' => $validator->errors(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $page = $request->get('page', 1);
@@ -95,7 +96,7 @@ class CompanyController extends Controller
             if (! $company) {
                 return response()->json([
                     'error' => '企業が見つかりません',
-                ], 404);
+                ], Response::HTTP_NOT_FOUND);
             }
 
             $query = $company->articles()
@@ -136,7 +137,7 @@ class CompanyController extends Controller
             return response()->json([
                 'error' => '企業IDが無効です',
                 'details' => $validator->errors(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $days = $request->get('days', 30);
@@ -150,7 +151,7 @@ class CompanyController extends Controller
             if (! $company) {
                 return response()->json([
                     'error' => '企業が見つかりません',
-                ], 404);
+                ], Response::HTTP_NOT_FOUND);
             }
 
             $scores = $this->scoreService->getCompanyScoreHistory($companyId, $period, $days);
@@ -182,7 +183,7 @@ class CompanyController extends Controller
             return response()->json([
                 'error' => '企業IDが無効です',
                 'details' => $validator->errors(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $includeHistory = $request->boolean('include_history', false);
@@ -196,7 +197,7 @@ class CompanyController extends Controller
             if (! $company) {
                 return response()->json([
                     'error' => '企業が見つかりません',
-                ], 404);
+                ], Response::HTTP_NOT_FOUND);
             }
 
             $rankings = $this->rankingService->getCompanyRankings($companyId);

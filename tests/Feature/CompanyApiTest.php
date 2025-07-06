@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\CompanyRanking;
 use App\Models\Platform;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class CompanyApiTest extends TestCase
@@ -52,7 +53,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'id',
@@ -94,7 +95,7 @@ class CompanyApiTest extends TestCase
     {
         $response = $this->getJson('/api/companies/99999');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -106,7 +107,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}/articles");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     '*' => [
@@ -148,7 +149,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}/articles?page=1&per_page=2");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('meta.per_page', 2)
             ->assertJsonPath('meta.current_page', 1);
     }
@@ -158,7 +159,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}/articles?days=7&min_bookmarks=50");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('meta.filters.days', 7)
             ->assertJsonPath('meta.filters.min_bookmarks', 50);
     }
@@ -167,7 +168,7 @@ class CompanyApiTest extends TestCase
     {
         $response = $this->getJson('/api/companies/99999/articles');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -179,7 +180,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}/scores");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -199,7 +200,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}/scores?period=1w&days=14");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('meta.period', '1w')
             ->assertJsonPath('meta.days', 14);
     }
@@ -208,7 +209,7 @@ class CompanyApiTest extends TestCase
     {
         $response = $this->getJson('/api/companies/99999/scores');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -220,7 +221,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}/rankings");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -245,7 +246,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}/rankings?include_history=true");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -259,7 +260,7 @@ class CompanyApiTest extends TestCase
     {
         $response = $this->getJson('/api/companies/99999/rankings');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -274,9 +275,9 @@ class CompanyApiTest extends TestCase
             $response = $this->getJson("/api/companies/{$company->id}");
 
             if ($i < 60) {
-                $response->assertStatus(200);
+                $response->assertStatus(Response::HTTP_OK);
             } else {
-                $response->assertStatus(429);
+                $response->assertStatus(Response::HTTP_TOO_MANY_REQUESTS);
                 break;
             }
         }
@@ -289,8 +290,8 @@ class CompanyApiTest extends TestCase
         $response1 = $this->getJson("/api/companies/{$company->id}");
         $response2 = $this->getJson("/api/companies/{$company->id}");
 
-        $response1->assertStatus(200);
-        $response2->assertStatus(200);
+        $response1->assertStatus(Response::HTTP_OK);
+        $response2->assertStatus(Response::HTTP_OK);
 
         $this->assertEquals($response1->json(), $response2->json());
     }
@@ -300,7 +301,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
 
         $data = $response->json('data');
         $this->assertArrayHasKey('recent_articles', $data);
@@ -322,7 +323,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
 
         $data = $response->json('data');
         $this->assertArrayHasKey('current_rankings', $data);
@@ -343,7 +344,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}/articles");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
 
         $articles = $response->json('data');
 
@@ -362,7 +363,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}/articles?days=7");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
 
         $articles = $response->json('data');
         $sevenDaysAgo = now()->subDays(7);
@@ -380,7 +381,7 @@ class CompanyApiTest extends TestCase
         $company = Company::first();
         $response = $this->getJson("/api/companies/{$company->id}/articles?min_bookmarks=50");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
 
         $articles = $response->json('data');
 

@@ -289,21 +289,23 @@ GET /api/rankings/{period}/statistics
 
 ## エラーレスポンス
 
-### 400 Bad Request
+HTTPステータスコードは`Symfony\Component\HttpFoundation\Response`の定数を使用しています。
+
+### 400 Bad Request (HTTP_BAD_REQUEST)
 ```json
 {
   "error": "Invalid period. Must be one of: 1w, 1m, 3m, 6m, 1y, 3y, all"
 }
 ```
 
-### 404 Not Found
+### 404 Not Found (HTTP_NOT_FOUND)
 ```json
 {
   "error": "Company not found"
 }
 ```
 
-### 429 Too Many Requests
+### 429 Too Many Requests (HTTP_TOO_MANY_REQUESTS)
 ```json
 {
   "error": "Rate limit exceeded. Please try again later."

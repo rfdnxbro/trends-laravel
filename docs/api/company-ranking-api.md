@@ -9,7 +9,7 @@
 - **ベースURL**: `/api/rankings`
 - **認証**: 不要
 - **レート制限**: 60リクエスト/分
-- **キャッシュ**: 5分間（統計情報は10分間）
+- **キャッシュ**: 5分間（CacheTime定数で管理、統計情報は10分間）
 
 ## 期間タイプ
 
@@ -331,6 +331,13 @@ curl -X GET "https://api.example.com/api/rankings/1y?page=2&per_page=25"
 ```bash
 curl -X GET "https://api.example.com/api/rankings/1m?sort_by=total_score&sort_order=desc"
 ```
+
+## キャッシュ設定
+
+キャッシュ時間は`App\Constants\CacheTime`クラスで一元管理されています：
+
+- `CacheTime::RANKING` - 5分間（ランキング関連API）
+- `CacheTime::STATISTICS` - 10分間（統計情報API）
 
 ## 注意事項
 

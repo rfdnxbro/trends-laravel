@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Constants\CacheTime;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompanyArticleResource;
 use App\Http\Resources\CompanyResource;
@@ -44,9 +45,8 @@ class CompanyController extends Controller
         }
 
         $cacheKey = "company_detail_{$companyId}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($companyId) {
+        return Cache::remember($cacheKey, CacheTime::COMPANY_DETAIL, function () use ($companyId) {
             $company = Company::with(['rankings', 'articles' => function ($query) {
                 $query->recent(30)->orderBy('published_at', 'desc')->limit(5);
             }])->find($companyId);
@@ -88,9 +88,8 @@ class CompanyController extends Controller
         $minBookmarks = $request->get('min_bookmarks', 0);
 
         $cacheKey = "company_articles_{$companyId}_{$page}_{$perPage}_{$days}_{$minBookmarks}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($companyId, $page, $perPage, $days, $minBookmarks) {
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($companyId, $page, $perPage, $days, $minBookmarks) {
             $company = Company::find($companyId);
 
             if (! $company) {
@@ -144,9 +143,8 @@ class CompanyController extends Controller
         $period = $request->get('period', '1d');
 
         $cacheKey = "company_scores_{$companyId}_{$days}_{$period}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($companyId, $days, $period) {
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($companyId, $days, $period) {
             $company = Company::find($companyId);
 
             if (! $company) {
@@ -191,9 +189,8 @@ class CompanyController extends Controller
         $historyDays = $request->get('history_days', 30);
 
         $cacheKey = "company_rankings_{$companyId}_{$includeHistory}_{$historyDays}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($companyId, $includeHistory, $historyDays) {
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($companyId, $includeHistory, $historyDays) {
             $company = Company::find($companyId);
 
             if (! $company) {

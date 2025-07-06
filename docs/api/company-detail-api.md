@@ -9,7 +9,7 @@
 - **ベースURL**: `/api/companies`
 - **認証**: 不要
 - **レート制限**: 60リクエスト/分
-- **キャッシュ**: 5分間
+- **キャッシュ**: 5分間（CacheTime::DEFAULT定数で管理）
 
 ## エンドポイント
 
@@ -306,6 +306,14 @@ curl -X GET "https://api.example.com/api/companies/1/articles?page=2&per_page=10
 - `period_start`: 期間開始日
 - `period_end`: 期間終了日
 - `calculated_at`: 計算日時
+
+## キャッシュ設定
+
+キャッシュ時間は`App\Constants\CacheTime`クラスで一元管理されています：
+
+- `CacheTime::DEFAULT` - 5分間（一般的なAPI）
+- `CacheTime::COMPANY_DETAIL` - 5分間（企業詳細）
+- `CacheTime::STATISTICS` - 10分間（統計情報）
 
 ## 注意事項
 

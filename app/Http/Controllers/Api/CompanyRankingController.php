@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Constants\CacheTime;
 use App\Constants\RankingPeriod;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompanyRankingResource;
@@ -47,9 +48,8 @@ class CompanyRankingController extends Controller
         $sortOrder = $request->get('sort_order', 'asc');
 
         $cacheKey = "company_ranking_{$period}_{$page}_{$perPage}_{$sortBy}_{$sortOrder}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($period, $page, $perPage, $sortBy, $sortOrder) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period, $page, $perPage, $sortBy, $sortOrder) {
             $rankings = $this->rankingService->getRankingForPeriod($period, $perPage * 10);
 
             if (empty($rankings)) {
@@ -105,9 +105,8 @@ class CompanyRankingController extends Controller
         }
 
         $cacheKey = "company_ranking_top_{$period}_{$limit}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($period, $limit) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period, $limit) {
             $rankings = $this->rankingService->getRankingForPeriod($period, $limit);
 
             return response()->json([
@@ -141,9 +140,8 @@ class CompanyRankingController extends Controller
         $historyDays = $request->get('history_days', 30);
 
         $cacheKey = "company_ranking_company_{$companyId}_{$includeHistory}_{$historyDays}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($companyId, $includeHistory, $historyDays) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($companyId, $includeHistory, $historyDays) {
             $rankings = $this->rankingService->getCompanyRankings($companyId);
 
             $response = [
@@ -187,9 +185,8 @@ class CompanyRankingController extends Controller
     public function statistics(): JsonResponse
     {
         $cacheKey = 'company_ranking_statistics';
-        $cacheTime = 600; // 10分
 
-        return Cache::remember($cacheKey, $cacheTime, function () {
+        return Cache::remember($cacheKey, CacheTime::STATISTICS, function () {
             $statistics = $this->rankingService->getRankingStatistics();
 
             return response()->json([
@@ -216,9 +213,8 @@ class CompanyRankingController extends Controller
         $limit = min($request->get('limit', 10), 50);
 
         $cacheKey = "company_ranking_risers_{$period}_{$limit}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($period, $limit) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period, $limit) {
             $risers = $this->historyService->getTopRankingRisers($period, $limit);
 
             return response()->json([
@@ -250,9 +246,8 @@ class CompanyRankingController extends Controller
         $limit = min($request->get('limit', 10), 50);
 
         $cacheKey = "company_ranking_fallers_{$period}_{$limit}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($period, $limit) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period, $limit) {
             $fallers = $this->historyService->getTopRankingFallers($period, $limit);
 
             return response()->json([
@@ -282,9 +277,8 @@ class CompanyRankingController extends Controller
         }
 
         $cacheKey = "company_ranking_change_stats_{$period}";
-        $cacheTime = 300; // 5分
 
-        return Cache::remember($cacheKey, $cacheTime, function () use ($period) {
+        return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period) {
             $stats = $this->historyService->getRankingChangeStatistics($period);
 
             return response()->json([

@@ -59,7 +59,7 @@ class CompanyRankingControllerTest extends TestCase
                 return $callback();
             });
 
-        $response = $this->controller->getRankingByPeriod($request, '1m');
+        $response = $this->controller->index($request, '1m');
 
         $this->assertEquals(200, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
@@ -70,7 +70,7 @@ class CompanyRankingControllerTest extends TestCase
     public function testGetRankingByPeriodWithInvalidPeriod()
     {
         $request = new Request();
-        $response = $this->controller->getRankingByPeriod($request, 'invalid');
+        $response = $this->controller->index($request, 'invalid');
 
         $this->assertEquals(400, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
@@ -104,7 +104,7 @@ class CompanyRankingControllerTest extends TestCase
                 return $callback();
             });
 
-        $response = $this->controller->getTopRanking($request, '1m', 10);
+        $response = $this->controller->top($request, '1m', 10);
 
         $this->assertEquals(200, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
@@ -115,7 +115,7 @@ class CompanyRankingControllerTest extends TestCase
     public function testGetTopRankingWithInvalidLimit()
     {
         $request = new Request();
-        $response = $this->controller->getTopRanking($request, '1m', 150);
+        $response = $this->controller->top($request, '1m', 150);
 
         $this->assertEquals(400, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
@@ -153,7 +153,7 @@ class CompanyRankingControllerTest extends TestCase
                 $mock->shouldReceive('fails')->andReturn(false);
             }));
 
-        $response = $this->controller->getCompanyRanking($request, 1);
+        $response = $this->controller->company($request, 1);
 
         $this->assertEquals(200, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
@@ -184,7 +184,7 @@ class CompanyRankingControllerTest extends TestCase
                 return $callback();
             });
 
-        $response = $this->controller->getStatistics();
+        $response = $this->controller->statistics();
 
         $this->assertEquals(200, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
@@ -215,7 +215,7 @@ class CompanyRankingControllerTest extends TestCase
                 return $callback();
             });
 
-        $response = $this->controller->getRankingRisers($request, '1m');
+        $response = $this->controller->risers($request, '1m');
 
         $this->assertEquals(200, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
@@ -247,7 +247,7 @@ class CompanyRankingControllerTest extends TestCase
                 return $callback();
             });
 
-        $response = $this->controller->getRankingFallers($request, '1m');
+        $response = $this->controller->fallers($request, '1m');
 
         $this->assertEquals(200, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
@@ -279,7 +279,7 @@ class CompanyRankingControllerTest extends TestCase
                 return $callback();
             });
 
-        $response = $this->controller->getRankingChangeStatistics($request, '1m');
+        $response = $this->controller->changeStatistics($request, '1m');
 
         $this->assertEquals(200, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
@@ -288,7 +288,7 @@ class CompanyRankingControllerTest extends TestCase
 
     public function testGetPeriodTypes()
     {
-        $response = $this->controller->getPeriodTypes();
+        $response = $this->controller->periods();
 
         $this->assertEquals(200, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);

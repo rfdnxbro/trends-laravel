@@ -30,7 +30,7 @@ class CompanyRankingController extends Controller
     /**
      * 期間別ランキング取得
      */
-    public function getRankingByPeriod(Request $request, string $period): JsonResponse
+    public function index(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
             'period' => 'required|' . RankingPeriod::getValidationRule(),
@@ -88,7 +88,7 @@ class CompanyRankingController extends Controller
     /**
      * 上位N件のランキング取得
      */
-    public function getTopRanking(Request $request, string $period, int $limit): JsonResponse
+    public function top(Request $request, string $period, int $limit): JsonResponse
     {
         $validator = Validator::make([
             'period' => $period,
@@ -125,7 +125,7 @@ class CompanyRankingController extends Controller
     /**
      * 特定企業のランキング取得
      */
-    public function getCompanyRanking(Request $request, int $companyId): JsonResponse
+    public function company(Request $request, int $companyId): JsonResponse
     {
         $validator = Validator::make(['company_id' => $companyId], [
             'company_id' => 'required|integer|exists:companies,id',
@@ -185,7 +185,7 @@ class CompanyRankingController extends Controller
     /**
      * ランキング統計情報取得
      */
-    public function getStatistics(): JsonResponse
+    public function statistics(): JsonResponse
     {
         $cacheKey = "company_ranking_statistics";
         $cacheTime = 600; // 10分
@@ -202,7 +202,7 @@ class CompanyRankingController extends Controller
     /**
      * 順位変動上位企業取得
      */
-    public function getRankingRisers(Request $request, string $period): JsonResponse
+    public function risers(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
             'period' => 'required|' . RankingPeriod::getValidationRule(),
@@ -236,7 +236,7 @@ class CompanyRankingController extends Controller
     /**
      * 順位変動下位企業取得
      */
-    public function getRankingFallers(Request $request, string $period): JsonResponse
+    public function fallers(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
             'period' => 'required|' . RankingPeriod::getValidationRule(),
@@ -270,7 +270,7 @@ class CompanyRankingController extends Controller
     /**
      * 順位変動統計取得
      */
-    public function getRankingChangeStatistics(Request $request, string $period): JsonResponse
+    public function changeStatistics(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
             'period' => 'required|' . RankingPeriod::getValidationRule(),
@@ -297,7 +297,7 @@ class CompanyRankingController extends Controller
     /**
      * 使用可能な期間タイプ一覧取得
      */
-    public function getPeriodTypes(): JsonResponse
+    public function periods(): JsonResponse
     {
         return response()->json([
             'data' => RankingPeriod::getValidPeriods()

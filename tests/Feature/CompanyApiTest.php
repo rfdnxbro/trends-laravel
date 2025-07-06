@@ -269,7 +269,7 @@ class CompanyApiTest extends TestCase
     public function test_api_rate_limiting()
     {
         $company = Company::first();
-        
+
         for ($i = 0; $i < 65; $i++) {
             $response = $this->getJson("/api/companies/{$company->id}");
 
@@ -285,7 +285,7 @@ class CompanyApiTest extends TestCase
     public function test_api_caching()
     {
         $company = Company::first();
-        
+
         $response1 = $this->getJson("/api/companies/{$company->id}");
         $response2 = $this->getJson("/api/companies/{$company->id}");
 
@@ -301,13 +301,13 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}");
 
         $response->assertStatus(200);
-        
+
         $data = $response->json('data');
         $this->assertArrayHasKey('recent_articles', $data);
-        
-        if (!empty($data['recent_articles'])) {
+
+        if (! empty($data['recent_articles'])) {
             $this->assertLessThanOrEqual(5, count($data['recent_articles']));
-            
+
             foreach ($data['recent_articles'] as $article) {
                 $this->assertArrayHasKey('title', $article);
                 $this->assertArrayHasKey('url', $article);
@@ -323,11 +323,11 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}");
 
         $response->assertStatus(200);
-        
+
         $data = $response->json('data');
         $this->assertArrayHasKey('current_rankings', $data);
-        
-        if (!empty($data['current_rankings'])) {
+
+        if (! empty($data['current_rankings'])) {
             foreach ($data['current_rankings'] as $ranking) {
                 $this->assertArrayHasKey('period', $ranking);
                 $this->assertArrayHasKey('rank_position', $ranking);
@@ -344,13 +344,13 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/articles");
 
         $response->assertStatus(200);
-        
+
         $articles = $response->json('data');
-        
+
         if (count($articles) > 1) {
             for ($i = 1; $i < count($articles); $i++) {
                 $this->assertLessThanOrEqual(
-                    strtotime($articles[$i-1]['published_at']),
+                    strtotime($articles[$i - 1]['published_at']),
                     strtotime($articles[$i]['published_at'])
                 );
             }
@@ -363,10 +363,10 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/articles?days=7");
 
         $response->assertStatus(200);
-        
+
         $articles = $response->json('data');
         $sevenDaysAgo = now()->subDays(7);
-        
+
         foreach ($articles as $article) {
             $this->assertGreaterThanOrEqual(
                 $sevenDaysAgo->toDateString(),
@@ -381,9 +381,9 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/articles?min_bookmarks=50");
 
         $response->assertStatus(200);
-        
+
         $articles = $response->json('data');
-        
+
         foreach ($articles as $article) {
             $this->assertGreaterThanOrEqual(50, $article['bookmark_count']);
         }

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Article extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'platform_id',
         'company_id',

@@ -39,7 +39,7 @@ class CompanyResource extends JsonResource
 
     private function formatCurrentRankings(): array
     {
-        if (!$this->currentRankings) {
+        if (! $this->currentRankings) {
             return [];
         }
 

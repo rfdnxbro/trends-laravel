@@ -325,7 +325,7 @@ class CompanyRankingService
                 ->map(function ($ranking, $index, $collection) {
                     $previousRank = $collection->get($index + 1)?->current_rank ?? $ranking->current_rank;
                     $rankChange = $previousRank - $ranking->current_rank;
-                    
+
                     return [
                         'period' => $ranking->ranking_period ?? null,
                         'current_rank' => $ranking->current_rank,
@@ -336,7 +336,7 @@ class CompanyRankingService
                 })
                 ->toArray();
 
-            if (!empty($rankings)) {
+            if (! empty($rankings)) {
                 $history[] = $rankings[0]; // 最新のランキング履歴のみ返す
             }
         }

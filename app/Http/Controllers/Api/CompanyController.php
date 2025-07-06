@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CompanyResource;
 use App\Http\Resources\CompanyArticleResource;
+use App\Http\Resources\CompanyResource;
 use App\Models\Company;
-use App\Services\CompanyRankingService;
 use App\Services\CompanyInfluenceScoreService;
+use App\Services\CompanyRankingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Validator;
 class CompanyController extends Controller
 {
     private CompanyRankingService $rankingService;
+
     private CompanyInfluenceScoreService $scoreService;
 
     public function __construct(
@@ -50,7 +51,7 @@ class CompanyController extends Controller
                 $query->recent(30)->orderBy('published_at', 'desc')->limit(5);
             }])->find($companyId);
 
-            if (!$company) {
+            if (! $company) {
                 return response()->json([
                     'error' => '企業が見つかりません',
                 ], 404);
@@ -92,7 +93,7 @@ class CompanyController extends Controller
         return Cache::remember($cacheKey, $cacheTime, function () use ($companyId, $page, $perPage, $days, $minBookmarks) {
             $company = Company::find($companyId);
 
-            if (!$company) {
+            if (! $company) {
                 return response()->json([
                     'error' => '企業が見つかりません',
                 ], 404);
@@ -148,7 +149,7 @@ class CompanyController extends Controller
         return Cache::remember($cacheKey, $cacheTime, function () use ($companyId, $days, $period) {
             $company = Company::find($companyId);
 
-            if (!$company) {
+            if (! $company) {
                 return response()->json([
                     'error' => '企業が見つかりません',
                 ], 404);
@@ -195,7 +196,7 @@ class CompanyController extends Controller
         return Cache::remember($cacheKey, $cacheTime, function () use ($companyId, $includeHistory, $historyDays) {
             $company = Company::find($companyId);
 
-            if (!$company) {
+            if (! $company) {
                 return response()->json([
                     'error' => '企業が見つかりません',
                 ], 404);

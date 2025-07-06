@@ -17,9 +17,9 @@ class PlatformFactory extends Factory
     public function definition(): array
     {
         $platform = $this->faker->company();
-        
+
         return [
-            'name' => $platform . ' ' . $this->faker->randomNumber(4),
+            'name' => $platform.' '.$this->faker->randomNumber(4),
             'base_url' => $this->faker->url(),
             'is_active' => true,
         ];

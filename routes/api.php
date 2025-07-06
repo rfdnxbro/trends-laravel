@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\CompanyRankingController;
 use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\Api\CompanyRankingController;
 use Illuminate\Support\Facades\Route;
 
 /*

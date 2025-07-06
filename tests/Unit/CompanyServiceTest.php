@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\Http\Resources\CompanyResource;
 use App\Http\Resources\CompanyArticleResource;
+use App\Http\Resources\CompanyResource;
 use App\Models\Article;
 use App\Models\Company;
 use App\Models\CompanyRanking;
@@ -87,8 +87,8 @@ class CompanyServiceTest extends TestCase
         $array = $resource->toArray(request());
 
         $this->assertIsArray($array['current_rankings']);
-        
-        if (!empty($array['current_rankings'])) {
+
+        if (! empty($array['current_rankings'])) {
             $ranking = $array['current_rankings'][0];
             $this->assertArrayHasKey('period', $ranking);
             $this->assertArrayHasKey('rank_position', $ranking);
@@ -135,7 +135,7 @@ class CompanyServiceTest extends TestCase
         Company::factory()->create(['is_active' => true]);
 
         $activeCompanies = Company::active()->get();
-        
+
         foreach ($activeCompanies as $company) {
             $this->assertTrue($company->is_active);
         }
@@ -150,7 +150,7 @@ class CompanyServiceTest extends TestCase
         ]);
 
         $recentArticles = Article::recent(7)->get();
-        
+
         foreach ($recentArticles as $article) {
             $this->assertGreaterThanOrEqual(
                 now()->subDays(7)->toDateString(),
@@ -168,7 +168,7 @@ class CompanyServiceTest extends TestCase
         ]);
 
         $popularArticles = Article::popular(10)->get();
-        
+
         foreach ($popularArticles as $article) {
             $this->assertGreaterThanOrEqual(10, $article->bookmark_count);
         }
@@ -177,7 +177,7 @@ class CompanyServiceTest extends TestCase
     public function test_company_article_relationship()
     {
         $article = $this->company->articles->first();
-        
+
         $this->assertInstanceOf(Company::class, $article->company);
         $this->assertEquals($this->company->id, $article->company->id);
     }
@@ -185,7 +185,7 @@ class CompanyServiceTest extends TestCase
     public function test_article_platform_relationship()
     {
         $article = $this->company->articles->first();
-        
+
         $this->assertInstanceOf(Platform::class, $article->platform);
         $this->assertEquals($this->platform->id, $article->platform->id);
     }
@@ -234,7 +234,7 @@ class CompanyServiceTest extends TestCase
 
     public function test_company_model_default_attributes()
     {
-        $newCompany = new Company();
+        $newCompany = new Company;
         $this->assertTrue($newCompany->is_active);
     }
 }

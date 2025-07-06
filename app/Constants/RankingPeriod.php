@@ -38,10 +38,10 @@ class RankingPeriod
      */
     public static function isValid($periodType): bool
     {
-        if (!is_string($periodType)) {
+        if (! is_string($periodType)) {
             return false;
         }
-        
+
         return array_key_exists($periodType, self::TYPES);
     }
 
@@ -50,7 +50,7 @@ class RankingPeriod
      */
     public static function getValidationRule(): string
     {
-        return 'in:' . implode(',', self::getValidPeriods());
+        return 'in:'.implode(',', self::getValidPeriods());
     }
 
     /**
@@ -58,6 +58,6 @@ class RankingPeriod
      */
     public static function getErrorMessage(): string
     {
-        return 'Invalid period. Must be one of: ' . implode(', ', self::getValidPeriods());
+        return 'Invalid period. Must be one of: '.implode(', ', self::getValidPeriods());
     }
 }

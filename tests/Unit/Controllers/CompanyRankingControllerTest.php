@@ -2,25 +2,26 @@
 
 namespace Tests\Unit\Controllers;
 
-use App\Constants\RankingPeriod;
 use App\Http\Controllers\Api\CompanyRankingController;
-use App\Services\CompanyRankingService;
 use App\Services\CompanyRankingHistoryService;
+use App\Services\CompanyRankingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Tests\TestCase;
 use Mockery;
+use Tests\TestCase;
 
 class CompanyRankingControllerTest extends TestCase
 {
     private $rankingService;
+
     private $historyService;
+
     private $controller;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->rankingService = Mockery::mock(CompanyRankingService::class);
         $this->historyService = Mockery::mock(CompanyRankingHistoryService::class);
         $this->controller = new CompanyRankingController($this->rankingService, $this->historyService);
@@ -32,7 +33,7 @@ class CompanyRankingControllerTest extends TestCase
         parent::tearDown();
     }
 
-    public function testGetRankingByPeriodWithValidPeriod()
+    public function test_get_ranking_by_period_with_valid_period()
     {
         $request = new Request(['page' => 1, 'per_page' => 10]);
         $mockRankings = [
@@ -46,7 +47,7 @@ class CompanyRankingControllerTest extends TestCase
                 'period_start' => '2024-01-01',
                 'period_end' => '2024-12-31',
                 'calculated_at' => '2024-12-31 23:59:59',
-            ]
+            ],
         ];
 
         $this->rankingService->shouldReceive('getRankingForPeriod')
@@ -67,9 +68,9 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('meta', $responseData);
     }
 
-    public function testGetRankingByPeriodWithInvalidPeriod()
+    public function test_get_ranking_by_period_with_invalid_period()
     {
-        $request = new Request();
+        $request = new Request;
         $response = $this->controller->index($request, 'invalid');
 
         $this->assertEquals(400, $response->getStatusCode());
@@ -77,9 +78,9 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('error', $responseData);
     }
 
-    public function testGetTopRankingWithValidParameters()
+    public function test_get_top_ranking_with_valid_parameters()
     {
-        $request = new Request();
+        $request = new Request;
         $mockRankings = [
             (object) [
                 'rank_position' => 1,
@@ -91,7 +92,7 @@ class CompanyRankingControllerTest extends TestCase
                 'period_start' => '2024-01-01',
                 'period_end' => '2024-12-31',
                 'calculated_at' => '2024-12-31 23:59:59',
-            ]
+            ],
         ];
 
         $this->rankingService->shouldReceive('getRankingForPeriod')
@@ -112,9 +113,9 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('meta', $responseData);
     }
 
-    public function testGetTopRankingWithInvalidLimit()
+    public function test_get_top_ranking_with_invalid_limit()
     {
-        $request = new Request();
+        $request = new Request;
         $response = $this->controller->top($request, '1m', 150);
 
         $this->assertEquals(400, $response->getStatusCode());
@@ -122,7 +123,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('error', $responseData);
     }
 
-    public function testGetCompanyRankingWithValidCompanyId()
+    public function test_get_company_ranking_with_valid_company_id()
     {
         $request = new Request(['include_history' => false]);
         $mockRankings = [
@@ -134,7 +135,7 @@ class CompanyRankingControllerTest extends TestCase
                 'period_start' => '2024-01-01',
                 'period_end' => '2024-12-31',
                 'calculated_at' => '2024-12-31 23:59:59',
-            ]
+            ],
         ];
 
         $this->rankingService->shouldReceive('getCompanyRankings')
@@ -161,7 +162,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertEquals(1, $responseData['data']['company_id']);
     }
 
-    public function testGetStatistics()
+    public function test_get_statistics()
     {
         $mockStats = [
             '1m' => [
@@ -172,7 +173,7 @@ class CompanyRankingControllerTest extends TestCase
                 'total_articles' => 1000,
                 'total_bookmarks' => 50000,
                 'last_calculated' => '2024-12-31 23:59:59',
-            ]
+            ],
         ];
 
         $this->rankingService->shouldReceive('getRankingStatistics')
@@ -191,7 +192,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('data', $responseData);
     }
 
-    public function testGetRankingRisersWithValidPeriod()
+    public function test_get_ranking_risers_with_valid_period()
     {
         $request = new Request(['limit' => 10]);
         $mockRisers = [
@@ -202,7 +203,7 @@ class CompanyRankingControllerTest extends TestCase
                 'previous_rank' => 10,
                 'rank_change' => 5,
                 'calculated_at' => '2024-12-31 23:59:59',
-            ]
+            ],
         ];
 
         $this->historyService->shouldReceive('getTopRankingRisers')
@@ -223,7 +224,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('meta', $responseData);
     }
 
-    public function testGetRankingFallersWithValidPeriod()
+    public function test_get_ranking_fallers_with_valid_period()
     {
         $request = new Request(['limit' => 10]);
         $mockFallers = [
@@ -234,7 +235,7 @@ class CompanyRankingControllerTest extends TestCase
                 'previous_rank' => 5,
                 'rank_change' => -5,
                 'calculated_at' => '2024-12-31 23:59:59',
-            ]
+            ],
         ];
 
         $this->historyService->shouldReceive('getTopRankingFallers')
@@ -255,9 +256,9 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('meta', $responseData);
     }
 
-    public function testGetRankingChangeStatisticsWithValidPeriod()
+    public function test_get_ranking_change_statistics_with_valid_period()
     {
-        $request = new Request();
+        $request = new Request;
         $mockStats = [
             'total_companies' => 100,
             'rising_companies' => 30,
@@ -286,7 +287,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('data', $responseData);
     }
 
-    public function testGetPeriodTypes()
+    public function test_get_period_types()
     {
         $response = $this->controller->periods();
 

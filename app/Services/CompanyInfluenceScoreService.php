@@ -6,7 +6,6 @@ use App\Models\Article;
 use App\Models\Company;
 use App\Models\CompanyInfluenceScore;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CompanyInfluenceScoreService
@@ -109,7 +108,7 @@ class CompanyInfluenceScoreService
      */
     private function getTimeWeight(?Carbon $publishedAt, Carbon $periodStart, Carbon $periodEnd): float
     {
-        if (!$publishedAt || $publishedAt->lt($periodStart) || $publishedAt->gt($periodEnd)) {
+        if (! $publishedAt || $publishedAt->lt($periodStart) || $publishedAt->gt($periodEnd)) {
             return 0.5; // 公開日が不明または期間外の場合は低い重み
         }
 
@@ -181,7 +180,7 @@ class CompanyInfluenceScoreService
 
         foreach ($companies as $company) {
             $score = $this->calculateCompanyScore($company, $periodType, $periodStart, $periodEnd);
-            
+
             if ($score > 0) {
                 $influenceScore = $this->saveCompanyInfluenceScore(
                     $company,
@@ -207,7 +206,7 @@ class CompanyInfluenceScoreService
     /**
      * 期間別スコア計算のヘルパーメソッド
      */
-    public function calculateScoresByPeriod(Carbon $referenceDate = null): array
+    public function calculateScoresByPeriod(?Carbon $referenceDate = null): array
     {
         $referenceDate = $referenceDate ?? now();
         $results = [];

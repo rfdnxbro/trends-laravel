@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Constants\RankingPeriod;
 use App\Models\Company;
-use App\Models\CompanyRanking;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

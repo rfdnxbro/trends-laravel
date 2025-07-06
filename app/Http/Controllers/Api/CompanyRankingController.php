@@ -4,19 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Constants\RankingPeriod;
 use App\Http\Controllers\Controller;
-use App\Services\CompanyRankingService;
-use App\Services\CompanyRankingHistoryService;
 use App\Http\Resources\CompanyRankingResource;
-use App\Http\Resources\CompanyRankingCollection;
-use Illuminate\Http\Request;
+use App\Services\CompanyRankingHistoryService;
+use App\Services\CompanyRankingService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 class CompanyRankingController extends Controller
 {
-
     private CompanyRankingService $rankingService;
+
     private CompanyRankingHistoryService $historyService;
 
     public function __construct(
@@ -33,12 +32,12 @@ class CompanyRankingController extends Controller
     public function index(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
-            'period' => 'required|' . RankingPeriod::getValidationRule(),
+            'period' => 'required|'.RankingPeriod::getValidationRule(),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'error' => RankingPeriod::getErrorMessage()
+                'error' => RankingPeriod::getErrorMessage(),
             ], 400);
         }
 
@@ -52,7 +51,7 @@ class CompanyRankingController extends Controller
 
         return Cache::remember($cacheKey, $cacheTime, function () use ($period, $page, $perPage, $sortBy, $sortOrder) {
             $rankings = $this->rankingService->getRankingForPeriod($period, $perPage * 10);
-            
+
             if (empty($rankings)) {
                 return response()->json([
                     'data' => [],
@@ -61,7 +60,7 @@ class CompanyRankingController extends Controller
                         'per_page' => $perPage,
                         'total' => 0,
                         'last_page' => 1,
-                    ]
+                    ],
                 ]);
             }
 
@@ -80,7 +79,7 @@ class CompanyRankingController extends Controller
                     'per_page' => $perPage,
                     'total' => $total,
                     'last_page' => ceil($total / $perPage),
-                ]
+                ],
             ]);
         });
     }
@@ -94,7 +93,7 @@ class CompanyRankingController extends Controller
             'period' => $period,
             'limit' => $limit,
         ], [
-            'period' => 'required|' . RankingPeriod::getValidationRule(),
+            'period' => 'required|'.RankingPeriod::getValidationRule(),
             'limit' => 'required|integer|min:1|max:100',
         ]);
 
@@ -110,14 +109,14 @@ class CompanyRankingController extends Controller
 
         return Cache::remember($cacheKey, $cacheTime, function () use ($period, $limit) {
             $rankings = $this->rankingService->getRankingForPeriod($period, $limit);
-            
+
             return response()->json([
                 'data' => CompanyRankingResource::collection($rankings),
                 'meta' => [
                     'period' => $period,
                     'limit' => $limit,
                     'total' => count($rankings),
-                ]
+                ],
             ]);
         });
     }
@@ -146,12 +145,12 @@ class CompanyRankingController extends Controller
 
         return Cache::remember($cacheKey, $cacheTime, function () use ($companyId, $includeHistory, $historyDays) {
             $rankings = $this->rankingService->getCompanyRankings($companyId);
-            
+
             $response = [
                 'data' => [
                     'company_id' => $companyId,
-                    'rankings' => []
-                ]
+                    'rankings' => [],
+                ],
             ];
 
             foreach ($rankings as $period => $ranking) {
@@ -172,7 +171,7 @@ class CompanyRankingController extends Controller
                 $response['data']['history'] = [];
                 foreach (RankingPeriod::getValidPeriods() as $period) {
                     $history = $this->historyService->getCompanyRankingHistory($companyId, $period, $historyDays);
-                    if (!empty($history)) {
+                    if (! empty($history)) {
                         $response['data']['history'][$period] = $history;
                     }
                 }
@@ -187,14 +186,14 @@ class CompanyRankingController extends Controller
      */
     public function statistics(): JsonResponse
     {
-        $cacheKey = "company_ranking_statistics";
+        $cacheKey = 'company_ranking_statistics';
         $cacheTime = 600; // 10分
 
         return Cache::remember($cacheKey, $cacheTime, function () {
             $statistics = $this->rankingService->getRankingStatistics();
-            
+
             return response()->json([
-                'data' => $statistics
+                'data' => $statistics,
             ]);
         });
     }
@@ -205,12 +204,12 @@ class CompanyRankingController extends Controller
     public function risers(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
-            'period' => 'required|' . RankingPeriod::getValidationRule(),
+            'period' => 'required|'.RankingPeriod::getValidationRule(),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'error' => RankingPeriod::getErrorMessage()
+                'error' => RankingPeriod::getErrorMessage(),
             ], 400);
         }
 
@@ -221,14 +220,14 @@ class CompanyRankingController extends Controller
 
         return Cache::remember($cacheKey, $cacheTime, function () use ($period, $limit) {
             $risers = $this->historyService->getTopRankingRisers($period, $limit);
-            
+
             return response()->json([
                 'data' => $risers,
                 'meta' => [
                     'period' => $period,
                     'limit' => $limit,
                     'total' => count($risers),
-                ]
+                ],
             ]);
         });
     }
@@ -239,12 +238,12 @@ class CompanyRankingController extends Controller
     public function fallers(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
-            'period' => 'required|' . RankingPeriod::getValidationRule(),
+            'period' => 'required|'.RankingPeriod::getValidationRule(),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'error' => RankingPeriod::getErrorMessage()
+                'error' => RankingPeriod::getErrorMessage(),
             ], 400);
         }
 
@@ -255,14 +254,14 @@ class CompanyRankingController extends Controller
 
         return Cache::remember($cacheKey, $cacheTime, function () use ($period, $limit) {
             $fallers = $this->historyService->getTopRankingFallers($period, $limit);
-            
+
             return response()->json([
                 'data' => $fallers,
                 'meta' => [
                     'period' => $period,
                     'limit' => $limit,
                     'total' => count($fallers),
-                ]
+                ],
             ]);
         });
     }
@@ -273,12 +272,12 @@ class CompanyRankingController extends Controller
     public function changeStatistics(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
-            'period' => 'required|' . RankingPeriod::getValidationRule(),
+            'period' => 'required|'.RankingPeriod::getValidationRule(),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'error' => RankingPeriod::getErrorMessage()
+                'error' => RankingPeriod::getErrorMessage(),
             ], 400);
         }
 
@@ -287,9 +286,9 @@ class CompanyRankingController extends Controller
 
         return Cache::remember($cacheKey, $cacheTime, function () use ($period) {
             $stats = $this->historyService->getRankingChangeStatistics($period);
-            
+
             return response()->json([
-                'data' => $stats
+                'data' => $stats,
             ]);
         });
     }
@@ -300,7 +299,7 @@ class CompanyRankingController extends Controller
     public function periods(): JsonResponse
     {
         return response()->json([
-            'data' => RankingPeriod::getValidPeriods()
+            'data' => RankingPeriod::getValidPeriods(),
         ]);
     }
 }

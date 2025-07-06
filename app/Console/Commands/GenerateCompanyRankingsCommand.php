@@ -48,12 +48,13 @@ class GenerateCompanyRankingsCommand extends Command
                 $this->handleSynchronously($rankingService, $periodType, $referenceDate);
             }
         } catch (\Exception $e) {
-            $this->error('ランキング生成でエラーが発生しました: ' . $e->getMessage());
+            $this->error('ランキング生成でエラーが発生しました: '.$e->getMessage());
             Log::error('Company ranking generation command failed', [
                 'period_type' => $periodType,
                 'reference_date' => $referenceDate->toDateString(),
                 'error' => $e->getMessage(),
             ]);
+
             return 1;
         }
 
@@ -72,11 +73,11 @@ class GenerateCompanyRankingsCommand extends Command
         } else {
             $this->info('全期間のランキング生成をキューに追加しています...');
             $periods = ['1w', '1m', '3m', '6m', '1y', '3y', 'all'];
-            
+
             foreach ($periods as $period) {
                 GenerateCompanyRankingsJob::dispatch($period, $referenceDate);
             }
-            
+
             $this->info('全期間のジョブがキューに追加されました。');
         }
     }
@@ -89,20 +90,20 @@ class GenerateCompanyRankingsCommand extends Command
         if ($periodType) {
             $this->info("期間 {$periodType} のランキングを生成中...");
             $results = $rankingService->generateRankingForPeriod($periodType, $referenceDate);
-            $this->info("完了: {$periodType} 期間で " . count($results) . " 社のランキングを生成しました。");
+            $this->info("完了: {$periodType} 期間で ".count($results).' 社のランキングを生成しました。');
         } else {
             $this->info('全期間のランキングを生成中...');
             $bar = $this->output->createProgressBar(7);
             $bar->start();
 
             $results = $rankingService->generateAllRankings($referenceDate);
-            
+
             $totalCompanies = 0;
             foreach ($results as $period => $rankings) {
                 $totalCompanies += count($rankings);
                 $bar->advance();
             }
-            
+
             $bar->finish();
             $this->newLine();
             $this->info("完了: 全期間で合計 {$totalCompanies} 社のランキングを生成しました。");
@@ -119,12 +120,12 @@ class GenerateCompanyRankingsCommand extends Command
     {
         $this->newLine();
         $this->info('=== ランキング統計 ===');
-        
+
         $statistics = $rankingService->getRankingStatistics();
-        
+
         $headers = ['期間', '企業数', '平均スコア', '最高スコア', '最低スコア', '総記事数', '総ブックマーク数'];
         $rows = [];
-        
+
         foreach ($statistics as $period => $stats) {
             $rows[] = [
                 $period,
@@ -136,7 +137,7 @@ class GenerateCompanyRankingsCommand extends Command
                 number_format($stats['total_bookmarks']),
             ];
         }
-        
+
         $this->table($headers, $rows);
     }
 }

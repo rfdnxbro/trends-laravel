@@ -7,22 +7,22 @@ use Tests\TestCase;
 
 class RankingPeriodTest extends TestCase
 {
-    public function testTypesConstantExists()
+    public function test_types_constant_exists()
     {
         $this->assertIsArray(RankingPeriod::TYPES);
         $this->assertNotEmpty(RankingPeriod::TYPES);
     }
 
-    public function testTypesConstantContainsExpectedPeriods()
+    public function test_types_constant_contains_expected_periods()
     {
         $expectedPeriods = ['1w', '1m', '3m', '6m', '1y', '3y', 'all'];
-        
+
         foreach ($expectedPeriods as $period) {
             $this->assertArrayHasKey($period, RankingPeriod::TYPES);
         }
     }
 
-    public function testTypesConstantHasCorrectValues()
+    public function test_types_constant_has_correct_values()
     {
         $expectedValues = [
             '1w' => 7,
@@ -37,18 +37,18 @@ class RankingPeriodTest extends TestCase
         $this->assertEquals($expectedValues, RankingPeriod::TYPES);
     }
 
-    public function testGetValidPeriods()
+    public function test_get_valid_periods()
     {
         $validPeriods = RankingPeriod::getValidPeriods();
-        
+
         $this->assertIsArray($validPeriods);
         $this->assertNotEmpty($validPeriods);
-        
+
         $expectedPeriods = ['1w', '1m', '3m', '6m', '1y', '3y', 'all'];
         $this->assertEquals($expectedPeriods, $validPeriods);
     }
 
-    public function testGetDaysWithValidPeriods()
+    public function test_get_days_with_valid_periods()
     {
         $testCases = [
             '1w' => 7,
@@ -65,32 +65,32 @@ class RankingPeriodTest extends TestCase
         }
     }
 
-    public function testGetDaysWithInvalidPeriod()
+    public function test_get_days_with_invalid_period()
     {
         $this->assertNull(RankingPeriod::getDays('invalid'));
         $this->assertNull(RankingPeriod::getDays('2w'));
         $this->assertNull(RankingPeriod::getDays(''));
     }
 
-    public function testIsValidWithValidPeriods()
+    public function test_is_valid_with_valid_periods()
     {
         $validPeriods = ['1w', '1m', '3m', '6m', '1y', '3y', 'all'];
-        
+
         foreach ($validPeriods as $period) {
             $this->assertTrue(RankingPeriod::isValid($period));
         }
     }
 
-    public function testIsValidWithInvalidPeriods()
+    public function test_is_valid_with_invalid_periods()
     {
         $invalidPeriods = ['invalid', '2w', '2m', '5y', '', 'weekly', 'monthly'];
-        
+
         foreach ($invalidPeriods as $period) {
             $this->assertFalse(RankingPeriod::isValid($period));
         }
     }
 
-    public function testIsValidWithInvalidTypes()
+    public function test_is_valid_with_invalid_types()
     {
         // null、数値、真偽値などの非文字列型
         $this->assertFalse(RankingPeriod::isValid(null));
@@ -99,102 +99,102 @@ class RankingPeriodTest extends TestCase
         $this->assertFalse(RankingPeriod::isValid(true));
         $this->assertFalse(RankingPeriod::isValid(false));
         $this->assertFalse(RankingPeriod::isValid([]));
-        $this->assertFalse(RankingPeriod::isValid(new \stdClass()));
-        
+        $this->assertFalse(RankingPeriod::isValid(new \stdClass));
+
         // 無効な文字列
         $this->assertFalse(RankingPeriod::isValid('1'));
         $this->assertFalse(RankingPeriod::isValid('30'));
     }
 
-    public function testGetValidationRule()
+    public function test_get_validation_rule()
     {
         $validationRule = RankingPeriod::getValidationRule();
-        
+
         $this->assertIsString($validationRule);
         $this->assertStringStartsWith('in:', $validationRule);
-        
+
         $expectedRule = 'in:1w,1m,3m,6m,1y,3y,all';
         $this->assertEquals($expectedRule, $validationRule);
     }
 
-    public function testGetErrorMessage()
+    public function test_get_error_message()
     {
         $errorMessage = RankingPeriod::getErrorMessage();
-        
+
         $this->assertIsString($errorMessage);
         $this->assertStringContainsString('Invalid period', $errorMessage);
         $this->assertStringContainsString('Must be one of:', $errorMessage);
-        
+
         $expectedMessage = 'Invalid period. Must be one of: 1w, 1m, 3m, 6m, 1y, 3y, all';
         $this->assertEquals($expectedMessage, $errorMessage);
     }
 
-    public function testAllMethodsReturnConsistentData()
+    public function test_all_methods_return_consistent_data()
     {
         $validPeriods = RankingPeriod::getValidPeriods();
         $typesKeys = array_keys(RankingPeriod::TYPES);
-        
+
         // getValidPeriods()とTYPESのキーが一致することを確認
         $this->assertEquals($typesKeys, $validPeriods);
-        
+
         // isValid()がgetValidPeriods()と一致することを確認
         foreach ($validPeriods as $period) {
             $this->assertTrue(RankingPeriod::isValid($period));
         }
-        
+
         // getDays()がTYPES配列と一致することを確認
         foreach (RankingPeriod::TYPES as $period => $days) {
             $this->assertEquals($days, RankingPeriod::getDays($period));
         }
     }
 
-    public function testValidationRuleContainsAllValidPeriods()
+    public function test_validation_rule_contains_all_valid_periods()
     {
         $validationRule = RankingPeriod::getValidationRule();
         $validPeriods = RankingPeriod::getValidPeriods();
-        
+
         // バリデーションルールから期間リストを抽出
         $rulePattern = '/^in:(.+)$/';
         preg_match($rulePattern, $validationRule, $matches);
         $rulePeriods = explode(',', $matches[1]);
-        
+
         $this->assertEquals($validPeriods, $rulePeriods);
     }
 
-    public function testErrorMessageContainsAllValidPeriods()
+    public function test_error_message_contains_all_valid_periods()
     {
         $errorMessage = RankingPeriod::getErrorMessage();
         $validPeriods = RankingPeriod::getValidPeriods();
-        
+
         foreach ($validPeriods as $period) {
             $this->assertStringContainsString($period, $errorMessage);
         }
     }
 
-    public function testTypesConstantIsImmutable()
+    public function test_types_constant_is_immutable()
     {
         // PHP定数は変更不可であることを確認
         $originalTypes = RankingPeriod::TYPES;
-        
+
         // 複数回呼び出しても同じ値を返すことを確認
         $this->assertEquals($originalTypes, RankingPeriod::TYPES);
         $this->assertEquals($originalTypes, RankingPeriod::TYPES);
     }
 
-    public function testCaseInsensitivity()
+    public function test_case_insensitivity()
     {
         // 大文字小文字の違いで無効になることを確認
         $this->assertFalse(RankingPeriod::isValid('1W'));
         $this->assertFalse(RankingPeriod::isValid('1M'));
         $this->assertFalse(RankingPeriod::isValid('ALL'));
-        
+
         $this->assertNull(RankingPeriod::getDays('1W'));
         $this->assertNull(RankingPeriod::getDays('1M'));
         $this->assertNull(RankingPeriod::getDays('ALL'));
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('periodDataProvider')]
-    public function testPeriodDataWithDataProvider($period, $expectedDays, $expectedValid)
+    public function test_period_data_with_data_provider($period, $expectedDays, $expectedValid)
     {
         $this->assertEquals($expectedDays, RankingPeriod::getDays($period));
         $this->assertEquals($expectedValid, RankingPeriod::isValid($period));
@@ -216,7 +216,7 @@ class RankingPeriodTest extends TestCase
         ];
     }
 
-    public function testEdgeCasesWithSpecialCharacters()
+    public function test_edge_cases_with_special_characters()
     {
         $specialCases = [
             '1w ',  // 末尾スペース
@@ -231,20 +231,20 @@ class RankingPeriodTest extends TestCase
         }
     }
 
-    public function testPerformanceWithLargeDataSet()
+    public function test_performance_with_large_data_set()
     {
         // パフォーマンステスト: 大量の呼び出しでも問題ないことを確認
         $startTime = microtime(true);
-        
+
         for ($i = 0; $i < 1000; $i++) {
             RankingPeriod::getValidPeriods();
             RankingPeriod::isValid('1m');
             RankingPeriod::getDays('1y');
         }
-        
+
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
-        
+
         // 1秒以内に完了することを確認
         $this->assertLessThan(1.0, $executionTime);
     }

@@ -19,14 +19,14 @@ class CompanyRankingHistoryServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new CompanyRankingHistoryService();
+        $this->service = new CompanyRankingHistoryService;
     }
 
     public function test_record_ranking_history_with_no_previous_ranking(): void
     {
         $company = Company::factory()->create();
         $calculatedAt = Carbon::now();
-        
+
         // 現在のランキングを作成
         CompanyRanking::create([
             'company_id' => $company->id,
@@ -50,7 +50,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $company = Company::factory()->create();
         $previousCalculatedAt = Carbon::now()->subHour();
         $currentCalculatedAt = Carbon::now();
-        
+
         // 前回のランキングを作成
         CompanyRanking::create([
             'company_id' => $company->id,
@@ -92,7 +92,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $company = Company::factory()->create();
         $previousCalculatedAt = Carbon::now()->subHour();
         $currentCalculatedAt = Carbon::now();
-        
+
         // 前回のランキングを作成
         CompanyRanking::create([
             'company_id' => $company->id,
@@ -134,7 +134,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $company = Company::factory()->create();
         $previousCalculatedAt = Carbon::now()->subHour();
         $currentCalculatedAt = Carbon::now();
-        
+
         // 前回のランキングを作成
         CompanyRanking::create([
             'company_id' => $company->id,
@@ -177,7 +177,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $company2 = Company::factory()->create();
         $previousCalculatedAt = Carbon::now()->subHour();
         $currentCalculatedAt = Carbon::now();
-        
+
         // 前回のランキングを作成
         CompanyRanking::create([
             'company_id' => $company1->id,
@@ -231,7 +231,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $changes = $this->service->recordRankingHistory('1w', $currentCalculatedAt);
 
         $this->assertCount(2, $changes);
-        
+
         // Company2が1位に上昇
         $company2Change = collect($changes)->firstWhere('company_id', $company2->id);
         $this->assertEquals(1, $company2Change['current_rank']);
@@ -248,7 +248,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
     public function test_get_company_ranking_history(): void
     {
         $company = Company::factory()->create();
-        
+
         // 履歴データを作成
         DB::table('company_ranking_history')->insert([
             [
@@ -448,7 +448,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
     public function test_get_history_storage_stats(): void
     {
         $company = Company::factory()->create();
-        
+
         // テストデータを作成
         DB::table('company_ranking_history')->insert([
             [

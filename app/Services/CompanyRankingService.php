@@ -3,15 +3,12 @@
 namespace App\Services;
 
 use App\Constants\RankingPeriod;
-use App\Models\Company;
-use App\Models\CompanyInfluenceScore;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CompanyRankingService
 {
-
     private CompanyInfluenceScoreService $scoreService;
 
     public function __construct(CompanyInfluenceScoreService $scoreService)

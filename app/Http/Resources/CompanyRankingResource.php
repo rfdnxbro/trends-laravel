@@ -15,23 +15,23 @@ class CompanyRankingResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id ?? null,
+            'id' => $this->resource->id ?? null,
             'company' => [
-                'id' => $this->company_id ?? null,
-                'name' => $this->company_name ?? null,
-                'domain' => $this->domain ?? null,
-                'logo_url' => $this->logo_url ?? null,
+                'id' => $this->resource->company_id ?? null,
+                'name' => $this->resource->company_name ?? null,
+                'domain' => $this->resource->domain ?? null,
+                'logo_url' => $this->resource->logo_url ?? null,
             ],
-            'rank_position' => $this->rank_position,
-            'total_score' => (float) $this->total_score,
-            'article_count' => $this->article_count,
-            'total_bookmarks' => $this->total_bookmarks,
-            'rank_change' => $this->rank_change ?? null,
+            'rank_position' => $this->resource->rank_position,
+            'total_score' => (float) $this->resource->total_score,
+            'article_count' => $this->resource->article_count,
+            'total_bookmarks' => $this->resource->total_bookmarks,
+            'rank_change' => $this->resource->rank_change ?? null,
             'period' => [
-                'start' => $this->period_start,
-                'end' => $this->period_end,
+                'start' => $this->resource->period_start,
+                'end' => $this->resource->period_end,
             ],
-            'calculated_at' => $this->calculated_at,
+            'calculated_at' => $this->resource->calculated_at,
         ];
     }
 }

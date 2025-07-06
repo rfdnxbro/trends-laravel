@@ -13,6 +13,7 @@ class GenerateCompanyRankingsJob implements ShouldQueue
     use Queueable;
 
     private ?string $periodType;
+
     private ?Carbon $referenceDate;
 
     /**

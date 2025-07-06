@@ -47,4 +47,12 @@ class Company extends Model
     {
         return $this->hasMany(CompanyInfluenceScore::class);
     }
+
+    /**
+     * 企業の記事
+     */
+    public function articles(): HasMany
+    {
+        return $this->hasMany(Article::class);
+    }
 }

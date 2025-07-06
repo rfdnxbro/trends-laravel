@@ -129,6 +129,122 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEquals(-5, $changes[0]['rank_change']); // 2 - 7 = -5 (decline)
     }
 
+    public function test_record_ranking_history_with_rank_unchanged(): void
+    {
+        $company = Company::factory()->create();
+        $previousCalculatedAt = Carbon::now()->subHour();
+        $currentCalculatedAt = Carbon::now();
+        
+        // 前回のランキングを作成
+        CompanyRanking::create([
+            'company_id' => $company->id,
+            'ranking_period' => '1w',
+            'rank_position' => 5,
+            'total_score' => 100.0,
+            'article_count' => 10,
+            'total_bookmarks' => 20,
+            'period_start' => $previousCalculatedAt->copy()->subDays(7),
+            'period_end' => $previousCalculatedAt->copy(),
+            'calculated_at' => $previousCalculatedAt,
+        ]);
+
+        // 現在のランキングを作成（順位変動なし）
+        CompanyRanking::create([
+            'company_id' => $company->id,
+            'ranking_period' => '1w',
+            'rank_position' => 5,
+            'total_score' => 100.0,
+            'article_count' => 10,
+            'total_bookmarks' => 20,
+            'period_start' => $currentCalculatedAt->copy()->subDays(7),
+            'period_end' => $currentCalculatedAt->copy(),
+            'calculated_at' => $currentCalculatedAt,
+        ]);
+
+        $changes = $this->service->recordRankingHistory('1w', $currentCalculatedAt);
+
+        $this->assertCount(1, $changes);
+        $this->assertEquals($company->id, $changes[0]['company_id']);
+        $this->assertEquals('1w', $changes[0]['period_type']);
+        $this->assertEquals(5, $changes[0]['current_rank']);
+        $this->assertEquals(5, $changes[0]['previous_rank']);
+        $this->assertEquals(0, $changes[0]['rank_change']); // 5 - 5 = 0 (unchanged)
+    }
+
+    public function test_record_ranking_history_with_multiple_companies(): void
+    {
+        $company1 = Company::factory()->create();
+        $company2 = Company::factory()->create();
+        $previousCalculatedAt = Carbon::now()->subHour();
+        $currentCalculatedAt = Carbon::now();
+        
+        // 前回のランキングを作成
+        CompanyRanking::create([
+            'company_id' => $company1->id,
+            'ranking_period' => '1w',
+            'rank_position' => 1,
+            'total_score' => 120.0,
+            'article_count' => 12,
+            'total_bookmarks' => 25,
+            'period_start' => $previousCalculatedAt->copy()->subDays(7),
+            'period_end' => $previousCalculatedAt->copy(),
+            'calculated_at' => $previousCalculatedAt,
+        ]);
+
+        CompanyRanking::create([
+            'company_id' => $company2->id,
+            'ranking_period' => '1w',
+            'rank_position' => 2,
+            'total_score' => 100.0,
+            'article_count' => 10,
+            'total_bookmarks' => 20,
+            'period_start' => $previousCalculatedAt->copy()->subDays(7),
+            'period_end' => $previousCalculatedAt->copy(),
+            'calculated_at' => $previousCalculatedAt,
+        ]);
+
+        // 現在のランキングを作成（順位が入れ替わる）
+        CompanyRanking::create([
+            'company_id' => $company1->id,
+            'ranking_period' => '1w',
+            'rank_position' => 2,
+            'total_score' => 110.0,
+            'article_count' => 11,
+            'total_bookmarks' => 22,
+            'period_start' => $currentCalculatedAt->copy()->subDays(7),
+            'period_end' => $currentCalculatedAt->copy(),
+            'calculated_at' => $currentCalculatedAt,
+        ]);
+
+        CompanyRanking::create([
+            'company_id' => $company2->id,
+            'ranking_period' => '1w',
+            'rank_position' => 1,
+            'total_score' => 130.0,
+            'article_count' => 13,
+            'total_bookmarks' => 26,
+            'period_start' => $currentCalculatedAt->copy()->subDays(7),
+            'period_end' => $currentCalculatedAt->copy(),
+            'calculated_at' => $currentCalculatedAt,
+        ]);
+
+        $changes = $this->service->recordRankingHistory('1w', $currentCalculatedAt);
+
+        $this->assertCount(2, $changes);
+        
+        // Company2が1位に上昇
+        $company2Change = collect($changes)->firstWhere('company_id', $company2->id);
+        $this->assertEquals(1, $company2Change['current_rank']);
+        $this->assertEquals(2, $company2Change['previous_rank']);
+        $this->assertEquals(1, $company2Change['rank_change']);
+
+        // Company1が2位に下降
+        $company1Change = collect($changes)->firstWhere('company_id', $company1->id);
+        $this->assertEquals(2, $company1Change['current_rank']);
+        $this->assertEquals(1, $company1Change['previous_rank']);
+        $this->assertEquals(-1, $company1Change['rank_change']);
+    }
+
     public function test_get_company_ranking_history(): void
     {
         $company = Company::factory()->create();

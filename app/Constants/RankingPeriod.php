@@ -36,8 +36,12 @@ class RankingPeriod
     /**
      * 期間タイプが有効かチェック
      */
-    public static function isValid(string $periodType): bool
+    public static function isValid($periodType): bool
     {
+        if (!is_string($periodType)) {
+            return false;
+        }
+        
         return array_key_exists($periodType, self::TYPES);
     }
 

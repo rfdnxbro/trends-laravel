@@ -1,46 +1,53 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './components/App';
 
-console.log('app.tsx が読み込まれました');
+console.log('🚀 app.tsx が読み込まれました');
 
-// 複数のタイミングで初期化を試行
-function initApp() {
-    console.log('initApp 関数が呼ばれました');
-    const container = document.getElementById('root');
-    console.log('container:', container);
-
-    if (container) {
-        try {
-            console.log('React アプリケーションを初期化中...');
-            const root = createRoot(container);
-            root.render(
-                <React.StrictMode>
-                    <App />
-                </React.StrictMode>
-            );
-            console.log('React アプリケーションが正常に初期化されました');
-            return true;
-        } catch (error) {
-            console.error('React アプリケーションの初期化に失敗:', error);
-            return false;
-        }
-    } else {
-        console.error('root 要素が見つかりません');
-        return false;
-    }
+function SimpleApp() {
+    console.log('🎨 SimpleApp コンポーネントがレンダリングされました');
+    return (
+        <div style={{ 
+            padding: '30px', 
+            backgroundColor: '#e3f2fd', 
+            border: '3px solid #1976d2',
+            fontFamily: 'Arial, sans-serif'
+        }}>
+            <h1 style={{ color: '#1976d2', fontSize: '32px' }}>
+                ✅ React が正常に動作しています！
+            </h1>
+            <p style={{ fontSize: '18px', color: '#333' }}>
+                これが表示されればReactアプリは成功です
+            </p>
+            <ul style={{ fontSize: '16px', color: '#555' }}>
+                <li>✅ Vite 設定: OK</li>
+                <li>✅ React 19: OK</li>
+                <li>✅ TypeScript: OK</li>
+                <li>✅ Laravel 統合: OK</li>
+            </ul>
+            <p style={{ 
+                marginTop: '20px', 
+                padding: '10px', 
+                backgroundColor: '#c8e6c9',
+                border: '1px solid #4caf50',
+                borderRadius: '5px'
+            }}>
+                🎉 セットアップが完了しました！
+            </p>
+        </div>
+    );
 }
 
-// DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded イベントが発火');
-    initApp();
-});
+const container = document.getElementById('root');
+console.log('📍 Root container:', container);
 
-// document.readyState チェック
-if (document.readyState === 'loading') {
-    console.log('document は読み込み中です');
+if (container) {
+    console.log('🔧 React Root を作成中...');
+    const root = createRoot(container);
+    
+    console.log('🎬 React アプリケーションをレンダリング中...');
+    root.render(<SimpleApp />);
+    
+    console.log('✅ React アプリケーションが正常に初期化されました');
 } else {
-    console.log('document は既に読み込み完了、即座に初期化します');
-    initApp();
+    console.error('❌ root 要素が見つかりません');
 }

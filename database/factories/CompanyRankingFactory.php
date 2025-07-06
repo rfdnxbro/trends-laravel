@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Constants\RankingPeriod;
 use App\Models\Company;
 use App\Models\CompanyRanking;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,7 +21,7 @@ class CompanyRankingFactory extends Factory
     {
         return [
             'company_id' => Company::factory(),
-            'ranking_period' => $this->faker->randomElement(['1w', '1m', '3m', '6m', '1y', '3y', 'all']),
+            'ranking_period' => $this->faker->randomElement(RankingPeriod::getValidPeriods()),
             'rank_position' => $this->faker->numberBetween(1, 100),
             'total_score' => $this->faker->randomFloat(2, 0, 1000),
             'article_count' => $this->faker->numberBetween(1, 50),

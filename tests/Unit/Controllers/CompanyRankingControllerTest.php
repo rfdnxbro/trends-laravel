@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Controllers;
 
+use App\Constants\RankingPeriod;
 use App\Http\Controllers\Api\CompanyRankingController;
 use App\Services\CompanyRankingService;
 use App\Services\CompanyRankingHistoryService;

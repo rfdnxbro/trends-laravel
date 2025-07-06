@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Constants\RankingPeriod;
 use App\Http\Controllers\Controller;
 use App\Services\CompanyRankingService;
 use App\Services\CompanyRankingHistoryService;
@@ -14,15 +15,6 @@ use Illuminate\Support\Facades\Validator;
 
 class CompanyRankingController extends Controller
 {
-    private const PERIOD_TYPES = [
-        '1w' => 7,
-        '1m' => 30,
-        '3m' => 90,
-        '6m' => 180,
-        '1y' => 365,
-        '3y' => 1095,
-        'all' => null,
-    ];
 
     private CompanyRankingService $rankingService;
     private CompanyRankingHistoryService $historyService;
@@ -41,12 +33,12 @@ class CompanyRankingController extends Controller
     public function getRankingByPeriod(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
-            'period' => 'required|in:' . implode(',', array_keys(self::PERIOD_TYPES)),
+            'period' => 'required|' . RankingPeriod::getValidationRule(),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'error' => 'Invalid period. Must be one of: ' . implode(', ', array_keys(self::PERIOD_TYPES))
+                'error' => RankingPeriod::getErrorMessage()
             ], 400);
         }
 
@@ -102,7 +94,7 @@ class CompanyRankingController extends Controller
             'period' => $period,
             'limit' => $limit,
         ], [
-            'period' => 'required|in:' . implode(',', array_keys(self::PERIOD_TYPES)),
+            'period' => 'required|' . RankingPeriod::getValidationRule(),
             'limit' => 'required|integer|min:1|max:100',
         ]);
 
@@ -178,7 +170,7 @@ class CompanyRankingController extends Controller
 
             if ($includeHistory) {
                 $response['data']['history'] = [];
-                foreach (array_keys(self::PERIOD_TYPES) as $period) {
+                foreach (RankingPeriod::getValidPeriods() as $period) {
                     $history = $this->historyService->getCompanyRankingHistory($companyId, $period, $historyDays);
                     if (!empty($history)) {
                         $response['data']['history'][$period] = $history;
@@ -213,12 +205,12 @@ class CompanyRankingController extends Controller
     public function getRankingRisers(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
-            'period' => 'required|in:' . implode(',', array_keys(self::PERIOD_TYPES)),
+            'period' => 'required|' . RankingPeriod::getValidationRule(),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'error' => 'Invalid period. Must be one of: ' . implode(', ', array_keys(self::PERIOD_TYPES))
+                'error' => RankingPeriod::getErrorMessage()
             ], 400);
         }
 
@@ -247,12 +239,12 @@ class CompanyRankingController extends Controller
     public function getRankingFallers(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
-            'period' => 'required|in:' . implode(',', array_keys(self::PERIOD_TYPES)),
+            'period' => 'required|' . RankingPeriod::getValidationRule(),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'error' => 'Invalid period. Must be one of: ' . implode(', ', array_keys(self::PERIOD_TYPES))
+                'error' => RankingPeriod::getErrorMessage()
             ], 400);
         }
 
@@ -281,12 +273,12 @@ class CompanyRankingController extends Controller
     public function getRankingChangeStatistics(Request $request, string $period): JsonResponse
     {
         $validator = Validator::make(['period' => $period], [
-            'period' => 'required|in:' . implode(',', array_keys(self::PERIOD_TYPES)),
+            'period' => 'required|' . RankingPeriod::getValidationRule(),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'error' => 'Invalid period. Must be one of: ' . implode(', ', array_keys(self::PERIOD_TYPES))
+                'error' => RankingPeriod::getErrorMessage()
             ], 400);
         }
 
@@ -308,7 +300,7 @@ class CompanyRankingController extends Controller
     public function getPeriodTypes(): JsonResponse
     {
         return response()->json([
-            'data' => array_keys(self::PERIOD_TYPES)
+            'data' => RankingPeriod::getValidPeriods()
         ]);
     }
 }

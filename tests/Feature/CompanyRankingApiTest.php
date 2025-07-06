@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Constants\RankingPeriod;
 use App\Models\Company;
 use App\Models\CompanyRanking;
 use Illuminate\Foundation\Testing\RefreshDatabase;

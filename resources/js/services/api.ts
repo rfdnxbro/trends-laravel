@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import { API_CONSTANTS } from '../constants/api';
 
 // Axios インスタンスの作成
 export const api = axios.create({
@@ -8,7 +9,7 @@ export const api = axios.create({
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
     },
-    timeout: 10000,
+    timeout: API_CONSTANTS.TIMEOUT,
 });
 
 // CSRFトークンを自動設定
@@ -24,10 +25,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response: AxiosResponse) => response,
     (error) => {
-        if (error.response?.status === 419) {
+        if (error.response?.status === API_CONSTANTS.CSRF_ERROR_STATUS) {
             // CSRF トークンエラー
             console.error('CSRF token mismatch. Please refresh the page.');
-        } else if (error.response?.status >= 500) {
+        } else if (error.response?.status >= API_CONSTANTS.SERVER_ERROR_START) {
             console.error('Server error:', error.response?.data?.message || 'Internal server error');
         }
         return Promise.reject(error);
@@ -40,7 +41,7 @@ export const apiService = {
     getDashboardStats: () => api.get('/api/dashboard/stats'),
     
     // 企業関連
-    getTopCompanies: (limit = 10) => api.get(`/api/companies/top?limit=${limit}`),
+    getTopCompanies: (limit = API_CONSTANTS.DEFAULT_LIMIT) => api.get(`/api/companies/top?limit=${limit}`),
     getCompanyDetail: (id: number) => api.get(`/api/companies/${id}`),
     searchCompanies: (query: string) => api.get(`/api/companies/search?q=${query}`),
     

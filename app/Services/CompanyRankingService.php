@@ -76,7 +76,7 @@ class CompanyRankingService
 
         if ($days === null) {
             // 全期間の場合
-            $startDate = Carbon::create(2020, 1, 1)->startOfDay();
+            $startDate = Carbon::create(config('constants.ranking.all_time_start_year'), 1, 1)->startOfDay();
         } else {
             $startDate = $referenceDate->copy()->subDays($days)->startOfDay();
         }
@@ -156,8 +156,10 @@ class CompanyRankingService
     /**
      * 指定期間のランキングを取得
      */
-    public function getRankingForPeriod(string $periodType, int $limit = 50): array
+    public function getRankingForPeriod(string $periodType, ?int $limit = null): array
     {
+        $limit = $limit ?? config('constants.ranking.default_limit');
+
         return DB::table('company_rankings as cr')
             ->join('companies as c', 'cr.company_id', '=', 'c.id')
             ->select([
@@ -214,8 +216,11 @@ class CompanyRankingService
     /**
      * トップ企業のランキング推移を取得
      */
-    public function getTopCompaniesRankingHistory(int $topCount = 10, int $historyDays = 30): array
+    public function getTopCompaniesRankingHistory(?int $topCount = null, ?int $historyDays = null): array
     {
+        $topCount = $topCount ?? config('constants.ranking.top_companies_count');
+        $historyDays = $historyDays ?? config('constants.ranking.history_days');
+
         $endDate = now();
         $startDate = $endDate->copy()->subDays($historyDays);
 

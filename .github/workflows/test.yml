@@ -55,14 +55,12 @@ jobs:
       
       - name: Run PHPStan (static analysis)
         run: vendor/bin/phpstan analyse --memory-limit=1G
-        continue-on-error: true
       
       - name: Build frontend assets
         run: npm run build
       
       - name: Run frontend tests
         run: npm test
-        continue-on-error: true
       
       - name: Test scraping services
         run: |

@@ -12,8 +12,10 @@ use Tests\TestCase;
 
 class CompanyRankingControllerTest extends TestCase
 {
+    /** @var \Mockery\MockInterface&CompanyRankingService */
     private $rankingService;
 
+    /** @var \Mockery\MockInterface&CompanyRankingHistoryService */
     private $historyService;
 
     private $controller;
@@ -22,8 +24,13 @@ class CompanyRankingControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->rankingService = Mockery::mock(CompanyRankingService::class);
-        $this->historyService = Mockery::mock(CompanyRankingHistoryService::class);
+        /** @var \Mockery\MockInterface&CompanyRankingService $rankingService */
+        $rankingService = Mockery::mock(CompanyRankingService::class);
+        /** @var \Mockery\MockInterface&CompanyRankingHistoryService $historyService */
+        $historyService = Mockery::mock(CompanyRankingHistoryService::class);
+
+        $this->rankingService = $rankingService;
+        $this->historyService = $historyService;
         $this->controller = new CompanyRankingController($this->rankingService, $this->historyService);
     }
 

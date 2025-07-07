@@ -323,7 +323,8 @@ class CompanyRankingService
                 ->orderBy('cr.calculated_at', 'desc')
                 ->get()
                 ->map(function ($ranking, $index, $collection) {
-                    $previousRank = $collection->get($index + 1)?->current_rank ?? $ranking->current_rank;
+                    $previous = $collection->get($index + 1);
+                    $previousRank = $previous ? $previous->current_rank : $ranking->current_rank;
                     $rankChange = $previousRank - $ranking->current_rank;
 
                     return [

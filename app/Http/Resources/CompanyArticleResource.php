@@ -2,9 +2,15 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Article
+ * @property-read \App\Models\Company|null $company
+ * @property-read \App\Models\Platform|null $platform
+ */
 class CompanyArticleResource extends JsonResource
 {
     /**
@@ -28,17 +34,17 @@ class CompanyArticleResource extends JsonResource
             'company' => [
                 'id' => $this->company_id,
                 'name' => $this->whenLoaded('company', function () {
-                    return $this->company->name;
+                    return $this->company?->name;
                 }),
                 'domain' => $this->whenLoaded('company', function () {
-                    return $this->company->domain;
+                    return $this->company?->domain;
                 }),
             ],
             'platform_details' => $this->when($this->relationLoaded('platform') && is_object($this->platform), function () {
                 return [
-                    'id' => $this->platform->id,
-                    'name' => $this->platform->name,
-                    'base_url' => $this->platform->base_url,
+                    'id' => $this->platform?->id,
+                    'name' => $this->platform?->name,
+                    'base_url' => $this->platform?->base_url,
                 ];
             }),
             'match_score' => $this->when(isset($this->match_score), $this->match_score),

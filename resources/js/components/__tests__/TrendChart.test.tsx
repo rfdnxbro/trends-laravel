@@ -99,7 +99,8 @@ describe('TrendChart', () => {
     });
 
     it('現在の期間が正しくハイライトされる', () => {
-        render(<TrendChart data={mockData} period="7d" />);
+        const mockOnPeriodChange = vi.fn();
+        render(<TrendChart data={mockData} period="7d" onPeriodChange={mockOnPeriodChange} />);
         
         const activeButton = screen.getByText('7日間');
         const inactiveButton = screen.getByText('30日間');

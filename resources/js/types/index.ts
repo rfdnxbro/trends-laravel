@@ -144,6 +144,70 @@ export interface RankingCardProps {
 }
 
 // React Query キー型定義
+// チャート関連型定義
+export interface ChartDataPoint {
+    x: string | number;
+    y: number;
+    label?: string;
+}
+
+export interface TimeSeriesData {
+    date: string;
+    value: number;
+    label?: string;
+}
+
+export interface InfluenceChartData {
+    companyId: number;
+    companyName: string;
+    data: TimeSeriesData[];
+}
+
+export interface TrendChartData {
+    articleCount: TimeSeriesData[];
+    bookmarkCount: TimeSeriesData[];
+    period: string;
+}
+
+export interface RankingHistoryData {
+    date: string;
+    rank: number;
+    score: number;
+    companyName: string;
+}
+
+export interface ChartConfig {
+    responsive: boolean;
+    maintainAspectRatio: boolean;
+    showLegend: boolean;
+    showTooltips: boolean;
+    height?: number;
+    width?: number;
+}
+
+export interface InfluenceChartProps {
+    data: InfluenceChartData[];
+    config?: Partial<ChartConfig>;
+    className?: string;
+    onDataPointClick?: (dataPoint: ChartDataPoint, companyId: number) => void;
+}
+
+export interface TrendChartProps {
+    data: TrendChartData;
+    config?: Partial<ChartConfig>;
+    className?: string;
+    period: string;
+    onPeriodChange?: (period: string) => void;
+}
+
+export interface RankingHistoryChartProps {
+    data: RankingHistoryData[];
+    config?: Partial<ChartConfig>;
+    className?: string;
+    companyId: number;
+    maxRank?: number;
+}
+
 export const QueryKeys = {
     DASHBOARD_STATS: ['dashboard-stats'] as const,
     TOP_COMPANIES: ['top-companies'] as const,
@@ -151,4 +215,7 @@ export const QueryKeys = {
     SEARCH_COMPANIES: (query: string) => ['search-companies', query] as const,
     SEARCH_RESULTS: (query: string, filters?: SearchFilters) => ['search-results', query, filters] as const,
     COMPANY_RANKINGS: (filters: RankingFilters) => ['company-rankings', filters] as const,
+    INFLUENCE_CHART: (companyIds: number[], period: string) => ['influence-chart', companyIds, period] as const,
+    TREND_CHART: (period: string) => ['trend-chart', period] as const,
+    RANKING_HISTORY: (companyId: number, period: string) => ['ranking-history', companyId, period] as const,
 } as const;

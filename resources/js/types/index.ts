@@ -36,6 +36,8 @@ export interface CompanyRanking {
     influence_score: number;
     rank: number;
     company: Company;
+    previous_rank?: number;
+    rank_change?: number;
 }
 
 // ダッシュボード関連型定義
@@ -109,6 +111,38 @@ export interface ApiError {
     status: number;
 }
 
+// ランキング関連型定義
+export interface RankingPeriod {
+    value: string;
+    label: string;
+}
+
+export interface RankingSortOption {
+    value: string;
+    label: string;
+}
+
+export interface RankingFilters {
+    period: string;
+    sortBy: string;
+    sortOrder: 'asc' | 'desc';
+    searchQuery?: string;
+}
+
+export interface RankingTableProps {
+    rankings: CompanyRanking[];
+    loading?: boolean;
+    filters: RankingFilters;
+    onFiltersChange: (filters: RankingFilters) => void;
+    onCompanyClick?: (company: Company) => void;
+}
+
+export interface RankingCardProps {
+    ranking: CompanyRanking;
+    onClick?: () => void;
+    showRankChange?: boolean;
+}
+
 // React Query キー型定義
 export const QueryKeys = {
     DASHBOARD_STATS: ['dashboard-stats'] as const,
@@ -116,4 +150,5 @@ export const QueryKeys = {
     COMPANY_DETAIL: (id: number) => ['company-detail', id] as const,
     SEARCH_COMPANIES: (query: string) => ['search-companies', query] as const,
     SEARCH_RESULTS: (query: string, filters?: SearchFilters) => ['search-results', query, filters] as const,
+    COMPANY_RANKINGS: (filters: RankingFilters) => ['company-rankings', filters] as const,
 } as const;

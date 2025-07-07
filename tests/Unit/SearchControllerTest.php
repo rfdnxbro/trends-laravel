@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\Company;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class SearchControllerTest extends TestCase
@@ -21,9 +22,7 @@ class SearchControllerTest extends TestCase
         $this->controller = new SearchController;
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function 企業の関連度スコア計算が正常に動作する()
     {
         $company = Company::factory()->create([
@@ -45,9 +44,7 @@ class SearchControllerTest extends TestCase
         $this->assertLessThanOrEqual(2.0, $score);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function 記事の関連度スコア計算が正常に動作する()
     {
         $article = Article::factory()->create([
@@ -70,9 +67,7 @@ class SearchControllerTest extends TestCase
         $this->assertLessThanOrEqual(2.0, $score);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function 企業名完全一致の場合最高スコアが返される()
     {
         $company = Company::factory()->create([
@@ -92,9 +87,7 @@ class SearchControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(1.0, $score);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function 記事のブックマーク数が多いほど高スコアが返される()
     {
         $highBookmarkArticle = Article::factory()->create([
@@ -121,9 +114,7 @@ class SearchControllerTest extends TestCase
         $this->assertGreaterThan($lowScore, $highScore);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function 新しい記事ほど高スコアが返される()
     {
         $recentArticle = Article::factory()->create([
@@ -150,9 +141,7 @@ class SearchControllerTest extends TestCase
         $this->assertGreaterThan($oldScore, $recentScore);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function 企業のドメイン一致でスコアが加算される()
     {
         $company = Company::factory()->create([
@@ -172,9 +161,7 @@ class SearchControllerTest extends TestCase
         $this->assertGreaterThan(0, $score);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function 記事の著者名一致でスコアが加算される()
     {
         $article = Article::factory()->create([

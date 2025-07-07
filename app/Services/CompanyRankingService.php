@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Constants\RankingConstants;
 use App\Constants\RankingPeriod;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -76,7 +77,7 @@ class CompanyRankingService
 
         if ($days === null) {
             // 全期間の場合
-            $startDate = Carbon::create(config('constants.ranking.all_time_start_year'), 1, 1)->startOfDay();
+            $startDate = Carbon::create(RankingConstants::ALL_TIME_START_YEAR, 1, 1)->startOfDay();
         } else {
             $startDate = $referenceDate->copy()->subDays($days)->startOfDay();
         }

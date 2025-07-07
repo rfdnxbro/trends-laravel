@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MagnifyingGlassIcon, FunnelIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 import { RankingTableProps, RankingPeriod, RankingSortOption } from '../types';
-import { UI_CONSTANTS } from '../constants/api';
+import { UI_CONSTANTS } from '../constants/ui';
 import RankingCard from './RankingCard';
 
 const RankingTable: React.FC<RankingTableProps> = ({

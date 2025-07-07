@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Constants\CacheTime;
+use App\Constants\RankingConstants;
 use App\Constants\RankingPeriod;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompanyRankingResource;
@@ -123,7 +124,7 @@ class CompanyRankingController extends Controller
         $cacheKey = "company_ranking_{$period}_{$page}_{$perPage}_{$sortBy}_{$sortOrder}";
 
         return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period, $page, $perPage, $sortBy, $sortOrder) {
-            $rankings = $this->rankingService->getRankingForPeriod($period, $perPage * config('constants.ranking.calculation_multiplier'));
+            $rankings = $this->rankingService->getRankingForPeriod($period, $perPage * RankingConstants::CALCULATION_MULTIPLIER);
 
             if (empty($rankings)) {
                 return response()->json([

@@ -4,9 +4,3 @@ export const API_CONSTANTS = {
   CSRF_ERROR_STATUS: 419,
   SERVER_ERROR_START: 500,
 } as const;
-
-export const UI_CONSTANTS = {
-  ICON_SIZE: 4,
-  SKELETON_COUNT: 10,
-  EMPTY_ICON_SIZE: 12,
-} as const;

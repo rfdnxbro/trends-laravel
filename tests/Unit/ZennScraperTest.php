@@ -89,13 +89,13 @@ class ZennScraperTest extends TestCase
     public function test_identify_company_account(): void
     {
         $company = Company::factory()->create([
-            'name' => 'Test Company',
+            'name' => 'テスト企業',
             'zenn_username' => 'testcompany',
         ]);
 
         $result = $this->scraper->identifyCompanyAccount('https://zenn.dev/@testcompany');
         $this->assertInstanceOf(Company::class, $result);
-        $this->assertEquals('Test Company', $result->name);
+        $this->assertEquals('テスト企業', $result->name);
 
         $result = $this->scraper->identifyCompanyAccount('https://zenn.dev/@unknownuser');
         $this->assertNull($result);
@@ -107,13 +107,13 @@ class ZennScraperTest extends TestCase
     public function test_normalize_and_save_data(): void
     {
         $company = Company::factory()->create([
-            'name' => 'Test Company',
+            'name' => 'テスト企業',
             'zenn_username' => 'testcompany',
         ]);
 
         $articlesData = [
             [
-                'title' => 'Test Article',
+                'title' => 'テスト記事',
                 'url' => 'https://zenn.dev/articles/test-article',
                 'likes_count' => 10,
                 'author' => '/@testcompany',
@@ -128,7 +128,7 @@ class ZennScraperTest extends TestCase
 
         $this->assertCount(1, $savedArticles);
         $this->assertInstanceOf(Article::class, $savedArticles[0]);
-        $this->assertEquals('Test Article', $savedArticles[0]->title);
+        $this->assertEquals('テスト記事', $savedArticles[0]->title);
         $this->assertEquals('https://zenn.dev/articles/test-article', $savedArticles[0]->url);
         $this->assertEquals($company->id, $savedArticles[0]->company_id);
         $this->assertEquals(10, $savedArticles[0]->likes_count);
@@ -137,7 +137,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals('zenn', $savedArticles[0]->platform);
 
         $this->assertDatabaseHas('articles', [
-            'title' => 'Test Article',
+            'title' => 'テスト記事',
             'url' => 'https://zenn.dev/articles/test-article',
             'company_id' => $company->id,
             'platform' => 'zenn',

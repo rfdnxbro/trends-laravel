@@ -191,7 +191,7 @@ class ArticleTest extends TestCase
         Article::create([
             'platform_id' => $platform->id,
             'company_id' => $company->id,
-            'title' => 'Recent Article',
+            'title' => '最新記事',
             'url' => $this->faker()->url(),
             'published_at' => now()->subDays(3),
             'scraped_at' => now(),
@@ -200,7 +200,7 @@ class ArticleTest extends TestCase
         Article::create([
             'platform_id' => $platform->id,
             'company_id' => $company->id,
-            'title' => 'Old Article',
+            'title' => '古い記事',
             'url' => $this->faker()->url(),
             'published_at' => now()->subDays(10),
             'scraped_at' => now(),
@@ -208,7 +208,7 @@ class ArticleTest extends TestCase
 
         $recentArticles = Article::recent(7)->get();
         $this->assertCount(1, $recentArticles);
-        $this->assertEquals('Recent Article', $recentArticles->first()->title);
+        $this->assertEquals('最新記事', $recentArticles->first()->title);
     }
 
     public function test_popularスコープの動作確認()
@@ -226,7 +226,7 @@ class ArticleTest extends TestCase
         Article::create([
             'platform_id' => $platform->id,
             'company_id' => $company->id,
-            'title' => 'Popular Article',
+            'title' => '人気記事',
             'url' => $this->faker()->url(),
             'bookmark_count' => 50,
             'scraped_at' => now(),
@@ -235,7 +235,7 @@ class ArticleTest extends TestCase
         Article::create([
             'platform_id' => $platform->id,
             'company_id' => $company->id,
-            'title' => 'Unpopular Article',
+            'title' => '人気のない記事',
             'url' => $this->faker()->url(),
             'bookmark_count' => 5,
             'scraped_at' => now(),
@@ -243,7 +243,7 @@ class ArticleTest extends TestCase
 
         $popularArticles = Article::popular(10)->get();
         $this->assertCount(1, $popularArticles);
-        $this->assertEquals('Popular Article', $popularArticles->first()->title);
+        $this->assertEquals('人気記事', $popularArticles->first()->title);
     }
 
     public function test_mass_assignment_protectionの確認()

@@ -50,8 +50,8 @@ jobs:
           php artisan config:cache
           php artisan migrate --force
       
-      - name: Run PHPUnit tests
-        run: php artisan test
+      - name: Run PHPUnit tests with coverage
+        run: php artisan test --coverage --coverage-html=coverage-html --coverage-clover=coverage-clover.xml
       
       - name: Run Laravel Pint (code style check)
         run: vendor/bin/pint --test
@@ -66,3 +66,13 @@ jobs:
         run: |
           php artisan test --filter=Scraper
           php artisan test --filter=ScrapeCommand
+      
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports
+          path: |
+            coverage-html/
+            coverage-clover.xml
+          retention-days: 30

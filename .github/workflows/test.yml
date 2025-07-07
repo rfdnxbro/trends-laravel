@@ -42,6 +42,9 @@ jobs:
           cp .env.ci .env
           php artisan key:generate
       
+      - name: Build frontend assets
+        run: npm run build
+      
       - name: Configure database
         run: |
           php artisan config:cache
@@ -55,9 +58,6 @@ jobs:
       
       - name: Run PHPStan (static analysis)
         run: vendor/bin/phpstan analyse --memory-limit=1G
-      
-      - name: Build frontend assets
-        run: npm run build
       
       - name: Run frontend tests
         run: npm test

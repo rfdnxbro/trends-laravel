@@ -1,0 +1,113 @@
+name: Test
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: trends_laravel_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:6
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, dom, fileinfo, pgsql, redis
+          coverage: xdebug
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install PHP dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+      
+      - name: Install Node.js dependencies
+        run: npm ci
+      
+      - name: Create environment file
+        run: |
+          cp .env.ci .env
+          php artisan key:generate
+      
+      - name: Configure database
+        run: |
+          php artisan config:cache
+          php artisan migrate --force
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: trends_laravel_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+      
+      - name: Run PHPUnit tests
+        run: php artisan test --coverage
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: trends_laravel_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+      
+      - name: Run Laravel Pint (code style check)
+        run: vendor/bin/pint --test
+      
+      - name: Run PHPStan (static analysis)
+        run: vendor/bin/phpstan analyse --memory-limit=1G
+      
+      - name: Build frontend assets
+        run: npm run build
+      
+      - name: Test scraping jobs
+        run: |
+          php artisan queue:work --once --queue=scraping --stop-when-empty &
+          php artisan test --filter=ScrapingJobTest
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: trends_laravel_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379

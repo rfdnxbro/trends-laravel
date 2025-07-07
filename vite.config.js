@@ -4,10 +4,20 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
     plugins: [
+        tailwindcss(),
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: 'resources/js/app.tsx',
             refresh: true,
         }),
-        tailwindcss(),
     ],
+    esbuild: {
+        jsx: 'automatic',
+        jsxFactory: 'React.createElement',
+        jsxFragment: 'React.Fragment',
+    },
+    server: {
+        host: 'localhost',
+        port: 5173,
+        strictPort: true,
+    },
 });

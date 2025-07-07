@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MagnifyingGlassIcon, FunnelIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 import { RankingTableProps, RankingPeriod, RankingSortOption } from '../types';
+import { UI_CONSTANTS } from '../constants/ui';
 import RankingCard from './RankingCard';
 
 const RankingTable: React.FC<RankingTableProps> = ({
@@ -47,8 +48,8 @@ const RankingTable: React.FC<RankingTableProps> = ({
     const getSortIcon = (sortBy: string) => {
         if (filters.sortBy !== sortBy) return null;
         return filters.sortOrder === 'asc' ? 
-            <ArrowUpIcon className="w-4 h-4" /> : 
-            <ArrowDownIcon className="w-4 h-4" />;
+            <ArrowUpIcon className={`w-${UI_CONSTANTS.ICON_SIZE} h-${UI_CONSTANTS.ICON_SIZE}`} /> : 
+            <ArrowDownIcon className={`w-${UI_CONSTANTS.ICON_SIZE} h-${UI_CONSTANTS.ICON_SIZE}`} />;
     };
 
     if (loading) {
@@ -58,7 +59,7 @@ const RankingTable: React.FC<RankingTableProps> = ({
                     <div className="animate-pulse">
                         <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
                         <div className="space-y-3">
-                            {[...Array(10)].map((_, i) => (
+                            {[...Array(UI_CONSTANTS.SKELETON_COUNT)].map((_, i) => (
                                 <div key={i} className="h-20 bg-gray-200 rounded"></div>
                             ))}
                         </div>
@@ -79,7 +80,7 @@ const RankingTable: React.FC<RankingTableProps> = ({
                         {/* 検索フォーム */}
                         <form onSubmit={handleSearchSubmit} className="flex">
                             <div className="relative">
-                                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <MagnifyingGlassIcon className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-${UI_CONSTANTS.ICON_SIZE} w-${UI_CONSTANTS.ICON_SIZE} text-gray-400`} />
                                 <input
                                     type="text"
                                     placeholder="企業を検索..."
@@ -101,7 +102,7 @@ const RankingTable: React.FC<RankingTableProps> = ({
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
                             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 text-sm"
                         >
-                            <FunnelIcon className="w-4 h-4 mr-2" />
+                            <FunnelIcon className={`w-${UI_CONSTANTS.ICON_SIZE} h-${UI_CONSTANTS.ICON_SIZE} mr-2`} />
                             フィルター
                         </button>
                     </div>
@@ -155,7 +156,7 @@ const RankingTable: React.FC<RankingTableProps> = ({
                 {rankings.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="text-gray-500">
-                            <MagnifyingGlassIcon className="mx-auto h-12 w-12 mb-4" />
+                            <MagnifyingGlassIcon className={`mx-auto h-${UI_CONSTANTS.EMPTY_ICON_SIZE} w-${UI_CONSTANTS.EMPTY_ICON_SIZE} mb-4`} />
                             <p className="text-lg font-medium">ランキングデータが見つかりません</p>
                             <p className="text-sm">条件を変更して再度お試しください。</p>
                         </div>

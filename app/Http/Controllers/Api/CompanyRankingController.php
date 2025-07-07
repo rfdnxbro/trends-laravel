@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Constants\CacheTime;
+use App\Constants\RankingConstants;
 use App\Constants\RankingPeriod;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompanyRankingResource;
@@ -116,14 +117,14 @@ class CompanyRankingController extends Controller
         }
 
         $page = $request->get('page', 1);
-        $perPage = min($request->get('per_page', 20), 100);
+        $perPage = min($request->get('per_page', config('constants.pagination.default_per_page')), config('constants.pagination.max_per_page'));
         $sortBy = $request->get('sort_by', 'rank_position');
         $sortOrder = $request->get('sort_order', 'asc');
 
         $cacheKey = "company_ranking_{$period}_{$page}_{$perPage}_{$sortBy}_{$sortOrder}";
 
         return Cache::remember($cacheKey, CacheTime::RANKING, function () use ($period, $page, $perPage, $sortBy, $sortOrder) {
-            $rankings = $this->rankingService->getRankingForPeriod($period, $perPage * 10);
+            $rankings = $this->rankingService->getRankingForPeriod($period, $perPage * RankingConstants::CALCULATION_MULTIPLIER);
 
             if (empty($rankings)) {
                 return response()->json([
@@ -215,7 +216,7 @@ class CompanyRankingController extends Controller
             'limit' => $limit,
         ], [
             'period' => 'required|'.RankingPeriod::getValidationRule(),
-            'limit' => 'required|integer|min:1|max:100',
+            'limit' => 'required|integer|min:1|max:'.config('constants.pagination.max_per_page'),
         ]);
 
         if ($validator->fails()) {
@@ -312,7 +313,7 @@ class CompanyRankingController extends Controller
         }
 
         $includeHistory = $request->boolean('include_history', false);
-        $historyDays = $request->get('history_days', 30);
+        $historyDays = $request->get('history_days', config('constants.ranking.history_days'));
 
         $cacheKey = "company_ranking_company_{$companyId}_{$includeHistory}_{$historyDays}";
 
@@ -464,7 +465,7 @@ class CompanyRankingController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $limit = min($request->get('limit', 10), 50);
+        $limit = min($request->get('limit', config('constants.ranking.top_companies_count')), config('constants.ranking.top_companies_max'));
 
         $cacheKey = "company_ranking_risers_{$period}_{$limit}";
 
@@ -551,7 +552,7 @@ class CompanyRankingController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $limit = min($request->get('limit', 10), 50);
+        $limit = min($request->get('limit', config('constants.ranking.top_companies_count')), config('constants.ranking.top_companies_max'));
 
         $cacheKey = "company_ranking_fallers_{$period}_{$limit}";
 

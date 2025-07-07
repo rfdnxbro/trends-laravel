@@ -11,13 +11,13 @@ use Illuminate\Support\Facades\Log;
 
 abstract class BaseScraper implements ScrapingService
 {
-    protected int $timeout = 30;
+    protected int $timeout;
 
-    protected int $maxRetries = 3;
+    protected int $maxRetries;
 
-    protected int $delaySeconds = 1;
+    protected int $delaySeconds;
 
-    protected int $requestsPerMinute = 30;
+    protected int $requestsPerMinute;
 
     protected array $headers = [];
 
@@ -29,6 +29,11 @@ abstract class BaseScraper implements ScrapingService
 
     public function __construct()
     {
+        $this->timeout = config('constants.api.timeout_seconds');
+        $this->maxRetries = config('constants.api.max_retry_count');
+        $this->delaySeconds = config('constants.api.retry_delay_seconds');
+        $this->requestsPerMinute = config('constants.api.rate_limit_per_minute');
+
         $this->setDefaultHeaders();
     }
 
@@ -162,7 +167,7 @@ abstract class BaseScraper implements ScrapingService
         $requests = Cache::get($cacheKey, 0);
 
         if ($requests >= $this->requestsPerMinute) {
-            $waitTime = 60 - (time() % 60);
+            $waitTime = config('constants.api.rate_limit_window_seconds') - (time() % config('constants.api.rate_limit_window_seconds'));
             Log::info("Rate limit exceeded. Waiting {$waitTime} seconds.", [
                 'scraper' => class_basename($this),
                 'requests' => $requests,
@@ -172,7 +177,7 @@ abstract class BaseScraper implements ScrapingService
             Cache::forget($cacheKey);
         }
 
-        Cache::put($cacheKey, $requests + 1, 60);
+        Cache::put($cacheKey, $requests + 1, config('constants.api.rate_limit_window_seconds'));
     }
 
     /**

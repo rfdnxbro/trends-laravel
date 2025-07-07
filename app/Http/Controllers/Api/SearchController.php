@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Constants\CacheTime;
+use App\Constants\ScoringConstants;
+use App\Constants\SearchConstants;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompanyArticleResource;
 use App\Http\Resources\CompanyResource;
@@ -82,8 +84,8 @@ class SearchController extends Controller
     public function searchCompanies(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'q' => 'required|string|min:1|max:255',
-            'limit' => 'integer|min:1|max:100',
+            'q' => SearchConstants::getQueryValidationRule(),
+            'limit' => 'integer|min:1|max:'.config('constants.pagination.max_per_page'),
         ]);
 
         if ($validator->fails()) {
@@ -94,7 +96,7 @@ class SearchController extends Controller
         }
 
         $query = $request->get('q');
-        $limit = $request->get('limit', 20);
+        $limit = $request->get('limit', config('constants.pagination.default_per_page'));
 
         $cacheKey = 'search_companies_'.md5($query.$limit);
 
@@ -108,7 +110,7 @@ class SearchController extends Controller
                         ->orWhere('description', 'LIKE', "%{$query}%");
                 })
                 ->with(['rankings' => function ($q) {
-                    $q->latest('calculated_at')->limit(1);
+                    $q->latest('calculated_at')->limit(SearchConstants::MIN_RANKING_DISPLAY);
                 }])
                 ->limit($limit)
                 ->get()
@@ -232,9 +234,9 @@ class SearchController extends Controller
     public function searchArticles(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'q' => 'required|string|min:1|max:255',
-            'limit' => 'integer|min:1|max:100',
-            'days' => 'integer|min:1|max:365',
+            'q' => SearchConstants::getQueryValidationRule(),
+            'limit' => 'integer|min:1|max:'.config('constants.pagination.max_per_page'),
+            'days' => 'integer|min:1|max:'.config('constants.api.max_article_days'),
             'min_bookmarks' => 'integer|min:0',
         ]);
 
@@ -246,8 +248,8 @@ class SearchController extends Controller
         }
 
         $query = $request->get('q');
-        $limit = $request->get('limit', 20);
-        $days = $request->get('days', 30);
+        $limit = $request->get('limit', config('constants.pagination.default_per_page'));
+        $days = $request->get('days', config('constants.api.default_article_days'));
         $minBookmarks = $request->get('min_bookmarks', 0);
 
         $cacheKey = 'search_articles_'.md5($query.$limit.$days.$minBookmarks);
@@ -385,10 +387,10 @@ class SearchController extends Controller
     public function search(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'q' => 'required|string|min:1|max:255',
+            'q' => SearchConstants::getQueryValidationRule(),
             'type' => 'string|in:companies,articles,all',
-            'limit' => 'integer|min:1|max:100',
-            'days' => 'integer|min:1|max:365',
+            'limit' => 'integer|min:1|max:'.config('constants.pagination.max_per_page'),
+            'days' => 'integer|min:1|max:'.config('constants.api.max_article_days'),
             'min_bookmarks' => 'integer|min:0',
         ]);
 
@@ -401,8 +403,8 @@ class SearchController extends Controller
 
         $query = $request->get('q');
         $type = $request->get('type', 'all');
-        $limit = $request->get('limit', 20);
-        $days = $request->get('days', 30);
+        $limit = $request->get('limit', config('constants.pagination.default_per_page'));
+        $days = $request->get('days', config('constants.api.default_article_days'));
         $minBookmarks = $request->get('min_bookmarks', 0);
 
         $cacheKey = 'search_all_'.md5($query.$type.$limit.$days.$minBookmarks);
@@ -419,7 +421,7 @@ class SearchController extends Controller
                             ->orWhere('description', 'LIKE', "%{$query}%");
                     })
                     ->with(['rankings' => function ($q) {
-                        $q->latest('calculated_at')->limit(1);
+                        $q->latest('calculated_at')->limit(SearchConstants::MIN_RANKING_DISPLAY);
                     }])
                     ->limit($limit)
                     ->get()
@@ -493,26 +495,26 @@ class SearchController extends Controller
 
         // 企業名での完全一致
         if (strtolower($company->name) === $queryLower) {
-            $score += 1.0;
+            $score += ScoringConstants::COMPANY_EXACT_MATCH_WEIGHT;
         }
         // 企業名の部分一致
         elseif (strpos(strtolower($company->name), $queryLower) !== false) {
-            $score += 0.8;
+            $score += ScoringConstants::COMPANY_PARTIAL_MATCH_WEIGHT;
         }
 
         // ドメインでの一致
         if (strpos(strtolower($company->domain ?? ''), $queryLower) !== false) {
-            $score += 0.6;
+            $score += ScoringConstants::COMPANY_DOMAIN_MATCH_WEIGHT;
         }
 
         // 説明文での一致
         if (strpos(strtolower($company->description ?? ''), $queryLower) !== false) {
-            $score += 0.4;
+            $score += ScoringConstants::COMPANY_DESCRIPTION_MATCH_WEIGHT;
         }
 
         // 最新ランキングがある場合はスコアを上げる
         if ($company->rankings && $company->rankings->isNotEmpty()) {
-            $score += 0.2;
+            $score += ScoringConstants::COMPANY_RANKING_BONUS_WEIGHT;
         }
 
         return $score;
@@ -528,32 +530,32 @@ class SearchController extends Controller
 
         // タイトルでの完全一致
         if (strpos(strtolower($article->title), $queryLower) !== false) {
-            $score += 1.0;
+            $score += ScoringConstants::ARTICLE_TITLE_MATCH_WEIGHT;
         }
 
         // 著者名での一致
         if (strpos(strtolower($article->author_name ?? ''), $queryLower) !== false) {
-            $score += 0.5;
+            $score += ScoringConstants::ARTICLE_AUTHOR_MATCH_WEIGHT;
         }
 
         // ブックマーク数によるスコア調整
-        if ($article->bookmark_count > 100) {
-            $score += 0.3;
-        } elseif ($article->bookmark_count > 50) {
-            $score += 0.2;
-        } elseif ($article->bookmark_count > 10) {
-            $score += 0.1;
+        if ($article->bookmark_count > ScoringConstants::HIGH_BOOKMARKS_THRESHOLD) {
+            $score += ScoringConstants::ARTICLE_HIGH_BOOKMARK_WEIGHT;
+        } elseif ($article->bookmark_count > ScoringConstants::MEDIUM_BOOKMARKS_THRESHOLD) {
+            $score += ScoringConstants::ARTICLE_MEDIUM_BOOKMARK_WEIGHT;
+        } elseif ($article->bookmark_count > ScoringConstants::LOW_BOOKMARKS_THRESHOLD) {
+            $score += ScoringConstants::ARTICLE_LOW_BOOKMARK_WEIGHT;
         }
 
         // 新しい記事ほど高スコア
         $daysAgo = abs(now()->diffInDays($article->published_at));
-        if ($daysAgo <= 7) {
-            $score += 0.2;
-        } elseif ($daysAgo <= 30) {
-            $score += 0.1;
-        } elseif ($daysAgo > 100) {
+        if ($daysAgo <= ScoringConstants::RECENT_DAYS_THRESHOLD) {
+            $score += ScoringConstants::ARTICLE_RECENT_BONUS_WEIGHT;
+        } elseif ($daysAgo <= ScoringConstants::SOMEWHAT_RECENT_DAYS_THRESHOLD) {
+            $score += ScoringConstants::ARTICLE_SOMEWHAT_RECENT_BONUS_WEIGHT;
+        } elseif ($daysAgo > ScoringConstants::OLD_DAYS_THRESHOLD) {
             // 100日以上古い記事にはペナルティ
-            $score -= 0.1;
+            $score += ScoringConstants::ARTICLE_OLD_PENALTY_WEIGHT;
         }
 
         return $score;

@@ -14,11 +14,12 @@ class HatenaBookmarkScraper extends BaseScraper
 
     protected string $itCategoryUrl = 'https://b.hatena.ne.jp/hotentry/it';
 
-    protected int $requestsPerMinute = 20;
+    protected int $requestsPerMinute;
 
     public function __construct()
     {
         parent::__construct();
+        $this->requestsPerMinute = config('constants.hatena.rate_limit_per_minute');
         $this->setHeaders([
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language' => 'ja,en-US;q=0.5,en;q=0.3',

@@ -106,7 +106,7 @@ class CompanyController extends Controller
 
         return Cache::remember($cacheKey, CacheTime::COMPANY_DETAIL, function () use ($companyId) {
             $company = Company::with(['rankings', 'articles' => function ($query) {
-                $query->recent(30)->orderBy('published_at', 'desc')->limit(5);
+                $query->recent(config('constants.api.default_article_days'))->orderBy('published_at', 'desc')->limit(config('constants.api.default_article_limit'));
             }])->find($companyId);
 
             if (! $company) {
@@ -225,8 +225,8 @@ class CompanyController extends Controller
         }
 
         $page = $request->get('page', 1);
-        $perPage = min($request->get('per_page', 20), 100);
-        $days = $request->get('days', 30);
+        $perPage = min($request->get('per_page', config('constants.pagination.default_per_page')), config('constants.pagination.max_per_page'));
+        $days = $request->get('days', config('constants.api.default_article_days'));
         $minBookmarks = $request->get('min_bookmarks', 0);
 
         $cacheKey = "company_articles_{$companyId}_{$page}_{$perPage}_{$days}_{$minBookmarks}";
@@ -354,7 +354,7 @@ class CompanyController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $days = $request->get('days', 30);
+        $days = $request->get('days', config('constants.api.default_article_days'));
         $period = $request->get('period', '1d');
 
         $cacheKey = "company_scores_{$companyId}_{$days}_{$period}";
@@ -465,7 +465,7 @@ class CompanyController extends Controller
         }
 
         $includeHistory = $request->boolean('include_history', false);
-        $historyDays = $request->get('history_days', 30);
+        $historyDays = $request->get('history_days', config('constants.ranking.history_days'));
 
         $cacheKey = "company_rankings_{$companyId}_{$includeHistory}_{$historyDays}";
 

@@ -1,0 +1,1767 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Trends Laravel API",
+        "description": "企業の技術コミュニティでの影響力を分析・追跡するAPI",
+        "contact": {
+            "email": "admin@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/companies/{company_id}": {
+            "get": {
+                "tags": [
+                    "企業詳細"
+                ],
+                "summary": "企業詳細情報取得",
+                "description": "企業の詳細情報を取得します。現在のランキング情報と最近の記事（最大5件）を含みます。",
+                "operationId": "b87956b293dcfbb97d69bf77d6d496cc",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "path",
+                        "description": "企業ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "企業詳細情報",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Company A"
+                                                },
+                                                "domain": {
+                                                    "type": "string",
+                                                    "example": "company-a.com"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "企業の説明文"
+                                                },
+                                                "logo_url": {
+                                                    "type": "string",
+                                                    "example": "https://example.com/logo.png"
+                                                },
+                                                "website_url": {
+                                                    "type": "string",
+                                                    "example": "https://company-a.com"
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "current_rankings": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "recent_articles": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正なリクエスト",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "企業IDが無効です"
+                                        },
+                                        "details": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "企業が見つかりません",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "企業が見つかりません"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/companies/{company_id}/articles": {
+            "get": {
+                "tags": [
+                    "企業詳細"
+                ],
+                "summary": "企業の記事一覧取得",
+                "description": "企業に関連する記事の一覧を取得します。",
+                "operationId": "a6fca0b29fa759399957964775c3bb6f",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "path",
+                        "description": "企業ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "ページ番号",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "1ページあたりの件数（最大100）",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "days",
+                        "in": "query",
+                        "description": "過去何日分の記事を取得するか",
+                        "schema": {
+                            "type": "integer",
+                            "default": 30,
+                            "example": 30
+                        }
+                    },
+                    {
+                        "name": "min_bookmarks",
+                        "in": "query",
+                        "description": "最小ブックマーク数",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0,
+                            "example": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "記事一覧",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "company_id": {
+                                                    "type": "integer"
+                                                },
+                                                "filters": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正なリクエスト",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "企業IDが無効です"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "企業が見つかりません",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "企業が見つかりません"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/companies/{company_id}/scores": {
+            "get": {
+                "tags": [
+                    "企業詳細"
+                ],
+                "summary": "企業の影響力スコア履歴取得",
+                "description": "企業の影響力スコアの履歴データを取得します。",
+                "operationId": "30d331d44d5ca7009a0cd5bae88aaf5d",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "path",
+                        "description": "企業ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "period",
+                        "in": "query",
+                        "description": "期間タイプ",
+                        "schema": {
+                            "type": "string",
+                            "default": "1d",
+                            "example": "1d"
+                        }
+                    },
+                    {
+                        "name": "days",
+                        "in": "query",
+                        "description": "過去何日分のスコアを取得するか",
+                        "schema": {
+                            "type": "integer",
+                            "default": 30,
+                            "example": 30
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "スコア履歴",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "company_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "scores": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "date": {
+                                                                "type": "string",
+                                                                "format": "date",
+                                                                "example": "2024-01-30"
+                                                            },
+                                                            "score": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 85.5
+                                                            },
+                                                            "rank_position": {
+                                                                "type": "integer",
+                                                                "example": 5
+                                                            },
+                                                            "calculated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "period": {
+                                                    "type": "string"
+                                                },
+                                                "days": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正なリクエスト",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "企業IDが無効です"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "企業が見つかりません",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "企業が見つかりません"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/companies/{company_id}/rankings": {
+            "get": {
+                "tags": [
+                    "企業詳細"
+                ],
+                "summary": "企業のランキング情報取得",
+                "description": "企業の各期間でのランキング情報を取得します。",
+                "operationId": "a50a508b0b1a0310be13e75c95aaacfc",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "path",
+                        "description": "企業ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "include_history",
+                        "in": "query",
+                        "description": "履歴を含める",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false,
+                            "example": false
+                        }
+                    },
+                    {
+                        "name": "history_days",
+                        "in": "query",
+                        "description": "履歴取得日数",
+                        "schema": {
+                            "type": "integer",
+                            "default": 30,
+                            "example": 30
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ランキング情報",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "company_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "rankings": {
+                                                    "type": "object"
+                                                },
+                                                "history": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正なリクエスト",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "企業IDが無効です"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "企業が見つかりません",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "企業が見つかりません"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/rankings/{period}": {
+            "get": {
+                "tags": [
+                    "企業ランキング"
+                ],
+                "summary": "期間別ランキング取得",
+                "description": "指定した期間の企業ランキングを取得します。",
+                "operationId": "2a59ef3da07e77296fd7d929cd34076e",
+                "parameters": [
+                    {
+                        "name": "period",
+                        "in": "path",
+                        "description": "期間タイプ (1w, 1m, 3m, 6m, 1y, 3y, all)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "1w",
+                                "1m",
+                                "3m",
+                                "6m",
+                                "1y",
+                                "3y",
+                                "all"
+                            ],
+                            "example": "1m"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "ページ番号",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "1ページあたりの件数（最大100）",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "ソート項目",
+                        "schema": {
+                            "type": "string",
+                            "default": "rank_position",
+                            "example": "rank_position"
+                        }
+                    },
+                    {
+                        "name": "sort_order",
+                        "in": "query",
+                        "description": "ソート順",
+                        "schema": {
+                            "type": "string",
+                            "default": "asc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "example": "asc"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ランキングリスト",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正な期間タイプ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/rankings/{period}/top/{limit}": {
+            "get": {
+                "tags": [
+                    "企業ランキング"
+                ],
+                "summary": "上位N件のランキング取得",
+                "description": "指定した期間の上位N件のランキングを取得します。",
+                "operationId": "78594b53d7fae9a30415e698a61b925f",
+                "parameters": [
+                    {
+                        "name": "period",
+                        "in": "path",
+                        "description": "期間タイプ",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "1w",
+                                "1m",
+                                "3m",
+                                "6m",
+                                "1y",
+                                "3y",
+                                "all"
+                            ],
+                            "example": "1m"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "path",
+                        "description": "取得件数 (1-100)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "上位ランキング",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "period": {
+                                                    "type": "string"
+                                                },
+                                                "limit": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正なパラメータ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/rankings/company/{company_id}": {
+            "get": {
+                "tags": [
+                    "企業ランキング"
+                ],
+                "summary": "特定企業のランキング取得",
+                "description": "特定企業の全期間ランキング情報を取得します。",
+                "operationId": "e8eb4538d14b415d668f8a5a75aa0201",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "path",
+                        "description": "企業ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "include_history",
+                        "in": "query",
+                        "description": "履歴を含める",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false,
+                            "example": false
+                        }
+                    },
+                    {
+                        "name": "history_days",
+                        "in": "query",
+                        "description": "履歴取得日数",
+                        "schema": {
+                            "type": "integer",
+                            "default": 30,
+                            "example": 30
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "企業ランキング情報",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "company_id": {
+                                                    "type": "integer"
+                                                },
+                                                "rankings": {
+                                                    "type": "object"
+                                                },
+                                                "history": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正な企業ID",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/rankings/statistics": {
+            "get": {
+                "tags": [
+                    "企業ランキング"
+                ],
+                "summary": "ランキング統計情報取得",
+                "description": "全期間のランキング統計情報を取得します。",
+                "operationId": "ebaf8a89cfb807d32cf6da1240d44b60",
+                "responses": {
+                    "200": {
+                        "description": "統計情報",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "1m": {
+                                                    "properties": {
+                                                        "total_companies": {
+                                                            "type": "integer",
+                                                            "example": 100
+                                                        },
+                                                        "average_score": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 50.25
+                                                        },
+                                                        "max_score": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 150.75
+                                                        },
+                                                        "min_score": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 5.1
+                                                        },
+                                                        "total_articles": {
+                                                            "type": "integer",
+                                                            "example": 1000
+                                                        },
+                                                        "total_bookmarks": {
+                                                            "type": "integer",
+                                                            "example": 50000
+                                                        },
+                                                        "last_calculated": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/rankings/{period}/risers": {
+            "get": {
+                "tags": [
+                    "企業ランキング"
+                ],
+                "summary": "順位上昇企業取得",
+                "description": "指定した期間で順位が上昇した企業を取得します。",
+                "operationId": "4291c8cb4bd975a76eb0612b090bc2b3",
+                "parameters": [
+                    {
+                        "name": "period",
+                        "in": "path",
+                        "description": "期間タイプ",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "1w",
+                                "1m",
+                                "3m",
+                                "6m",
+                                "1y",
+                                "3y",
+                                "all"
+                            ],
+                            "example": "1m"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "取得件数（最大50）",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 50,
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "順位上昇企業リスト",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "company_name": {
+                                                        "type": "string",
+                                                        "example": "Rising Company"
+                                                    },
+                                                    "domain": {
+                                                        "type": "string",
+                                                        "example": "rising.com"
+                                                    },
+                                                    "current_rank": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    },
+                                                    "previous_rank": {
+                                                        "type": "integer",
+                                                        "example": 10
+                                                    },
+                                                    "rank_change": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    },
+                                                    "calculated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "period": {
+                                                    "type": "string"
+                                                },
+                                                "limit": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正な期間タイプ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/rankings/{period}/fallers": {
+            "get": {
+                "tags": [
+                    "企業ランキング"
+                ],
+                "summary": "順位下降企業取得",
+                "description": "指定した期間で順位が下降した企業を取得します。",
+                "operationId": "1fd5786a7f0ccdd71c3823e12eca6318",
+                "parameters": [
+                    {
+                        "name": "period",
+                        "in": "path",
+                        "description": "期間タイプ",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "1w",
+                                "1m",
+                                "3m",
+                                "6m",
+                                "1y",
+                                "3y",
+                                "all"
+                            ],
+                            "example": "1m"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "取得件数（最大50）",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 50,
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "順位下降企業リスト",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "company_name": {
+                                                        "type": "string",
+                                                        "example": "Falling Company"
+                                                    },
+                                                    "domain": {
+                                                        "type": "string",
+                                                        "example": "falling.com"
+                                                    },
+                                                    "current_rank": {
+                                                        "type": "integer",
+                                                        "example": 15
+                                                    },
+                                                    "previous_rank": {
+                                                        "type": "integer",
+                                                        "example": 8
+                                                    },
+                                                    "rank_change": {
+                                                        "type": "integer",
+                                                        "example": -7
+                                                    },
+                                                    "calculated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "period": {
+                                                    "type": "string"
+                                                },
+                                                "limit": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正な期間タイプ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/rankings/{period}/statistics": {
+            "get": {
+                "tags": [
+                    "企業ランキング"
+                ],
+                "summary": "順位変動統計取得",
+                "description": "指定した期間の順位変動統計情報を取得します。",
+                "operationId": "fec34322cc5c1aa3b37972e5faf38ac5",
+                "parameters": [
+                    {
+                        "name": "period",
+                        "in": "path",
+                        "description": "期間タイプ",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "1w",
+                                "1m",
+                                "3m",
+                                "6m",
+                                "1y",
+                                "3y",
+                                "all"
+                            ],
+                            "example": "1m"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "順位変動統計",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "total_companies": {
+                                                    "type": "integer",
+                                                    "example": 100
+                                                },
+                                                "rising_companies": {
+                                                    "type": "integer",
+                                                    "example": 35
+                                                },
+                                                "falling_companies": {
+                                                    "type": "integer",
+                                                    "example": 40
+                                                },
+                                                "unchanged_companies": {
+                                                    "type": "integer",
+                                                    "example": 25
+                                                },
+                                                "average_change": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 0.8
+                                                },
+                                                "max_rise": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "max_fall": {
+                                                    "type": "integer",
+                                                    "example": 8
+                                                },
+                                                "calculated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正な期間タイプ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/rankings/periods": {
+            "get": {
+                "tags": [
+                    "企業ランキング"
+                ],
+                "summary": "期間タイプ一覧取得",
+                "description": "使用可能な期間タイプの一覧を取得します。",
+                "operationId": "494cd9bbb44db993095cbe91297c21dc",
+                "responses": {
+                    "200": {
+                        "description": "期間タイプ一覧",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "1w",
+                                                    "1m",
+                                                    "3m",
+                                                    "6m",
+                                                    "1y",
+                                                    "3y",
+                                                    "all"
+                                                ]
+                                            },
+                                            "example": [
+                                                "1w",
+                                                "1m",
+                                                "3m",
+                                                "6m",
+                                                "1y",
+                                                "3y",
+                                                "all"
+                                            ]
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/search/companies": {
+            "get": {
+                "tags": [
+                    "検索"
+                ],
+                "summary": "企業検索",
+                "description": "企業名・ドメイン・説明文から企業を検索します。",
+                "operationId": "65205532c324c7142beb7954d74d90ba",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "検索クエリ（1-255文字）",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255,
+                            "minLength": 1,
+                            "example": "Google"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "取得件数（最大100）",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1,
+                            "example": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "検索結果",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "companies": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "株式会社サンプル"
+                                                            },
+                                                            "domain": {
+                                                                "type": "string",
+                                                                "example": "sample.com"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "サンプル企業の説明"
+                                                            },
+                                                            "logo_url": {
+                                                                "type": "string",
+                                                                "example": "https://example.com/logo.png"
+                                                            },
+                                                            "website_url": {
+                                                                "type": "string",
+                                                                "example": "https://sample.com"
+                                                            },
+                                                            "is_active": {
+                                                                "type": "boolean",
+                                                                "example": true
+                                                            },
+                                                            "match_score": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 0.95
+                                                            },
+                                                            "current_rankings": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "total_results": {
+                                                    "type": "integer",
+                                                    "example": 25
+                                                },
+                                                "search_time": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 0.123
+                                                },
+                                                "query": {
+                                                    "type": "string",
+                                                    "example": "サンプル"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正なリクエスト",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "検索クエリが無効です"
+                                        },
+                                        "details": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/search/articles": {
+            "get": {
+                "tags": [
+                    "検索"
+                ],
+                "summary": "記事検索",
+                "description": "記事タイトル・著者名から記事を検索します。",
+                "operationId": "fdf80b709ecde3acfef0d13a86558991",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "検索クエリ（1-255文字）",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255,
+                            "minLength": 1,
+                            "example": "Laravel"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "取得件数（最大100）",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1,
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "days",
+                        "in": "query",
+                        "description": "検索対象期間（日数）",
+                        "schema": {
+                            "type": "integer",
+                            "default": 30,
+                            "maximum": 365,
+                            "minimum": 1,
+                            "example": 30
+                        }
+                    },
+                    {
+                        "name": "min_bookmarks",
+                        "in": "query",
+                        "description": "最小ブックマーク数",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0,
+                            "minimum": 0,
+                            "example": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "検索結果",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "articles": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "title": {
+                                                                "type": "string",
+                                                                "example": "Laravel入門ガイド"
+                                                            },
+                                                            "url": {
+                                                                "type": "string",
+                                                                "example": "https://qiita.com/sample/items/12345"
+                                                            },
+                                                            "domain": {
+                                                                "type": "string",
+                                                                "example": "qiita.com"
+                                                            },
+                                                            "platform": {
+                                                                "type": "string",
+                                                                "example": "Qiita"
+                                                            },
+                                                            "author_name": {
+                                                                "type": "string",
+                                                                "example": "sample_author"
+                                                            },
+                                                            "author_url": {
+                                                                "type": "string",
+                                                                "example": "https://qiita.com/sample_author"
+                                                            },
+                                                            "published_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            },
+                                                            "bookmark_count": {
+                                                                "type": "integer",
+                                                                "example": 125
+                                                            },
+                                                            "likes_count": {
+                                                                "type": "integer",
+                                                                "example": 45
+                                                            },
+                                                            "match_score": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 0.92
+                                                            },
+                                                            "company": {
+                                                                "type": "object"
+                                                            },
+                                                            "platform_details": {
+                                                                "type": "object"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "total_results": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "search_time": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 0.089
+                                                },
+                                                "query": {
+                                                    "type": "string",
+                                                    "example": "Laravel"
+                                                },
+                                                "filters": {
+                                                    "properties": {
+                                                        "days": {
+                                                            "type": "integer",
+                                                            "example": 30
+                                                        },
+                                                        "min_bookmarks": {
+                                                            "type": "integer",
+                                                            "example": 0
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正なリクエスト",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "検索クエリが無効です"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/search": {
+            "get": {
+                "tags": [
+                    "検索"
+                ],
+                "summary": "統合検索",
+                "description": "企業・記事を横断的に検索します。",
+                "operationId": "d70c8d72bc43cc6c7321086ae9d2c1f1",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "検索クエリ（1-255文字）",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255,
+                            "minLength": 1,
+                            "example": "Laravel"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "検索タイプ",
+                        "schema": {
+                            "type": "string",
+                            "default": "all",
+                            "enum": [
+                                "companies",
+                                "articles",
+                                "all"
+                            ],
+                            "example": "all"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "取得件数（最大100）",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1,
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "days",
+                        "in": "query",
+                        "description": "記事検索の対象期間（日数）",
+                        "schema": {
+                            "type": "integer",
+                            "default": 30,
+                            "maximum": 365,
+                            "minimum": 1,
+                            "example": 30
+                        }
+                    },
+                    {
+                        "name": "min_bookmarks",
+                        "in": "query",
+                        "description": "記事検索の最小ブックマーク数",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0,
+                            "minimum": 0,
+                            "example": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "検索結果",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "companies": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "articles": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "total_results": {
+                                                    "type": "integer",
+                                                    "example": 40
+                                                },
+                                                "search_time": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 0.156
+                                                },
+                                                "query": {
+                                                    "type": "string",
+                                                    "example": "Laravel"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "all"
+                                                },
+                                                "filters": {
+                                                    "properties": {
+                                                        "days": {
+                                                            "type": "integer",
+                                                            "example": 30
+                                                        },
+                                                        "min_bookmarks": {
+                                                            "type": "integer",
+                                                            "example": 0
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "不正なリクエスト",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "検索クエリが無効です"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "企業詳細",
+            "description": "企業の詳細情報、記事一覧、影響力スコア履歴、ランキング情報を提供するAPI"
+        },
+        {
+            "name": "企業ランキング",
+            "description": "企業の技術コミュニティでの影響力ランキングデータを提供するAPI"
+        },
+        {
+            "name": "検索",
+            "description": "企業・記事・技術キーワードを検索するAPI"
+        }
+    ]
+}

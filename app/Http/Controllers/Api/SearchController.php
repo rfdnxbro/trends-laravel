@@ -17,7 +17,67 @@ use Symfony\Component\HttpFoundation\Response;
 class SearchController extends Controller
 {
     /**
-     * 企業名検索
+     * @OA\Get(
+     *     path="/api/search/companies",
+     *     tags={"検索"},
+     *     summary="企業検索",
+     *     description="企業名・ドメイン・説明文から企業を検索します。",
+     *
+     *     @OA\Parameter(
+     *         name="q",
+     *         in="query",
+     *         required=true,
+     *         description="検索クエリ（1-255文字）",
+     *
+     *         @OA\Schema(type="string", minLength=1, maxLength=255, example="Google")
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         description="取得件数（最大100）",
+     *
+     *         @OA\Schema(type="integer", minimum=1, maximum=100, default=20, example=20)
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="検索結果",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="companies", type="array", @OA\Items(type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="株式会社サンプル"),
+     *                     @OA\Property(property="domain", type="string", example="sample.com"),
+     *                     @OA\Property(property="description", type="string", example="サンプル企業の説明"),
+     *                     @OA\Property(property="logo_url", type="string", example="https://example.com/logo.png"),
+     *                     @OA\Property(property="website_url", type="string", example="https://sample.com"),
+     *                     @OA\Property(property="is_active", type="boolean", example=true),
+     *                     @OA\Property(property="match_score", type="number", format="float", example=0.95),
+     *                     @OA\Property(property="current_rankings", type="array", @OA\Items(type="object"))
+     *                 ))
+     *             ),
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="total_results", type="integer", example=25),
+     *                 @OA\Property(property="search_time", type="number", format="float", example=0.123),
+     *                 @OA\Property(property="query", type="string", example="サンプル")
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=400,
+     *         description="不正なリクエスト",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="error", type="string", example="検索クエリが無効です"),
+     *             @OA\Property(property="details", type="object")
+     *         )
+     *     )
+     * )
      */
     public function searchCompanies(Request $request): JsonResponse
     {
@@ -84,7 +144,90 @@ class SearchController extends Controller
     }
 
     /**
-     * 記事検索
+     * @OA\Get(
+     *     path="/api/search/articles",
+     *     tags={"検索"},
+     *     summary="記事検索",
+     *     description="記事タイトル・著者名から記事を検索します。",
+     *
+     *     @OA\Parameter(
+     *         name="q",
+     *         in="query",
+     *         required=true,
+     *         description="検索クエリ（1-255文字）",
+     *
+     *         @OA\Schema(type="string", minLength=1, maxLength=255, example="Laravel")
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         description="取得件数（最大100）",
+     *
+     *         @OA\Schema(type="integer", minimum=1, maximum=100, default=20, example=20)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="days",
+     *         in="query",
+     *         description="検索対象期間（日数）",
+     *
+     *         @OA\Schema(type="integer", minimum=1, maximum=365, default=30, example=30)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="min_bookmarks",
+     *         in="query",
+     *         description="最小ブックマーク数",
+     *
+     *         @OA\Schema(type="integer", minimum=0, default=0, example=0)
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="検索結果",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="articles", type="array", @OA\Items(type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="title", type="string", example="Laravel入門ガイド"),
+     *                     @OA\Property(property="url", type="string", example="https://qiita.com/sample/items/12345"),
+     *                     @OA\Property(property="domain", type="string", example="qiita.com"),
+     *                     @OA\Property(property="platform", type="string", example="Qiita"),
+     *                     @OA\Property(property="author_name", type="string", example="sample_author"),
+     *                     @OA\Property(property="author_url", type="string", example="https://qiita.com/sample_author"),
+     *                     @OA\Property(property="published_at", type="string", format="date-time"),
+     *                     @OA\Property(property="bookmark_count", type="integer", example=125),
+     *                     @OA\Property(property="likes_count", type="integer", example=45),
+     *                     @OA\Property(property="match_score", type="number", format="float", example=0.92),
+     *                     @OA\Property(property="company", type="object"),
+     *                     @OA\Property(property="platform_details", type="object")
+     *                 ))
+     *             ),
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="total_results", type="integer", example=15),
+     *                 @OA\Property(property="search_time", type="number", format="float", example=0.089),
+     *                 @OA\Property(property="query", type="string", example="Laravel"),
+     *                 @OA\Property(property="filters", type="object",
+     *                     @OA\Property(property="days", type="integer", example=30),
+     *                     @OA\Property(property="min_bookmarks", type="integer", example=0)
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=400,
+     *         description="不正なリクエスト",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="error", type="string", example="検索クエリが無効です")
+     *         )
+     *     )
+     * )
      */
     public function searchArticles(Request $request): JsonResponse
     {
@@ -158,7 +301,86 @@ class SearchController extends Controller
     }
 
     /**
-     * 統合検索
+     * @OA\Get(
+     *     path="/api/search",
+     *     tags={"検索"},
+     *     summary="統合検索",
+     *     description="企業・記事を横断的に検索します。",
+     *
+     *     @OA\Parameter(
+     *         name="q",
+     *         in="query",
+     *         required=true,
+     *         description="検索クエリ（1-255文字）",
+     *
+     *         @OA\Schema(type="string", minLength=1, maxLength=255, example="Laravel")
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         description="検索タイプ",
+     *
+     *         @OA\Schema(type="string", enum={"companies", "articles", "all"}, default="all", example="all")
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         description="取得件数（最大100）",
+     *
+     *         @OA\Schema(type="integer", minimum=1, maximum=100, default=20, example=20)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="days",
+     *         in="query",
+     *         description="記事検索の対象期間（日数）",
+     *
+     *         @OA\Schema(type="integer", minimum=1, maximum=365, default=30, example=30)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="min_bookmarks",
+     *         in="query",
+     *         description="記事検索の最小ブックマーク数",
+     *
+     *         @OA\Schema(type="integer", minimum=0, default=0, example=0)
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="検索結果",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="companies", type="array", @OA\Items(type="object")),
+     *                 @OA\Property(property="articles", type="array", @OA\Items(type="object"))
+     *             ),
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="total_results", type="integer", example=40),
+     *                 @OA\Property(property="search_time", type="number", format="float", example=0.156),
+     *                 @OA\Property(property="query", type="string", example="Laravel"),
+     *                 @OA\Property(property="type", type="string", example="all"),
+     *                 @OA\Property(property="filters", type="object",
+     *                     @OA\Property(property="days", type="integer", example=30),
+     *                     @OA\Property(property="min_bookmarks", type="integer", example=0)
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=400,
+     *         description="不正なリクエスト",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="error", type="string", example="検索クエリが無効です")
+     *         )
+     *     )
+     * )
      */
     public function search(Request $request): JsonResponse
     {

@@ -101,7 +101,7 @@ class CompanyController extends Controller
 
             $query = $company->articles()
                 ->with('platform')
-                ->recent($days)
+                ->where('published_at', '>=', now()->subDays($days))
                 ->where('bookmark_count', '>=', $minBookmarks)
                 ->orderBy('published_at', 'desc');
 

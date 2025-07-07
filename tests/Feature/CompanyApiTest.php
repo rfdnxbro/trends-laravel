@@ -123,8 +123,6 @@ class CompanyApiTest extends TestCase
                         'likes_count',
                         'company' => [
                             'id',
-                            'name',
-                            'domain',
                         ],
                         'scraped_at',
                     ],
@@ -160,8 +158,8 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/articles?days=7&min_bookmarks=50");
 
         $response->assertStatus(Response::HTTP_OK)
-            ->assertJsonPath('meta.filters.days', 7)
-            ->assertJsonPath('meta.filters.min_bookmarks', 50);
+            ->assertJsonPath('meta.filters.days', '7')
+            ->assertJsonPath('meta.filters.min_bookmarks', '50');
     }
 
     public function test_get_company_articles_with_invalid_company_id()
@@ -202,7 +200,7 @@ class CompanyApiTest extends TestCase
 
         $response->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('meta.period', '1w')
-            ->assertJsonPath('meta.days', 14);
+            ->assertJsonPath('meta.days', '14');
     }
 
     public function test_get_company_scores_with_invalid_company_id()

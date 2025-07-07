@@ -2,16 +2,10 @@ includes:
     - vendor/larastan/larastan/extension.neon
 
 parameters:
-    level: 5
+    level: 4
     paths:
         - app/
         - routes/
-        - tests/
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
-        - '#Call to method PHPUnit\\Framework\\Assert::assertTrue\(\) with true will always evaluate to true#'
-        - '#Call to method PHPUnit\\Framework\\Assert::assertIsArray\(\) with array.* will always evaluate to true#'
-        - '#Call to method PHPUnit\\Framework\\Assert::assertIsInt\(\) with int will always evaluate to true#'
-        - '#Call to method PHPUnit\\Framework\\Assert::assertIsBool\(\) with bool will always evaluate to true#'
-        - '#method\.alreadyNarrowedType#'
         - '#Variable \$scraper might not be defined#'

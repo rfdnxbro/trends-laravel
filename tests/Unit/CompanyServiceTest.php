@@ -31,7 +31,7 @@ class CompanyServiceTest extends TestCase
 
         $this->platform = Platform::factory()->create([
             'name' => 'Qiita',
-            'url' => 'https://qiita.com',
+            'base_url' => 'https://qiita.com',
         ]);
 
         CompanyRanking::factory()->create([
@@ -184,10 +184,10 @@ class CompanyServiceTest extends TestCase
 
     public function test_article_platform_relationship()
     {
-        $article = $this->company->articles->first();
+        $article = $this->company->articles()->with('platform')->first();
 
-        $this->assertInstanceOf(Platform::class, $article->platform);
-        $this->assertEquals($this->platform->id, $article->platform->id);
+        $this->assertInstanceOf(Platform::class, $article->getRelation('platform'));
+        $this->assertEquals($this->platform->id, $article->getRelation('platform')->id);
     }
 
     public function test_company_resource_with_loaded_articles()
@@ -197,7 +197,8 @@ class CompanyServiceTest extends TestCase
         $array = $resource->toArray(request());
 
         $this->assertArrayHasKey('recent_articles', $array);
-        $this->assertIsArray($array['recent_articles']);
+        $this->assertIsObject($array['recent_articles']);
+        $this->assertInstanceOf(\Illuminate\Http\Resources\Json\AnonymousResourceCollection::class, $array['recent_articles']);
     }
 
     public function test_company_resource_without_rankings()
@@ -227,6 +228,7 @@ class CompanyServiceTest extends TestCase
     {
         $casts = [
             'is_active' => 'boolean',
+            'id' => 'int',
         ];
 
         $this->assertEquals($casts, $this->company->getCasts());

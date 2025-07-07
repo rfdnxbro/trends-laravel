@@ -1,0 +1,68 @@
+name: Test
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    # SQLite in-memory database is used for testing
+    # No external services needed
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
+          coverage: xdebug
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install PHP dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+      
+      - name: Install Node.js dependencies
+        run: npm ci
+      
+      - name: Create environment file
+        run: |
+          cp .env.ci .env
+          php artisan key:generate
+      
+      - name: Build frontend assets
+        run: npm run build
+      
+      - name: Configure database
+        run: |
+          php artisan config:cache
+          php artisan migrate --force
+      
+      - name: Run PHPUnit tests
+        run: php artisan test
+      
+      - name: Run Laravel Pint (code style check)
+        run: vendor/bin/pint --test
+      
+      - name: Run PHPStan (static analysis)
+        run: vendor/bin/phpstan analyse --memory-limit=1G
+      
+      - name: Run frontend tests
+        run: npm test
+      
+      - name: Test scraping services
+        run: |
+          php artisan test --filter=Scraper
+          php artisan test --filter=ScrapeCommand

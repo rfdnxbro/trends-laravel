@@ -8,7 +8,7 @@ const Header: React.FC = () => {
                 <div className="flex justify-between items-center h-16">
                     <div className="flex items-center">
                         <Link to="/" className="text-xl font-bold text-gray-900">
-                            企業影響力ダッシュボード
+                            {import.meta.env.VITE_APP_NAME || 'DevCorpTrends'}
                         </Link>
                     </div>
                     <nav className="hidden md:flex space-x-8">

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>React Test - 企業影響力ダッシュボード</title>
+    <title>{{ config('app.name') }}</title>
     
     @vite('resources/js/app.tsx')
 </head>

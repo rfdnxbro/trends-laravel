@@ -10,6 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
+    # Skip CI if commit message contains [skip ci]
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    
     # SQLite in-memory database is used for testing
     # No external services needed
     
@@ -29,6 +32,16 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+      
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache
+            vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
       
       - name: Install PHP dependencies
         run: |
@@ -50,17 +63,25 @@ jobs:
           php artisan config:cache
           php artisan migrate --force
       
-      - name: Run PHPUnit tests
-        run: php artisan test
-      
-      - name: Run Laravel Pint (code style check)
-        run: vendor/bin/pint --test
-      
-      - name: Run PHPStan (static analysis)
-        run: vendor/bin/phpstan analyse --memory-limit=1G
-      
-      - name: Run frontend tests
-        run: npm test
+      - name: Run tests in parallel
+        run: |
+          # Run PHP tests in background
+          php artisan test --parallel &
+          PHP_TEST_PID=$!
+          
+          # Run frontend tests in background
+          npm test &
+          FRONTEND_TEST_PID=$!
+          
+          # Run code style check
+          vendor/bin/pint --test
+          
+          # Run static analysis
+          vendor/bin/phpstan analyse --memory-limit=1G
+          
+          # Wait for parallel tests to complete
+          wait $PHP_TEST_PID
+          wait $FRONTEND_TEST_PID
       
       - name: Test scraping services
         run: |

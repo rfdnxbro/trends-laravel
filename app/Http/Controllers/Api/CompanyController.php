@@ -35,17 +35,22 @@ class CompanyController extends Controller
      *     tags={"企業詳細"},
      *     summary="企業詳細情報取得",
      *     description="企業の詳細情報を取得します。現在のランキング情報と最近の記事（最大5件）を含みます。",
+     *
      *     @OA\Parameter(
      *         name="company_id",
      *         in="path",
      *         required=true,
      *         description="企業ID",
+     *
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="企業詳細情報",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="name", type="string", example="Company A"),
@@ -61,18 +66,24 @@ class CompanyController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="不正なリクエスト",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="企業IDが無効です"),
      *             @OA\Property(property="details", type="object")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=404,
      *         description="企業が見つかりません",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="企業が見つかりません")
      *         )
      *     )
@@ -119,41 +130,54 @@ class CompanyController extends Controller
      *     tags={"企業詳細"},
      *     summary="企業の記事一覧取得",
      *     description="企業に関連する記事の一覧を取得します。",
+     *
      *     @OA\Parameter(
      *         name="company_id",
      *         in="path",
      *         required=true,
      *         description="企業ID",
+     *
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="page",
      *         in="query",
      *         description="ページ番号",
+     *
      *         @OA\Schema(type="integer", default=1, example=1)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="per_page",
      *         in="query",
      *         description="1ページあたりの件数（最大100）",
+     *
      *         @OA\Schema(type="integer", default=20, maximum=100, example=20)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="days",
      *         in="query",
      *         description="過去何日分の記事を取得するか",
+     *
      *         @OA\Schema(type="integer", default=30, example=30)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="min_bookmarks",
      *         in="query",
      *         description="最小ブックマーク数",
+     *
      *         @OA\Schema(type="integer", default=0, example=0)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="記事一覧",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
      *             @OA\Property(property="meta", type="object",
      *                 @OA\Property(property="current_page", type="integer"),
@@ -165,17 +189,23 @@ class CompanyController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="不正なリクエスト",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="企業IDが無効です")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=404,
      *         description="企業が見つかりません",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="企業が見つかりません")
      *         )
      *     )
@@ -241,29 +271,38 @@ class CompanyController extends Controller
      *     tags={"企業詳細"},
      *     summary="企業の影響力スコア履歴取得",
      *     description="企業の影響力スコアの履歴データを取得します。",
+     *
      *     @OA\Parameter(
      *         name="company_id",
      *         in="path",
      *         required=true,
      *         description="企業ID",
+     *
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="period",
      *         in="query",
      *         description="期間タイプ",
+     *
      *         @OA\Schema(type="string", default="1d", example="1d")
      *     ),
+     *
      *     @OA\Parameter(
      *         name="days",
      *         in="query",
      *         description="過去何日分のスコアを取得するか",
+     *
      *         @OA\Schema(type="integer", default=30, example=30)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="スコア履歴",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="company_id", type="integer", example=1),
      *                 @OA\Property(property="scores", type="array", @OA\Items(type="object",
@@ -280,17 +319,23 @@ class CompanyController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="不正なリクエスト",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="企業IDが無効です")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=404,
      *         description="企業が見つかりません",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="企業が見つかりません")
      *         )
      *     )
@@ -345,29 +390,38 @@ class CompanyController extends Controller
      *     tags={"企業詳細"},
      *     summary="企業のランキング情報取得",
      *     description="企業の各期間でのランキング情報を取得します。",
+     *
      *     @OA\Parameter(
      *         name="company_id",
      *         in="path",
      *         required=true,
      *         description="企業ID",
+     *
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="include_history",
      *         in="query",
      *         description="履歴を含める",
+     *
      *         @OA\Schema(type="boolean", default=false, example=false)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="history_days",
      *         in="query",
      *         description="履歴取得日数",
+     *
      *         @OA\Schema(type="integer", default=30, example=30)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="ランキング情報",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="company_id", type="integer", example=1),
      *                 @OA\Property(property="rankings", type="object"),
@@ -375,17 +429,23 @@ class CompanyController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="不正なリクエスト",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="企業IDが無効です")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=404,
      *         description="企業が見つかりません",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="企業が見つかりません")
      *         )
      *     )

@@ -22,23 +22,30 @@ class SearchController extends Controller
      *     tags={"検索"},
      *     summary="企業検索",
      *     description="企業名・ドメイン・説明文から企業を検索します。",
+     *
      *     @OA\Parameter(
      *         name="q",
      *         in="query",
      *         required=true,
      *         description="検索クエリ（1-255文字）",
+     *
      *         @OA\Schema(type="string", minLength=1, maxLength=255, example="Google")
      *     ),
+     *
      *     @OA\Parameter(
      *         name="limit",
      *         in="query",
      *         description="取得件数（最大100）",
+     *
      *         @OA\Schema(type="integer", minimum=1, maximum=100, default=20, example=20)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="検索結果",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="companies", type="array", @OA\Items(type="object",
      *                     @OA\Property(property="id", type="integer", example=1),
@@ -59,10 +66,13 @@ class SearchController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="不正なリクエスト",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="検索クエリが無効です"),
      *             @OA\Property(property="details", type="object")
      *         )
@@ -139,35 +149,46 @@ class SearchController extends Controller
      *     tags={"検索"},
      *     summary="記事検索",
      *     description="記事タイトル・著者名から記事を検索します。",
+     *
      *     @OA\Parameter(
      *         name="q",
      *         in="query",
      *         required=true,
      *         description="検索クエリ（1-255文字）",
+     *
      *         @OA\Schema(type="string", minLength=1, maxLength=255, example="Laravel")
      *     ),
+     *
      *     @OA\Parameter(
      *         name="limit",
      *         in="query",
      *         description="取得件数（最大100）",
+     *
      *         @OA\Schema(type="integer", minimum=1, maximum=100, default=20, example=20)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="days",
      *         in="query",
      *         description="検索対象期間（日数）",
+     *
      *         @OA\Schema(type="integer", minimum=1, maximum=365, default=30, example=30)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="min_bookmarks",
      *         in="query",
      *         description="最小ブックマーク数",
+     *
      *         @OA\Schema(type="integer", minimum=0, default=0, example=0)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="検索結果",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="articles", type="array", @OA\Items(type="object",
      *                     @OA\Property(property="id", type="integer", example=1),
@@ -196,10 +217,13 @@ class SearchController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="不正なリクエスト",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="検索クエリが無効です")
      *         )
      *     )
@@ -282,41 +306,54 @@ class SearchController extends Controller
      *     tags={"検索"},
      *     summary="統合検索",
      *     description="企業・記事を横断的に検索します。",
+     *
      *     @OA\Parameter(
      *         name="q",
      *         in="query",
      *         required=true,
      *         description="検索クエリ（1-255文字）",
+     *
      *         @OA\Schema(type="string", minLength=1, maxLength=255, example="Laravel")
      *     ),
+     *
      *     @OA\Parameter(
      *         name="type",
      *         in="query",
      *         description="検索タイプ",
+     *
      *         @OA\Schema(type="string", enum={"companies", "articles", "all"}, default="all", example="all")
      *     ),
+     *
      *     @OA\Parameter(
      *         name="limit",
      *         in="query",
      *         description="取得件数（最大100）",
+     *
      *         @OA\Schema(type="integer", minimum=1, maximum=100, default=20, example=20)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="days",
      *         in="query",
      *         description="記事検索の対象期間（日数）",
+     *
      *         @OA\Schema(type="integer", minimum=1, maximum=365, default=30, example=30)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="min_bookmarks",
      *         in="query",
      *         description="記事検索の最小ブックマーク数",
+     *
      *         @OA\Schema(type="integer", minimum=0, default=0, example=0)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="検索結果",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="companies", type="array", @OA\Items(type="object")),
      *                 @OA\Property(property="articles", type="array", @OA\Items(type="object"))
@@ -333,10 +370,13 @@ class SearchController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="不正なリクエスト",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="検索クエリが無効です")
      *         )
      *     )

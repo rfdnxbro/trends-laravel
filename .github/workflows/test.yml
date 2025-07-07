@@ -64,5 +64,8 @@ jobs:
       
       - name: Test scraping services
         run: |
-          php artisan test --filter=Scraper
-          php artisan test --filter=ScrapeCommand
+          php artisan test tests/Unit/Services/BaseScraperTest.php
+          php artisan test tests/Unit/HatenaBookmarkScraperTest.php
+          php artisan test tests/Unit/QiitaScraperTest.php  
+          php artisan test tests/Unit/ZennScraperTest.php
+          php artisan test tests/Feature/Console/Commands/ScrapeCommandsTest.php

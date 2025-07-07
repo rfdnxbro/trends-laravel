@@ -20,6 +20,10 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->scraper = new HatenaBookmarkScraper;
     }
 
+    /**
+     * @test
+     * スクレイパーの初期化をテスト
+     */
     public function test_scraper_initialization()
     {
         $this->assertInstanceOf(HatenaBookmarkScraper::class, $this->scraper);
@@ -30,6 +34,10 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertEquals(20, $property->getValue($this->scraper));
     }
 
+    /**
+     * @test
+     * はてなブックマークHTMLの解析をテスト
+     */
     public function test_parse_hatena_bookmark_html()
     {
         $mockHtml = $this->getMockHatenaHtml();
@@ -50,19 +58,27 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertEquals('hatena_bookmark', $result[0]['platform']);
     }
 
+    /**
+     * @test
+     * 企業ドメインの特定をテスト
+     */
     public function test_identify_company_domain()
     {
         $company = Company::factory()->create([
             'domain' => 'example.com',
-            'name' => 'Example Company',
+            'name' => 'サンプル企業',
         ]);
 
         $result = $this->scraper->identifyCompanyDomain('example.com');
 
         $this->assertNotNull($result);
-        $this->assertEquals('Example Company', $result->name);
+        $this->assertEquals('サンプル企業', $result->name);
     }
 
+    /**
+     * @test
+     * 企業ドメインが見つからない場合をテスト
+     */
     public function test_identify_company_domain_not_found()
     {
         $result = $this->scraper->identifyCompanyDomain('unknown.com');
@@ -70,11 +86,15 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertNull($result);
     }
 
+    /**
+     * @test
+     * データの正規化と保存をテスト
+     */
     public function test_normalize_and_save_data()
     {
         $company = Company::factory()->create([
             'domain' => 'example.com',
-            'name' => 'Example Company',
+            'name' => 'サンプル企業',
         ]);
 
         $entries = [
@@ -100,6 +120,10 @@ class HatenaBookmarkScraperTest extends TestCase
         ]);
     }
 
+    /**
+     * @test
+     * ドメインの抽出をテスト
+     */
     public function test_extract_domain()
     {
         $reflection = new \ReflectionClass($this->scraper);
@@ -113,6 +137,10 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertEquals('subdomain.example.com', $domain);
     }
 
+    /**
+     * @test
+     * 解析エラーの適切な処理をテスト
+     */
     public function test_handles_parsing_errors_gracefully()
     {
         $malformedHtml = '<html><body><div class="invalid">broken</div></body></html>';

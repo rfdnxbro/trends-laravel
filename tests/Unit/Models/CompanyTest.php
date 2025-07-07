@@ -107,20 +107,20 @@ class CompanyTest extends TestCase
     public function test_activeスコープの動作確認()
     {
         Company::create([
-            'name' => 'Active Company',
+            'name' => 'アクティブ企業',
             'domain' => 'active.example.com',
             'is_active' => true,
         ]);
 
         Company::create([
-            'name' => 'Inactive Company',
+            'name' => '非アクティブ企業',
             'domain' => 'inactive.example.com',
             'is_active' => false,
         ]);
 
         $activeCompanies = Company::active()->get();
         $this->assertCount(1, $activeCompanies);
-        $this->assertEquals('Active Company', $activeCompanies->first()->name);
+        $this->assertEquals('アクティブ企業', $activeCompanies->first()->name);
     }
 
     public function test_mass_assignment_protectionの確認()

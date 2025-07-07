@@ -55,13 +55,13 @@ class QiitaScraperTest extends TestCase
     {
         $company = Company::factory()->create([
             'qiita_username' => 'company_user',
-            'name' => 'Test Company',
+            'name' => 'テスト企業',
         ]);
 
         $result = $this->scraper->identifyCompanyAccount('https://qiita.com/company_user');
 
         $this->assertNotNull($result);
-        $this->assertEquals('Test Company', $result->name);
+        $this->assertEquals('テスト企業', $result->name);
     }
 
     public function test_identify_company_account_not_found()
@@ -82,7 +82,7 @@ class QiitaScraperTest extends TestCase
     {
         $company = Company::factory()->create([
             'qiita_username' => 'test_user',
-            'name' => 'Test Company',
+            'name' => 'テスト企業',
         ]);
 
         $articles = [

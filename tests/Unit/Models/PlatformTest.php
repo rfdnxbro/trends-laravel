@@ -86,20 +86,20 @@ class PlatformTest extends TestCase
     public function test_activeスコープの動作確認()
     {
         Platform::create([
-            'name' => 'Active Platform',
+            'name' => 'アクティブプラットフォーム',
             'base_url' => 'https://active.example.com',
             'is_active' => true,
         ]);
 
         Platform::create([
-            'name' => 'Inactive Platform',
+            'name' => '非アクティブプラットフォーム',
             'base_url' => 'https://inactive.example.com',
             'is_active' => false,
         ]);
 
         $activePlatforms = Platform::active()->get();
         $this->assertCount(1, $activePlatforms);
-        $this->assertEquals('Active Platform', $activePlatforms->first()->name);
+        $this->assertEquals('アクティブプラットフォーム', $activePlatforms->first()->name);
     }
 
     public function test_mass_assignment_protectionの確認()

@@ -309,32 +309,34 @@ class CompanyRankingService
 
         $history = [];
         foreach (RankingPeriod::TYPES as $periodType => $days) {
-            $rankings = DB::table('company_rankings as cr')
+            $results = DB::table('company_rankings as cr')
                 ->join('companies as c', 'cr.company_id', '=', 'c.id')
                 ->select([
                     'cr.rank_position as current_rank',
                     'cr.total_score',
                     'cr.calculated_at',
+                    'cr.ranking_period',
                     'c.name as company_name',
                 ])
                 ->where('cr.company_id', $companyId)
                 ->where('cr.ranking_period', $periodType)
                 ->whereBetween('cr.calculated_at', [$startDate, $endDate])
                 ->orderBy('cr.calculated_at', 'desc')
-                ->get()
-                ->map(function ($ranking, $index, $collection) {
-                    $previous = $collection->get($index + 1);
-                    $previousRank = $previous ? $previous->current_rank : $ranking->current_rank;
-                    $rankChange = $previousRank - $ranking->current_rank;
+                ->get();
 
-                    return [
-                        'period' => $ranking->ranking_period ?? null,
-                        'current_rank' => $ranking->current_rank,
-                        'previous_rank' => $previousRank,
-                        'rank_change' => $rankChange,
-                        'calculated_at' => $ranking->calculated_at,
-                    ];
-                })
+            $rankings = $results->map(function ($ranking, $key) use ($results, $periodType) {
+                $previous = $results->get($key + 1);
+                $previousRank = $previous ? $previous->current_rank : $ranking->current_rank;
+                $rankChange = $previousRank - $ranking->current_rank;
+
+                return [
+                    'period' => $ranking->ranking_period ?? $periodType,
+                    'current_rank' => $ranking->current_rank,
+                    'previous_rank' => $previousRank,
+                    'rank_change' => $rankChange,
+                    'calculated_at' => $ranking->calculated_at,
+                ];
+            })
                 ->toArray();
 
             if (! empty($rankings)) {

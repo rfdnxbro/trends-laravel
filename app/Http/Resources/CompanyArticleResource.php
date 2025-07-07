@@ -8,6 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin Article
+ *
  * @property-read \App\Models\Company|null $company
  * @property-read \App\Models\Platform|null $platform
  */

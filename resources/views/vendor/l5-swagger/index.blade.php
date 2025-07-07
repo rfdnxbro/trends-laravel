@@ -140,8 +140,15 @@
             oauth2RedirectUrl: "{{ route('l5-swagger.'.$documentation.'.oauth2_callback', [], $useAbsolutePath) }}",
 
             requestInterceptor: function(request) {
-                request.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
+                console.log('Request interceptor:', request);
+                // CSRFトークンはAPIルートでは不要
+                // request.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
                 return request;
+            },
+
+            responseInterceptor: function(response) {
+                console.log('Response interceptor:', response);
+                return response;
             },
 
             presets: [

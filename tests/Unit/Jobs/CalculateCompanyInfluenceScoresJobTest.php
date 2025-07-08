@@ -3,7 +3,6 @@
 namespace Tests\Unit\Jobs;
 
 use App\Jobs\CalculateCompanyInfluenceScoresJob;
-use App\Models\CompanyInfluenceScore;
 use App\Services\CompanyInfluenceScoreService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;

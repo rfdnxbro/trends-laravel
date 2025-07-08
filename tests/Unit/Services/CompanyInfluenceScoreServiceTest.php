@@ -26,7 +26,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function calculate_company_score_記事なしの場合ゼロを返す()
+    public function test_calculate_company_score_記事なしの場合ゼロを返す()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -41,7 +41,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function calculate_company_score_記事ありの場合正しいスコアを計算する()
+    public function test_calculate_company_score_記事ありの場合正しいスコアを計算する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -67,7 +67,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function calculate_company_score_複数記事の場合合計スコアを返す()
+    public function test_calculate_company_score_複数記事の場合合計スコアを返す()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -106,7 +106,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function calculate_company_score_プラットフォーム別重み付けが適用される()
+    public function test_calculate_company_score_プラットフォーム別重み付けが適用される()
     {
         // Arrange
         $company1 = Company::factory()->create();
@@ -148,7 +148,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function save_company_influence_score_正常にスコアを保存できる()
+    public function test_save_company_influence_score_正常にスコアを保存できる()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -185,7 +185,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function save_company_influence_score_同じ期間の場合更新される()
+    public function test_save_company_influence_score_同じ期間の場合更新される()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -222,7 +222,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function calculate_all_companies_score_アクティブな企業のみ処理される()
+    public function test_calculate_all_companies_score_アクティブな企業のみ処理される()
     {
         // Arrange
         $activeCompany = Company::factory()->create(['is_active' => true]);
@@ -256,7 +256,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function calculate_all_companies_score_スコアゼロの企業は結果に含まれない()
+    public function test_calculate_all_companies_score_スコアゼロの企業は結果に含まれない()
     {
         // Arrange
         $company = Company::factory()->create(['is_active' => true]);
@@ -273,7 +273,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function calculate_scores_by_period_全期間タイプのスコアを計算する()
+    public function test_calculate_scores_by_period_全期間タイプのスコアを計算する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -300,7 +300,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_company_scores_by_period_期間別スコアを正しく取得する()
+    public function test_get_company_scores_by_period_期間別スコアを正しく取得する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -332,7 +332,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_company_score_statistics_統計情報を正しく計算する()
+    public function test_get_company_score_statistics_統計情報を正しく計算する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -362,7 +362,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_company_score_history_指定期間の履歴を取得する()
+    public function test_get_company_score_history_指定期間の履歴を取得する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -394,7 +394,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function 期間外の記事は対象外となる()
+    public function test_期間外の記事は対象外となる()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -419,7 +419,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function published_at_がnullの場合scraped_atで判定される()
+    public function test_published_at_がnullの場合scraped_atで判定される()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -444,7 +444,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function 時系列重み付けが正しく適用される()
+    public function test_時系列重み付けが正しく適用される()
     {
         // Arrange
         $company1 = Company::factory()->create();
@@ -484,7 +484,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
-    public function calculate_company_score_でログが出力される()
+    public function test_calculate_company_score_でログが出力される()
     {
         // Arrange
         Log::shouldReceive('info')

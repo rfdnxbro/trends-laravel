@@ -32,7 +32,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_特定期間のランキング生成が正常に実行される()
+    public function test_handle_特定期間のランキング生成が正常に実行される()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -74,7 +74,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_全期間のランキング生成が正常に実行される()
+    public function test_handle_全期間のランキング生成が正常に実行される()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -121,7 +121,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_基準日未指定の場合現在日時を使用する()
+    public function test_handle_基準日未指定の場合現在日時を使用する()
     {
         // Arrange
         $periodType = '1w';
@@ -144,7 +144,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_特定期間処理で例外発生時にログを出力して再スローする()
+    public function test_handle_特定期間処理で例外発生時にログを出力して再スローする()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -179,7 +179,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_全期間処理で例外発生時にログを出力して再スローする()
+    public function test_handle_全期間処理で例外発生時にログを出力して再スローする()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -213,7 +213,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function failed_失敗時のログを出力する()
+    public function test_failed_失敗時のログを出力する()
     {
         // Arrange
         $exception = new \Exception('Test failure');
@@ -238,7 +238,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function failed_参照日がnullの場合も正常に処理される()
+    public function test_failed_参照日がnullの場合も正常に処理される()
     {
         // Arrange
         $exception = new \Exception('Test failure');
@@ -262,7 +262,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function constructor_パラメータが正しく設定される()
+    public function test_constructor_パラメータが正しく設定される()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -284,7 +284,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function constructor_パラメータがnullでも正常に設定される()
+    public function test_constructor_パラメータがnullでも正常に設定される()
     {
         // Act
         $job = new GenerateCompanyRankingsJob;
@@ -302,7 +302,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_空の結果でも正常に処理される()
+    public function test_handle_空の結果でも正常に処理される()
     {
         // Arrange
         $periodType = '1w';
@@ -334,7 +334,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_全期間で空の結果でも正常に処理される()
+    public function test_handle_全期間で空の結果でも正常に処理される()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -370,7 +370,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_企業数の計算が正しく行われる()
+    public function test_handle_企業数の計算が正しく行われる()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -416,14 +416,14 @@ class GenerateCompanyRankingsJobTest extends TestCase
     }
 
     #[Test]
-    public function job_should_queueインターフェースを実装している()
+    public function test_job_should_queueインターフェースを実装している()
     {
         // Assert
         $this->assertInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class, new GenerateCompanyRankingsJob);
     }
 
     #[Test]
-    public function job_queueableトレイトを使用している()
+    public function test_job_queueableトレイトを使用している()
     {
         // Arrange
         $job = new GenerateCompanyRankingsJob;

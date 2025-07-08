@@ -38,7 +38,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function generate_all_rankings_全期間のランキングを生成する()
+    public function test_generate_all_rankings_全期間のランキングを生成する()
     {
         // Arrange
         $company1 = Company::factory()->create();
@@ -78,7 +78,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function generate_ranking_for_period_指定期間のランキングを生成する()
+    public function test_generate_ranking_for_period_指定期間のランキングを生成する()
     {
         // Arrange
         $company1 = Company::factory()->create();
@@ -126,7 +126,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function generate_ranking_for_period_同じスコアの場合同じ順位になる()
+    public function test_generate_ranking_for_period_同じスコアの場合同じ順位になる()
     {
         // Arrange
         $company1 = Company::factory()->create();
@@ -176,7 +176,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_ranking_for_period_指定期間のランキングを取得する()
+    public function test_get_ranking_for_period_指定期間のランキングを取得する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -198,7 +198,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_ranking_for_period_非アクティブ企業は除外される()
+    public function test_get_ranking_for_period_非アクティブ企業は除外される()
     {
         // Arrange
         $activeCompany = Company::factory()->create(['is_active' => true]);
@@ -225,7 +225,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_company_rankings_企業の全期間ランキングを取得する()
+    public function test_get_company_rankings_企業の全期間ランキングを取得する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -256,7 +256,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_company_rankings_ランキングがない期間はnullを返す()
+    public function test_get_company_rankings_ランキングがない期間はnullを返す()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -278,7 +278,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_top_companies_ranking_history_上位企業の履歴を取得する()
+    public function test_get_top_companies_ranking_history_上位企業の履歴を取得する()
     {
         // Arrange
         $company1 = Company::factory()->create();
@@ -324,7 +324,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_ranking_statistics_ランキング統計を取得する()
+    public function test_get_ranking_statistics_ランキング統計を取得する()
     {
         // Arrange
         $company1 = Company::factory()->create();
@@ -362,7 +362,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_company_ranking_history_企業のランキング履歴を取得する()
+    public function test_get_company_ranking_history_企業のランキング履歴を取得する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -406,7 +406,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function calculate_period_dates_期間の開始日と終了日を正しく計算する()
+    public function test_calculate_period_dates_期間の開始日と終了日を正しく計算する()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 15, 12, 0, 0);
@@ -433,7 +433,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function save_rankings_ランキングをデータベースに保存する()
+    public function test_save_rankings_ランキングをデータベースに保存する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -470,7 +470,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function save_rankings_既存ランキングを更新する()
+    public function test_save_rankings_既存ランキングを更新する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -523,7 +523,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function generate_rankings_concurrently_並行処理でランキングを生成する()
+    public function test_generate_rankings_concurrently_並行処理でランキングを生成する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -546,7 +546,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function generate_ranking_for_period_空のスコアでも正常に処理される()
+    public function test_generate_ranking_for_period_空のスコアでも正常に処理される()
     {
         // Arrange
         $this->scoreService
@@ -565,7 +565,7 @@ class CompanyRankingServiceTest extends TestCase
     }
 
     #[Test]
-    public function create_rankings_スコア順でランキングを作成する()
+    public function test_create_rankings_スコア順でランキングを作成する()
     {
         // Arrange
         $company1 = Company::factory()->create();

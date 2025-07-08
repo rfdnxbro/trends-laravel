@@ -45,16 +45,19 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function show_正常に企業詳細情報を取得できる()
+    public function test_show_正常に企業詳細情報を取得できる()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        Article::factory()->count(3)->create([
-            'company_id' => $company->id,
-            'platform_id' => $platform->id,
-            'published_at' => now()->subDays(1),
-        ]);
+        for ($i = 1; $i <= 3; $i++) {
+            Article::factory()->create([
+                'company_id' => $company->id,
+                'platform_id' => $platform->id,
+                'published_at' => now()->subDays(1),
+                'url' => "https://example.com/article-show-{$i}",
+            ]);
+        }
 
         $mockRankings = [
             '1w' => (object) [
@@ -112,7 +115,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function show_存在しない企業_i_dで404エラーが返される()
+    public function test_show_存在しない企業_i_dで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999');
@@ -125,7 +128,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function show_不正な企業_i_dでバリデーションエラーが返される()
+    public function test_show_不正な企業_i_dでバリデーションエラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/0');
@@ -138,7 +141,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function show_キャッシュが正常に動作する()
+    public function test_show_キャッシュが正常に動作する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -161,18 +164,21 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function articles_正常に企業記事一覧を取得できる()
+    public function test_articles_正常に企業記事一覧を取得できる()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
 
-        Article::factory()->count(5)->create([
-            'company_id' => $company->id,
-            'platform_id' => $platform->id,
-            'published_at' => now()->subDays(1),
-            'bookmark_count' => 10,
-        ]);
+        for ($i = 1; $i <= 5; $i++) {
+            Article::factory()->create([
+                'company_id' => $company->id,
+                'platform_id' => $platform->id,
+                'published_at' => now()->subDays(1),
+                'bookmark_count' => 10,
+                'url' => "https://example.com/article-list-{$i}",
+            ]);
+        }
 
         // Act
         $response = $this->getJson("/api/companies/{$company->id}/articles");
@@ -209,7 +215,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function articles_フィルタリングパラメータが正常に動作する()
+    public function test_articles_フィルタリングパラメータが正常に動作する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -221,15 +227,19 @@ class CompanyApiTest extends TestCase
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(35),
             'bookmark_count' => 5,
+            'url' => 'https://example.com/article-old-filter',
         ]);
 
         // 新しい記事（7日以内）
-        Article::factory()->count(3)->create([
-            'company_id' => $company->id,
-            'platform_id' => $platform->id,
-            'published_at' => now()->subDays(3),
-            'bookmark_count' => 15,
-        ]);
+        for ($i = 1; $i <= 3; $i++) {
+            Article::factory()->create([
+                'company_id' => $company->id,
+                'platform_id' => $platform->id,
+                'published_at' => now()->subDays(3),
+                'bookmark_count' => 15,
+                'url' => "https://example.com/article-filter-{$i}",
+            ]);
+        }
 
         // Act
         $response = $this->getJson("/api/companies/{$company->id}/articles?days=7&min_bookmarks=10&per_page=10");
@@ -250,7 +260,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function articles_存在しない企業_i_dで404エラーが返される()
+    public function test_articles_存在しない企業_i_dで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/articles');
@@ -263,17 +273,21 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function articles_ページネーションが正常に動作する()
+    public function test_articles_ページネーションが正常に動作する()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
 
-        Article::factory()->count(25)->create([
-            'company_id' => $company->id,
-            'platform_id' => $platform->id,
-            'published_at' => now()->subDays(1),
-        ]);
+        // 各記事にユニークなURLを明示的に設定
+        for ($i = 1; $i <= 25; $i++) {
+            Article::factory()->create([
+                'company_id' => $company->id,
+                'platform_id' => $platform->id,
+                'published_at' => now()->subDays(1),
+                'url' => "https://example.com/article-pagination-{$i}",
+            ]);
+        }
 
         // Act
         $response = $this->getJson("/api/companies/{$company->id}/articles?per_page=10&page=2");
@@ -291,7 +305,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function scores_正常に企業スコア履歴を取得できる()
+    public function test_scores_正常に企業スコア履歴を取得できる()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -354,7 +368,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function scores_パラメータが正常に動作する()
+    public function test_scores_パラメータが正常に動作する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -379,7 +393,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function scores_存在しない企業_i_dで404エラーが返される()
+    public function test_scores_存在しない企業_i_dで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/scores');
@@ -392,7 +406,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function rankings_正常に企業ランキング情報を取得できる()
+    public function test_rankings_正常に企業ランキング情報を取得できる()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -457,7 +471,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function rankings_履歴付きで正常に取得できる()
+    public function test_rankings_履歴付きで正常に取得できる()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -504,7 +518,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function rankings_存在しない企業_i_dで404エラーが返される()
+    public function test_rankings_存在しない企業_i_dで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/rankings');
@@ -517,7 +531,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function rankings_履歴なしでも正常に動作する()
+    public function test_rankings_履歴なしでも正常に動作する()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -543,7 +557,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function get_company_scores_with_parameters()
+    public function test_get_company_scores_with_parameters()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -562,7 +576,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function get_company_scores_with_invalid_company_id()
+    public function test_get_company_scores_with_invalid_company_id()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/scores');
@@ -575,7 +589,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function get_company_rankings()
+    public function test_get_company_rankings()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -594,7 +608,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function get_company_rankings_with_history()
+    public function test_get_company_rankings_with_history()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -619,7 +633,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function get_company_rankings_with_invalid_company_id()
+    public function test_get_company_rankings_with_invalid_company_id()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/rankings');
@@ -632,7 +646,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function api_rate_limiting()
+    public function test_api_rate_limiting()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -654,7 +668,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function api_caching()
+    public function test_api_caching()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -674,17 +688,20 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function company_detail_includes_recent_articles()
+    public function test_company_detail_includes_recent_articles()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
 
-        Article::factory()->count(3)->create([
-            'company_id' => $company->id,
-            'platform_id' => $platform->id,
-            'published_at' => now()->subDays(1),
-        ]);
+        for ($i = 1; $i <= 3; $i++) {
+            Article::factory()->create([
+                'company_id' => $company->id,
+                'platform_id' => $platform->id,
+                'published_at' => now()->subDays(1),
+                'url' => "https://example.com/article-recent-{$i}",
+            ]);
+        }
 
         $this->rankingService
             ->shouldReceive('getCompanyRankings')
@@ -705,7 +722,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function company_detail_includes_current_rankings()
+    public function test_company_detail_includes_current_rankings()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -740,7 +757,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function company_articles_are_sorted_by_date()
+    public function test_company_articles_are_sorted_by_date()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -751,6 +768,7 @@ class CompanyApiTest extends TestCase
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(3),
             'title' => 'Older Article',
+            'url' => 'https://example.com/older-article',
         ]);
 
         $article2 = Article::factory()->create([
@@ -758,6 +776,7 @@ class CompanyApiTest extends TestCase
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(1),
             'title' => 'Newer Article',
+            'url' => 'https://example.com/newer-article',
         ]);
 
         // Act
@@ -773,7 +792,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function company_articles_filter_by_days()
+    public function test_company_articles_filter_by_days()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -784,6 +803,7 @@ class CompanyApiTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(10),
+            'url' => 'https://example.com/article-10-days-ago',
         ]);
 
         // 3日前の記事
@@ -791,6 +811,7 @@ class CompanyApiTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(3),
+            'url' => 'https://example.com/article-3-days-ago',
         ]);
 
         // Act - 過去7日間の記事のみ取得
@@ -809,7 +830,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function company_articles_filter_by_min_bookmarks()
+    public function test_company_articles_filter_by_min_bookmarks()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -821,6 +842,7 @@ class CompanyApiTest extends TestCase
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(1),
             'bookmark_count' => 5,
+            'url' => 'https://example.com/article-5-bookmarks',
         ]);
 
         // ブックマーク数15の記事
@@ -829,6 +851,7 @@ class CompanyApiTest extends TestCase
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(1),
             'bookmark_count' => 15,
+            'url' => 'https://example.com/article-15-bookmarks',
         ]);
 
         // Act - 最小ブックマーク数10で絞り込み

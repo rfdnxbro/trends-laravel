@@ -33,7 +33,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_全期間タイプの計算が正常に実行される()
+    public function test_handle_全期間タイプの計算が正常に実行される()
     {
         // Arrange
         $mockResults = [
@@ -75,7 +75,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_特定期間タイプの計算が正常に実行される()
+    public function test_handle_特定期間タイプの計算が正常に実行される()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -118,7 +118,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_基準日未指定の場合現在日時を使用する()
+    public function test_handle_基準日未指定の場合現在日時を使用する()
     {
         // Arrange
         $periodType = 'daily';
@@ -146,7 +146,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_例外発生時にログを出力して再スローする()
+    public function test_handle_例外発生時にログを出力して再スローする()
     {
         // Arrange
         $exception = new \Exception('Test exception');
@@ -174,7 +174,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function handle_実行時間がログに記録される()
+    public function test_handle_実行時間がログに記録される()
     {
         // Arrange
         $this->scoreService
@@ -206,7 +206,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function get_period_days_正しい日数を返す()
+    public function test_get_period_days_正しい日数を返す()
     {
         // Arrange
         $job = new CalculateCompanyInfluenceScoresJob;
@@ -221,7 +221,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function get_period_days_無効な期間タイプで例外を発生する()
+    public function test_get_period_days_無効な期間タイプで例外を発生する()
     {
         // Arrange
         $job = new CalculateCompanyInfluenceScoresJob;
@@ -237,7 +237,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function failed_失敗時のログを出力する()
+    public function test_failed_失敗時のログを出力する()
     {
         // Arrange
         $exception = new \Exception('Test failure');
@@ -263,7 +263,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function unique_id_正しい識別子を生成する()
+    public function test_unique_id_正しい識別子を生成する()
     {
         // Arrange & Act
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -280,7 +280,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function job_プロパティが正しく設定されている()
+    public function test_job_プロパティが正しく設定されている()
     {
         // Arrange
         $job = new CalculateCompanyInfluenceScoresJob;
@@ -291,7 +291,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function constructor_パラメータが正しく設定される()
+    public function test_constructor_パラメータが正しく設定される()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -313,7 +313,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function calculate_specific_period_正しいパラメータでサービスを呼び出す()
+    public function test_calculate_specific_period_正しいパラメータでサービスを呼び出す()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 10);
@@ -341,7 +341,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function calculate_all_periods_正しいパラメータでサービスを呼び出す()
+    public function test_calculate_all_periods_正しいパラメータでサービスを呼び出す()
     {
         // Arrange
         $referenceDate = Carbon::create(2024, 1, 7);
@@ -368,7 +368,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
     }
 
     #[Test]
-    public function calculate_all_periods_処理企業数が正しくログに記録される()
+    public function test_calculate_all_periods_処理企業数が正しくログに記録される()
     {
         // Arrange
         $mockResults = [

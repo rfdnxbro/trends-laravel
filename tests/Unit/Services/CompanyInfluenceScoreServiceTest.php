@@ -10,6 +10,7 @@ use App\Services\CompanyInfluenceScoreService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CompanyInfluenceScoreServiceTest extends TestCase
@@ -21,11 +22,11 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new CompanyInfluenceScoreService();
+        $this->service = new CompanyInfluenceScoreService;
     }
 
-    /** @test */
-    public function calculateCompanyScore_記事なしの場合ゼロを返す()
+    #[Test]
+    public function calculate_company_score_記事なしの場合ゼロを返す()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -39,13 +40,13 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertEquals(0.0, $score);
     }
 
-    /** @test */
-    public function calculateCompanyScore_記事ありの場合正しいスコアを計算する()
+    #[Test]
+    public function calculate_company_score_記事ありの場合正しいスコアを計算する()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create(['name' => 'qiita']);
-        
+
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
@@ -65,13 +66,13 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertIsFloat($score);
     }
 
-    /** @test */
-    public function calculateCompanyScore_複数記事の場合合計スコアを返す()
+    #[Test]
+    public function calculate_company_score_複数記事の場合合計スコアを返す()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create(['name' => 'qiita']);
-        
+
         // 2記事作成
         Article::factory()->count(2)->create([
             'company_id' => $company->id,
@@ -89,7 +90,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
 
         // Assert
         $this->assertGreaterThan(0.0, $score);
-        
+
         // 単一記事のスコアと比較して大きいことを確認
         $singleArticleCompany = Company::factory()->create();
         Article::factory()->create([
@@ -99,20 +100,20 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'likes_count' => 2,
             'published_at' => Carbon::create(2024, 1, 3),
         ]);
-        
+
         $singleScore = $this->service->calculateCompanyScore($singleArticleCompany, 'weekly', $periodStart, $periodEnd);
         $this->assertGreaterThan($singleScore, $score);
     }
 
-    /** @test */
-    public function calculateCompanyScore_プラットフォーム別重み付けが適用される()
+    #[Test]
+    public function calculate_company_score_プラットフォーム別重み付けが適用される()
     {
         // Arrange
         $company1 = Company::factory()->create();
         $company2 = Company::factory()->create();
         $qiitaPlatform = Platform::factory()->create(['name' => 'qiita']);
         $hatenaPlatform = Platform::factory()->create(['name' => 'hatena']);
-        
+
         // Qiita記事（重み1.0）
         Article::factory()->create([
             'company_id' => $company1->id,
@@ -142,13 +143,13 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertGreaterThan($hatenaScore, $qiitaScore);
     }
 
-    /** @test */
-    public function saveCompanyInfluenceScore_正常にスコアを保存できる()
+    #[Test]
+    public function save_company_influence_score_正常にスコアを保存できる()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
@@ -179,8 +180,8 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertNotNull($influenceScore->calculated_at);
     }
 
-    /** @test */
-    public function saveCompanyInfluenceScore_同じ期間の場合更新される()
+    #[Test]
+    public function save_company_influence_score_同じ期間の場合更新される()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -208,19 +209,19 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         // Assert
         $this->assertEquals($firstScore->id, $secondScore->id);
         $this->assertEquals(200.0, $secondScore->total_score);
-        
+
         // データベースには1レコードのみ
         $this->assertEquals(1, CompanyInfluenceScore::count());
     }
 
-    /** @test */
-    public function calculateAllCompaniesScore_アクティブな企業のみ処理される()
+    #[Test]
+    public function calculate_all_companies_score_アクティブな企業のみ処理される()
     {
         // Arrange
         $activeCompany = Company::factory()->create(['is_active' => true]);
         $inactiveCompany = Company::factory()->create(['is_active' => false]);
         $platform = Platform::factory()->create();
-        
+
         // 両方の企業に記事作成
         Article::factory()->create([
             'company_id' => $activeCompany->id,
@@ -228,7 +229,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'bookmark_count' => 10,
             'published_at' => Carbon::create(2024, 1, 3),
         ]);
-        
+
         Article::factory()->create([
             'company_id' => $inactiveCompany->id,
             'platform_id' => $platform->id,
@@ -247,8 +248,8 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertEquals($activeCompany->id, $results[0]->company_id);
     }
 
-    /** @test */
-    public function calculateAllCompaniesScore_スコアゼロの企業は結果に含まれない()
+    #[Test]
+    public function calculate_all_companies_score_スコアゼロの企業は結果に含まれない()
     {
         // Arrange
         $company = Company::factory()->create(['is_active' => true]);
@@ -264,13 +265,13 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertCount(0, $results);
     }
 
-    /** @test */
-    public function calculateScoresByPeriod_全期間タイプのスコアを計算する()
+    #[Test]
+    public function calculate_scores_by_period_全期間タイプのスコアを計算する()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
@@ -285,25 +286,25 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertArrayHasKey('daily', $results);
         $this->assertArrayHasKey('weekly', $results);
         $this->assertArrayHasKey('monthly', $results);
-        
+
         foreach ($results as $periodType => $scores) {
             $this->assertIsArray($scores);
         }
     }
 
-    /** @test */
-    public function getCompanyScoresByPeriod_期間別スコアを正しく取得する()
+    #[Test]
+    public function get_company_scores_by_period_期間別スコアを正しく取得する()
     {
         // Arrange
         $company = Company::factory()->create();
-        
+
         // 各期間のスコアを事前作成
         CompanyInfluenceScore::factory()->create([
             'company_id' => $company->id,
             'period_type' => 'daily',
             'total_score' => 100.0,
         ]);
-        
+
         CompanyInfluenceScore::factory()->create([
             'company_id' => $company->id,
             'period_type' => 'weekly',
@@ -317,25 +318,25 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertArrayHasKey('daily', $scores);
         $this->assertArrayHasKey('weekly', $scores);
         $this->assertArrayHasKey('monthly', $scores);
-        
+
         $this->assertCount(1, $scores['daily']);
         $this->assertCount(1, $scores['weekly']);
         $this->assertCount(0, $scores['monthly']);
     }
 
-    /** @test */
-    public function getCompanyScoreStatistics_統計情報を正しく計算する()
+    #[Test]
+    public function get_company_score_statistics_統計情報を正しく計算する()
     {
         // Arrange
         $company = Company::factory()->create();
-        
+
         // 複数のスコア作成
         CompanyInfluenceScore::factory()->create([
             'company_id' => $company->id,
             'period_type' => 'daily',
             'total_score' => 100.0,
         ]);
-        
+
         CompanyInfluenceScore::factory()->create([
             'company_id' => $company->id,
             'period_type' => 'daily',
@@ -353,12 +354,12 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertEquals(2, $statistics['daily']['score_count']);
     }
 
-    /** @test */
-    public function getCompanyScoreHistory_指定期間の履歴を取得する()
+    #[Test]
+    public function get_company_score_history_指定期間の履歴を取得する()
     {
         // Arrange
         $company = Company::factory()->create();
-        
+
         // 過去30日以内のスコア
         CompanyInfluenceScore::factory()->create([
             'company_id' => $company->id,
@@ -366,7 +367,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'total_score' => 100.0,
             'calculated_at' => now()->subDays(5),
         ]);
-        
+
         // 30日より古いスコア（取得対象外）
         CompanyInfluenceScore::factory()->create([
             'company_id' => $company->id,
@@ -385,13 +386,13 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertArrayHasKey('calculated_at', $history[0]);
     }
 
-    /** @test */
+    #[Test]
     public function 期間外の記事は対象外となる()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         // 期間外の記事
         Article::factory()->create([
             'company_id' => $company->id,
@@ -410,13 +411,13 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertEquals(0.0, $score);
     }
 
-    /** @test */
+    #[Test]
     public function published_at_がnullの場合scraped_atで判定される()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
@@ -435,14 +436,14 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertGreaterThan(0.0, $score);
     }
 
-    /** @test */
+    #[Test]
     public function 時系列重み付けが正しく適用される()
     {
         // Arrange
         $company1 = Company::factory()->create();
         $company2 = Company::factory()->create();
         $platform = Platform::factory()->create(['name' => 'qiita']);
-        
+
         // 新しい記事
         Article::factory()->create([
             'company_id' => $company1->id,
@@ -472,8 +473,8 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertGreaterThan($oldScore, $newScore);
     }
 
-    /** @test */
-    public function calculateCompanyScore_でログが出力される()
+    #[Test]
+    public function calculate_company_score_でログが出力される()
     {
         // Arrange
         Log::shouldReceive('info')
@@ -482,7 +483,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
 
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,

@@ -2,36 +2,33 @@
 
 namespace Tests\Feature;
 
-use App\Constants\CacheTime;
-use App\Http\Resources\CompanyArticleResource;
-use App\Http\Resources\CompanyResource;
 use App\Models\Article;
 use App\Models\Company;
-use App\Models\CompanyRanking;
 use App\Models\Platform;
 use App\Services\CompanyInfluenceScoreService;
 use App\Services\CompanyRankingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Tests\TestCase;
 use Mockery;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class CompanyApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private CompanyRankingService $rankingService;
+
     private CompanyInfluenceScoreService $scoreService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // モックサービスを作成
         $this->rankingService = Mockery::mock(CompanyRankingService::class);
         $this->scoreService = Mockery::mock(CompanyInfluenceScoreService::class);
-        
+
         // サービスコンテナにバインド
         $this->app->instance(CompanyRankingService::class, $this->rankingService);
         $this->app->instance(CompanyInfluenceScoreService::class, $this->scoreService);
@@ -42,12 +39,12 @@ class CompanyApiTest extends TestCase
         $this->beforeApplicationDestroyed(function () {
             DB::disconnect();
         });
-        
+
         Mockery::close();
         parent::tearDown();
     }
 
-    /** @test */
+    #[Test]
     public function show_正常に企業詳細情報を取得できる()
     {
         // Arrange
@@ -56,27 +53,27 @@ class CompanyApiTest extends TestCase
         Article::factory()->count(3)->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'published_at' => now()->subDays(1)
+            'published_at' => now()->subDays(1),
         ]);
 
         $mockRankings = [
             '1w' => (object) [
-                'rank_position' => 5, 
+                'rank_position' => 5,
                 'total_score' => 100.0,
                 'article_count' => 10,
                 'total_bookmarks' => 500,
                 'period_start' => '2024-01-01',
                 'period_end' => '2024-01-07',
-                'calculated_at' => now()
+                'calculated_at' => now(),
             ],
             '1m' => (object) [
-                'rank_position' => 3, 
+                'rank_position' => 3,
                 'total_score' => 150.0,
                 'article_count' => 15,
                 'total_bookmarks' => 800,
                 'period_start' => '2024-01-01',
                 'period_end' => '2024-01-31',
-                'calculated_at' => now()
+                'calculated_at' => now(),
             ],
         ];
 
@@ -103,19 +100,19 @@ class CompanyApiTest extends TestCase
                     'current_rankings',
                     'recent_articles',
                     'created_at',
-                    'updated_at'
-                ]
+                    'updated_at',
+                ],
             ])
             ->assertJson([
                 'data' => [
                     'id' => $company->id,
                     'name' => $company->name,
-                ]
+                ],
             ]);
     }
 
-    /** @test */
-    public function show_存在しない企業IDで404エラーが返される()
+    #[Test]
+    public function show_存在しない企業_i_dで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999');
@@ -123,12 +120,12 @@ class CompanyApiTest extends TestCase
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'error' => '企業IDが無効です'
+                'error' => '企業IDが無効です',
             ]);
     }
 
-    /** @test */
-    public function show_不正な企業IDでバリデーションエラーが返される()
+    #[Test]
+    public function show_不正な企業_i_dでバリデーションエラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/0');
@@ -136,16 +133,16 @@ class CompanyApiTest extends TestCase
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'error' => '企業IDが無効です'
+                'error' => '企業IDが無効です',
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function show_キャッシュが正常に動作する()
     {
         // Arrange
         $company = Company::factory()->create();
-        
+
         $this->rankingService
             ->shouldReceive('getCompanyRankings')
             ->once()
@@ -153,7 +150,7 @@ class CompanyApiTest extends TestCase
 
         // Act - 1回目のリクエスト
         $response1 = $this->getJson("/api/companies/{$company->id}");
-        
+
         // Act - 2回目のリクエスト（キャッシュから取得）
         $response2 = $this->getJson("/api/companies/{$company->id}");
 
@@ -163,18 +160,18 @@ class CompanyApiTest extends TestCase
         $this->assertEquals($response1->json(), $response2->json());
     }
 
-    /** @test */
+    #[Test]
     public function articles_正常に企業記事一覧を取得できる()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         Article::factory()->count(5)->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(1),
-            'bookmark_count' => 10
+            'bookmark_count' => 10,
         ]);
 
         // Act
@@ -191,8 +188,8 @@ class CompanyApiTest extends TestCase
                         'author_name',
                         'bookmark_count',
                         'published_at',
-                        'platform'
-                    ]
+                        'platform',
+                    ],
                 ],
                 'meta' => [
                     'current_page',
@@ -200,38 +197,38 @@ class CompanyApiTest extends TestCase
                     'total',
                     'last_page',
                     'company_id',
-                    'filters'
-                ]
+                    'filters',
+                ],
             ])
             ->assertJson([
                 'meta' => [
                     'company_id' => $company->id,
-                    'total' => 5
-                ]
+                    'total' => 5,
+                ],
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function articles_フィルタリングパラメータが正常に動作する()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         // 古い記事（30日以上前）
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(35),
-            'bookmark_count' => 5
+            'bookmark_count' => 5,
         ]);
-        
+
         // 新しい記事（7日以内）
         Article::factory()->count(3)->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(3),
-            'bookmark_count' => 15
+            'bookmark_count' => 15,
         ]);
 
         // Act
@@ -246,14 +243,14 @@ class CompanyApiTest extends TestCase
                     'per_page' => 10,
                     'filters' => [
                         'days' => 7,
-                        'min_bookmarks' => 10
-                    ]
-                ]
+                        'min_bookmarks' => 10,
+                    ],
+                ],
             ]);
     }
 
-    /** @test */
-    public function articles_存在しない企業IDで404エラーが返される()
+    #[Test]
+    public function articles_存在しない企業_i_dで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/articles');
@@ -261,21 +258,21 @@ class CompanyApiTest extends TestCase
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'error' => '企業IDが無効です'
+                'error' => '企業IDが無効です',
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function articles_ページネーションが正常に動作する()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         Article::factory()->count(25)->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'published_at' => now()->subDays(1)
+            'published_at' => now()->subDays(1),
         ]);
 
         // Act
@@ -288,30 +285,30 @@ class CompanyApiTest extends TestCase
                     'current_page' => 2,
                     'per_page' => 10,
                     'total' => 25,
-                    'last_page' => 3
-                ]
+                    'last_page' => 3,
+                ],
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function scores_正常に企業スコア履歴を取得できる()
     {
         // Arrange
         $company = Company::factory()->create();
-        
+
         $mockScores = [
             [
                 'date' => '2024-01-30',
                 'score' => 85.5,
                 'rank_position' => 5,
-                'calculated_at' => '2024-01-30 10:00:00'
+                'calculated_at' => '2024-01-30 10:00:00',
             ],
             [
                 'date' => '2024-01-29',
                 'score' => 80.0,
                 'rank_position' => 7,
-                'calculated_at' => '2024-01-29 10:00:00'
-            ]
+                'calculated_at' => '2024-01-29 10:00:00',
+            ],
         ];
 
         $this->scoreService
@@ -333,35 +330,35 @@ class CompanyApiTest extends TestCase
                             'date',
                             'score',
                             'rank_position',
-                            'calculated_at'
-                        ]
-                    ]
+                            'calculated_at',
+                        ],
+                    ],
                 ],
                 'meta' => [
                     'period',
                     'days',
-                    'total'
-                ]
+                    'total',
+                ],
             ])
             ->assertJson([
                 'data' => [
                     'company_id' => $company->id,
-                    'scores' => $mockScores
+                    'scores' => $mockScores,
                 ],
                 'meta' => [
                     'period' => '1d',
                     'days' => 30,
-                    'total' => 2
-                ]
+                    'total' => 2,
+                ],
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function scores_パラメータが正常に動作する()
     {
         // Arrange
         $company = Company::factory()->create();
-        
+
         $this->scoreService
             ->shouldReceive('getCompanyScoreHistory')
             ->with($company->id, '1w', 60)
@@ -376,13 +373,13 @@ class CompanyApiTest extends TestCase
             ->assertJson([
                 'meta' => [
                     'period' => '1w',
-                    'days' => 60
-                ]
+                    'days' => 60,
+                ],
             ]);
     }
 
-    /** @test */
-    public function scores_存在しない企業IDで404エラーが返される()
+    #[Test]
+    public function scores_存在しない企業_i_dで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/scores');
@@ -390,16 +387,16 @@ class CompanyApiTest extends TestCase
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'error' => '企業IDが無効です'
+                'error' => '企業IDが無効です',
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function rankings_正常に企業ランキング情報を取得できる()
     {
         // Arrange
         $company = Company::factory()->create();
-        
+
         $mockRankings = [
             '1w' => (object) [
                 'rank_position' => 5,
@@ -408,7 +405,7 @@ class CompanyApiTest extends TestCase
                 'total_bookmarks' => 500,
                 'period_start' => '2024-01-23',
                 'period_end' => '2024-01-30',
-                'calculated_at' => '2024-01-30 10:00:00'
+                'calculated_at' => '2024-01-30 10:00:00',
             ],
             '1m' => (object) [
                 'rank_position' => 3,
@@ -417,8 +414,8 @@ class CompanyApiTest extends TestCase
                 'total_bookmarks' => 1200,
                 'period_start' => '2024-01-01',
                 'period_end' => '2024-01-30',
-                'calculated_at' => '2024-01-30 10:00:00'
-            ]
+                'calculated_at' => '2024-01-30 10:00:00',
+            ],
         ];
 
         $this->rankingService
@@ -435,8 +432,8 @@ class CompanyApiTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
-                    'rankings'
-                ]
+                    'rankings',
+                ],
             ])
             ->assertJson([
                 'data' => [
@@ -446,32 +443,32 @@ class CompanyApiTest extends TestCase
                             'rank_position' => 5,
                             'total_score' => 100.0,
                             'article_count' => 10,
-                            'total_bookmarks' => 500
+                            'total_bookmarks' => 500,
                         ],
                         '1m' => [
                             'rank_position' => 3,
                             'total_score' => 150.0,
                             'article_count' => 25,
-                            'total_bookmarks' => 1200
-                        ]
-                    ]
-                ]
+                            'total_bookmarks' => 1200,
+                        ],
+                    ],
+                ],
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function rankings_履歴付きで正常に取得できる()
     {
         // Arrange
         $company = Company::factory()->create();
-        
+
         $mockRankings = [
-            '1w' => (object) ['rank_position' => 5, 'total_score' => 100.0, 'article_count' => 10, 'total_bookmarks' => 500, 'period_start' => '2024-01-23', 'period_end' => '2024-01-30', 'calculated_at' => '2024-01-30 10:00:00']
+            '1w' => (object) ['rank_position' => 5, 'total_score' => 100.0, 'article_count' => 10, 'total_bookmarks' => 500, 'period_start' => '2024-01-23', 'period_end' => '2024-01-30', 'calculated_at' => '2024-01-30 10:00:00'],
         ];
-        
+
         $mockHistory = [
             ['date' => '2024-01-29', 'rank_position' => 6],
-            ['date' => '2024-01-28', 'rank_position' => 7]
+            ['date' => '2024-01-28', 'rank_position' => 7],
         ];
 
         $this->rankingService
@@ -479,7 +476,7 @@ class CompanyApiTest extends TestCase
             ->with($company->id)
             ->once()
             ->andReturn($mockRankings);
-            
+
         $this->rankingService
             ->shouldReceive('getCompanyRankingHistory')
             ->with($company->id, 30)
@@ -495,19 +492,19 @@ class CompanyApiTest extends TestCase
                 'data' => [
                     'company_id',
                     'rankings',
-                    'history'
-                ]
+                    'history',
+                ],
             ])
             ->assertJson([
                 'data' => [
                     'company_id' => $company->id,
-                    'history' => $mockHistory
-                ]
+                    'history' => $mockHistory,
+                ],
             ]);
     }
 
-    /** @test */
-    public function rankings_存在しない企業IDで404エラーが返される()
+    #[Test]
+    public function rankings_存在しない企業_i_dで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/rankings');
@@ -515,16 +512,16 @@ class CompanyApiTest extends TestCase
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'error' => '企業IDが無効です'
+                'error' => '企業IDが無効です',
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function rankings_履歴なしでも正常に動作する()
     {
         // Arrange
         $company = Company::factory()->create();
-        
+
         $this->rankingService
             ->shouldReceive('getCompanyRankings')
             ->with($company->id)
@@ -539,13 +536,13 @@ class CompanyApiTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
-                    'rankings'
-                ]
+                    'rankings',
+                ],
             ])
             ->assertJsonMissing(['history']);
     }
 
-    /** @test */
+    #[Test]
     public function get_company_scores_with_parameters()
     {
         // Arrange
@@ -564,20 +561,20 @@ class CompanyApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function get_company_scores_with_invalid_company_id()
     {
         // Act
-        $response = $this->getJson("/api/companies/99999/scores");
+        $response = $this->getJson('/api/companies/99999/scores');
 
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'error' => '企業IDが無効です'
+                'error' => '企業IDが無効です',
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function get_company_rankings()
     {
         // Arrange
@@ -596,7 +593,7 @@ class CompanyApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function get_company_rankings_with_history()
     {
         // Arrange
@@ -621,20 +618,20 @@ class CompanyApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function get_company_rankings_with_invalid_company_id()
     {
         // Act
-        $response = $this->getJson("/api/companies/99999/rankings");
+        $response = $this->getJson('/api/companies/99999/rankings');
 
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'error' => '企業IDが無効です'
+                'error' => '企業IDが無効です',
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function api_rate_limiting()
     {
         // Arrange
@@ -656,7 +653,7 @@ class CompanyApiTest extends TestCase
         $response->assertStatus(429);
     }
 
-    /** @test */
+    #[Test]
     public function api_caching()
     {
         // Arrange
@@ -676,17 +673,17 @@ class CompanyApiTest extends TestCase
         $response2->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function company_detail_includes_recent_articles()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         Article::factory()->count(3)->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'published_at' => now()->subDays(1)
+            'published_at' => now()->subDays(1),
         ]);
 
         $this->rankingService
@@ -701,13 +698,13 @@ class CompanyApiTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'recent_articles' => [
-                        '*' => ['id', 'title', 'url']
-                    ]
-                ]
+                        '*' => ['id', 'title', 'url'],
+                    ],
+                ],
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function company_detail_includes_current_rankings()
     {
         // Arrange
@@ -715,14 +712,14 @@ class CompanyApiTest extends TestCase
 
         $mockRankings = [
             '1w' => (object) [
-                'rank_position' => 5, 
+                'rank_position' => 5,
                 'total_score' => 100.0,
                 'article_count' => 10,
                 'total_bookmarks' => 500,
                 'period_start' => '2024-01-01',
                 'period_end' => '2024-01-07',
-                'calculated_at' => now()
-            ]
+                'calculated_at' => now(),
+            ],
         ];
 
         $this->rankingService
@@ -737,30 +734,30 @@ class CompanyApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    'current_rankings'
-                ]
+                    'current_rankings',
+                ],
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function company_articles_are_sorted_by_date()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         $article1 = Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(3),
-            'title' => 'Older Article'
+            'title' => 'Older Article',
         ]);
-        
+
         $article2 = Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(1),
-            'title' => 'Newer Article'
+            'title' => 'Newer Article',
         ]);
 
         // Act
@@ -769,31 +766,31 @@ class CompanyApiTest extends TestCase
         // Assert
         $response->assertStatus(200);
         $articles = $response->json('data');
-        
+
         // 新しい記事が最初に来ることを確認
         $this->assertEquals('Newer Article', $articles[0]['title']);
         $this->assertEquals('Older Article', $articles[1]['title']);
     }
 
-    /** @test */
+    #[Test]
     public function company_articles_filter_by_days()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         // 10日前の記事
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'published_at' => now()->subDays(10)
+            'published_at' => now()->subDays(10),
         ]);
-        
+
         // 3日前の記事
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'published_at' => now()->subDays(3)
+            'published_at' => now()->subDays(3),
         ]);
 
         // Act - 過去7日間の記事のみ取得
@@ -805,33 +802,33 @@ class CompanyApiTest extends TestCase
                 'meta' => [
                     'total' => 1, // 7日以内の記事は1件のみ
                     'filters' => [
-                        'days' => 7
-                    ]
-                ]
+                        'days' => 7,
+                    ],
+                ],
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function company_articles_filter_by_min_bookmarks()
     {
         // Arrange
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
-        
+
         // ブックマーク数5の記事
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(1),
-            'bookmark_count' => 5
+            'bookmark_count' => 5,
         ]);
-        
+
         // ブックマーク数15の記事
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(1),
-            'bookmark_count' => 15
+            'bookmark_count' => 15,
         ]);
 
         // Act - 最小ブックマーク数10で絞り込み
@@ -843,9 +840,9 @@ class CompanyApiTest extends TestCase
                 'meta' => [
                     'total' => 1, // ブックマーク数10以上の記事は1件のみ
                     'filters' => [
-                        'min_bookmarks' => 10
-                    ]
-                ]
+                        'min_bookmarks' => 10,
+                    ],
+                ],
             ]);
     }
 }

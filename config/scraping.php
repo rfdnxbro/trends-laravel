@@ -67,23 +67,23 @@ return [
 
     'platforms' => [
         'hatena_bookmark' => [
-            'rate_limit' => env('HATENA_SCRAPING_RATE_LIMIT', 20),
+            'rate_limit' => env('HATENA_SCRAPING_RATE_LIMIT', \App\Constants\Platform::getRateLimit(\App\Constants\Platform::HATENA_BOOKMARK)),
             'timeout' => env('HATENA_SCRAPING_TIMEOUT', 30),
-            'base_url' => 'https://b.hatena.ne.jp',
+            'base_url' => \App\Constants\Platform::getUrl(\App\Constants\Platform::HATENA_BOOKMARK),
             'api_url' => 'https://bookmark.hatenaapis.com',
         ],
 
         'qiita' => [
-            'rate_limit' => env('QIITA_SCRAPING_RATE_LIMIT', 60),
+            'rate_limit' => env('QIITA_SCRAPING_RATE_LIMIT', \App\Constants\Platform::getRateLimit(\App\Constants\Platform::QIITA)),
             'timeout' => env('QIITA_SCRAPING_TIMEOUT', 30),
             'api_token' => env('QIITA_TOKEN'),
             'api_url' => 'https://qiita.com/api/v2',
         ],
 
         'zenn' => [
-            'rate_limit' => env('ZENN_SCRAPING_RATE_LIMIT', 30),
+            'rate_limit' => env('ZENN_SCRAPING_RATE_LIMIT', \App\Constants\Platform::getRateLimit(\App\Constants\Platform::ZENN)),
             'timeout' => env('ZENN_SCRAPING_TIMEOUT', 30),
-            'base_url' => 'https://zenn.dev',
+            'base_url' => \App\Constants\Platform::getUrl(\App\Constants\Platform::ZENN),
             'api_url' => 'https://zenn.dev/api',
         ],
     ],

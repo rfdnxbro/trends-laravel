@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Constants\Platform;
 use App\Models\Company;
 use App\Services\QiitaScraper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,7 +28,7 @@ class QiitaScraperTest extends TestCase
         $reflection = new \ReflectionClass($this->scraper);
         $property = $reflection->getProperty('requestsPerMinute');
         $property->setAccessible(true);
-        $this->assertEquals(20, $property->getValue($this->scraper));
+        $this->assertEquals(Platform::getRateLimit(Platform::QIITA), $property->getValue($this->scraper));
     }
 
     public function test_parse_qiita_trend_html()

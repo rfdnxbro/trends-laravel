@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Constants\ArticleEngagement;
+use App\Constants\Platform as PlatformConstants;
 use App\Models\Company;
 use App\Models\Platform;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,8 +20,7 @@ class ArticleFactory extends Factory
      */
     public function definition(): array
     {
-        $platforms = ['Qiita', 'Zenn', 'はてなブログ', 'note'];
-        $platform = $this->faker->randomElement($platforms);
+        $platform = $this->faker->randomElement(PlatformConstants::getValidPlatforms());
         $domain = $this->getDomainForPlatform($platform);
 
         return [
@@ -33,8 +34,8 @@ class ArticleFactory extends Factory
             'author' => $this->faker->userName(),
             'author_url' => $this->faker->url(),
             'published_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
-            'bookmark_count' => $this->faker->numberBetween(0, 1000),
-            'likes_count' => $this->faker->numberBetween(0, 500),
+            'bookmark_count' => $this->faker->numberBetween(...ArticleEngagement::getNormalBookmarkRange()),
+            'likes_count' => $this->faker->numberBetween(...ArticleEngagement::getNormalLikesRange()),
             'scraped_at' => $this->faker->dateTimeBetween('-1 day', 'now'),
         ];
     }
@@ -77,10 +78,9 @@ class ArticleFactory extends Factory
     private function getDomainForPlatform(string $platform): string
     {
         return match ($platform) {
-            'Qiita' => 'qiita.com',
-            'Zenn' => 'zenn.dev',
-            'はてなブログ' => 'hatena.ne.jp',
-            'note' => 'note.com',
+            PlatformConstants::QIITA => 'qiita.com',
+            PlatformConstants::ZENN => 'zenn.dev',
+            PlatformConstants::HATENA_BOOKMARK => 'b.hatena.ne.jp',
             default => $this->faker->domainName(),
         };
     }
@@ -91,8 +91,8 @@ class ArticleFactory extends Factory
     public function popular(): static
     {
         return $this->state(fn (array $attributes) => [
-            'bookmark_count' => $this->faker->numberBetween(500, 2000),
-            'likes_count' => $this->faker->numberBetween(200, 1000),
+            'bookmark_count' => $this->faker->numberBetween(...ArticleEngagement::getPopularBookmarkRange()),
+            'likes_count' => $this->faker->numberBetween(...ArticleEngagement::getPopularLikesRange()),
         ]);
     }
 
@@ -124,8 +124,8 @@ class ArticleFactory extends Factory
     public function lowEngagement(): static
     {
         return $this->state(fn (array $attributes) => [
-            'bookmark_count' => $this->faker->numberBetween(0, 10),
-            'likes_count' => $this->faker->numberBetween(0, 5),
+            'bookmark_count' => $this->faker->numberBetween(...ArticleEngagement::getLowBookmarkRange()),
+            'likes_count' => $this->faker->numberBetween(...ArticleEngagement::getLowLikesRange()),
         ]);
     }
 
@@ -135,8 +135,8 @@ class ArticleFactory extends Factory
     public function highEngagement(): static
     {
         return $this->state(fn (array $attributes) => [
-            'bookmark_count' => $this->faker->numberBetween(1000, 5000),
-            'likes_count' => $this->faker->numberBetween(500, 2000),
+            'bookmark_count' => $this->faker->numberBetween(...ArticleEngagement::getHighBookmarkRange()),
+            'likes_count' => $this->faker->numberBetween(...ArticleEngagement::getHighLikesRange()),
         ]);
     }
 }

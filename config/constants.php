@@ -25,14 +25,14 @@ return [
     ],
 
     'hatena' => [
-        'rate_limit_per_minute' => env('HATENA_RATE_LIMIT_PER_MINUTE', 20),
+        'rate_limit_per_minute' => env('HATENA_RATE_LIMIT_PER_MINUTE', \App\Constants\Platform::getRateLimit(\App\Constants\Platform::HATENA_BOOKMARK)),
     ],
 
     'qiita' => [
-        'rate_limit_per_minute' => env('QIITA_RATE_LIMIT_PER_MINUTE', 20),
+        'rate_limit_per_minute' => env('QIITA_RATE_LIMIT_PER_MINUTE', \App\Constants\Platform::getRateLimit(\App\Constants\Platform::QIITA)),
     ],
 
     'zenn' => [
-        'rate_limit_per_minute' => env('ZENN_RATE_LIMIT_PER_MINUTE', 20),
+        'rate_limit_per_minute' => env('ZENN_RATE_LIMIT_PER_MINUTE', \App\Constants\Platform::getRateLimit(\App\Constants\Platform::ZENN)),
     ],
 ];

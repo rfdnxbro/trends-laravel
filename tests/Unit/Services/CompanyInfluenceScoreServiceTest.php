@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Services;
 
+use App\Constants\Platform as PlatformConstants;
 use App\Models\Article;
 use App\Models\Company;
 use App\Models\CompanyInfluenceScore;
@@ -45,7 +46,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     {
         // Arrange
         $company = Company::factory()->create();
-        $platform = Platform::factory()->create(['name' => 'qiita']);
+        $platform = Platform::factory()->create(['name' => PlatformConstants::QIITA]);
 
         Article::factory()->create([
             'company_id' => $company->id,
@@ -71,7 +72,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     {
         // Arrange
         $company = Company::factory()->create();
-        $platform = Platform::factory()->create(['name' => 'qiita']);
+        $platform = Platform::factory()->create(['name' => PlatformConstants::QIITA]);
 
         // 2記事作成
         Article::factory()->count(2)->create([
@@ -111,8 +112,8 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         // Arrange
         $company1 = Company::factory()->create();
         $company2 = Company::factory()->create();
-        $qiitaPlatform = Platform::factory()->create(['name' => 'qiita']);
-        $hatenaPlatform = Platform::factory()->create(['name' => 'hatena']);
+        $qiitaPlatform = Platform::factory()->create(['name' => PlatformConstants::QIITA]);
+        $hatenaPlatform = Platform::factory()->create(['name' => PlatformConstants::HATENA_BOOKMARK]);
 
         // Qiita記事（重み1.0）
         Article::factory()->create([
@@ -449,7 +450,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         // Arrange
         $company1 = Company::factory()->create();
         $company2 = Company::factory()->create();
-        $platform = Platform::factory()->create(['name' => 'qiita']);
+        $platform = Platform::factory()->create(['name' => PlatformConstants::QIITA]);
 
         // 新しい記事
         Article::factory()->create([

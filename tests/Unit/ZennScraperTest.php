@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Constants\Platform;
 use App\Models\Article;
 use App\Models\Company;
 use App\Services\ZennScraper;
@@ -40,7 +41,7 @@ class ZennScraperTest extends TestCase
 
         $requestsPerMinuteProperty = $reflection->getProperty('requestsPerMinute');
         $requestsPerMinuteProperty->setAccessible(true);
-        $this->assertEquals(20, $requestsPerMinuteProperty->getValue($this->scraper));
+        $this->assertEquals(Platform::getRateLimit(Platform::ZENN), $requestsPerMinuteProperty->getValue($this->scraper));
     }
 
     public function test_scrape_trending_articles_with_mocked_response(): void

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Constants\ScorePeriod;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +22,7 @@ class CompanyInfluenceScoreFactory extends Factory
 
         return [
             'company_id' => \App\Models\Company::factory(),
-            'period_type' => $this->faker->randomElement(['daily', 'weekly', 'monthly']),
+            'period_type' => $this->faker->randomElement(ScorePeriod::getValidPeriods()),
             'period_start' => $periodStart,
             'period_end' => $periodEnd,
             'total_score' => $this->faker->randomFloat(2, 0, 1000),
@@ -84,7 +85,7 @@ class CompanyInfluenceScoreFactory extends Factory
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
         return $this->state(fn (array $attributes) => [
-            'period_type' => 'monthly',
+            'period_type' => ScorePeriod::MONTHLY,
             'period_start' => $startOfMonth,
             'period_end' => $endOfMonth,
         ]);
@@ -99,7 +100,7 @@ class CompanyInfluenceScoreFactory extends Factory
         $endOfWeek = $startOfWeek->copy()->endOfWeek();
 
         return $this->state(fn (array $attributes) => [
-            'period_type' => 'weekly',
+            'period_type' => ScorePeriod::WEEKLY,
             'period_start' => $startOfWeek,
             'period_end' => $endOfWeek,
         ]);
@@ -113,7 +114,7 @@ class CompanyInfluenceScoreFactory extends Factory
         $date = $this->faker->dateTimeBetween('-30 days', 'now');
 
         return $this->state(fn (array $attributes) => [
-            'period_type' => 'daily',
+            'period_type' => ScorePeriod::DAILY,
             'period_start' => $date->copy()->startOfDay(),
             'period_end' => $date->copy()->endOfDay(),
         ]);

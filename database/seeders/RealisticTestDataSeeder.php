@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Constants\Platform as PlatformConstants;
 use App\Models\Article;
 use App\Models\Company;
 use App\Models\CompanyInfluenceScore;
@@ -34,10 +35,9 @@ class RealisticTestDataSeeder extends Seeder
     private function createPlatforms(): void
     {
         $platforms = [
-            ['name' => 'Qiita', 'domain' => 'qiita.com'],
-            ['name' => 'Zenn', 'domain' => 'zenn.dev'],
-            ['name' => 'はてなブログ', 'domain' => 'hatena.ne.jp'],
-            ['name' => 'note', 'domain' => 'note.com'],
+            ['name' => PlatformConstants::QIITA, 'domain' => 'qiita.com'],
+            ['name' => PlatformConstants::ZENN, 'domain' => 'zenn.dev'],
+            ['name' => PlatformConstants::HATENA_BOOKMARK, 'domain' => 'b.hatena.ne.jp'],
         ];
 
         foreach ($platforms as $platform) {

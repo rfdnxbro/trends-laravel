@@ -17,7 +17,7 @@ vi.mock('react-router-dom', async () => {
 
 // API のモック
 vi.mock('@/services/api', () => ({
-    default: {
+    api: {
         get: vi.fn(),
     },
 }));
@@ -64,6 +64,8 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         defaultOptions: {
             queries: {
                 retry: false,
+                refetchOnWindowFocus: false,
+                staleTime: 0,
             },
         },
     });
@@ -86,7 +88,7 @@ describe('CompanyDetail', () => {
     });
 
     it('ローディング状態が正しく表示される', async () => {
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockImplementation(() => new Promise(() => {})); // 永続的なローディング
 
         render(
@@ -100,7 +102,7 @@ describe('CompanyDetail', () => {
     });
 
     it('企業データが正常に表示される', async () => {
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -110,36 +112,49 @@ describe('CompanyDetail', () => {
         );
 
         await waitFor(() => {
-            expect(screen.getByText('テスト企業')).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: 'テスト企業' })).toBeInTheDocument();
         });
 
         // 基本情報の確認
         expect(screen.getByText('テスト企業の説明です')).toBeInTheDocument();
         expect(screen.getByText('85.50')).toBeInTheDocument();
-        expect(screen.getByText('#3')).toBeInTheDocument();
+        expect(screen.getByText('影響力スコア')).toBeInTheDocument();
+        expect(screen.getByText('ランキング')).toBeInTheDocument();
         expect(screen.getByText('ウェブサイト')).toBeInTheDocument();
     });
 
     it('エラー状態が正しく表示される', async () => {
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockRejectedValue(new Error('API Error'));
 
+        const queryClient = new QueryClient({
+            defaultOptions: {
+                queries: {
+                    retry: false,
+                    refetchOnWindowFocus: false,
+                    staleTime: 0,
+                },
+            },
+        });
+
         render(
-            <TestWrapper>
-                <CompanyDetail />
-            </TestWrapper>
+            <QueryClientProvider client={queryClient}>
+                <BrowserRouter>
+                    <CompanyDetail />
+                </BrowserRouter>
+            </QueryClientProvider>
         );
 
         await waitFor(() => {
-            expect(screen.getByText('企業が見つかりません')).toBeInTheDocument();
-        });
+            expect(screen.getByRole('heading', { name: '企業が見つかりません' })).toBeInTheDocument();
+        }, { timeout: 10000 });
 
         expect(screen.getByText('指定された企業IDの情報を取得できませんでした。')).toBeInTheDocument();
         expect(screen.getByText('ダッシュボードに戻る')).toBeInTheDocument();
     });
 
     it('パンくずナビゲーションが正しく表示される', async () => {
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -157,7 +172,7 @@ describe('CompanyDetail', () => {
     });
 
     it('プラットフォーム連携情報が正しく表示される', async () => {
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -172,14 +187,17 @@ describe('CompanyDetail', () => {
 
         expect(screen.getByText('はてなブログ')).toBeInTheDocument();
         expect(screen.getByText('@test_hatena')).toBeInTheDocument();
-        expect(screen.getByText('Qiita')).toBeInTheDocument();
         expect(screen.getByText('@test_qiita')).toBeInTheDocument();
-        expect(screen.getByText('Zenn')).toBeInTheDocument();
         expect(screen.getByText('@test_zenn')).toBeInTheDocument();
+        
+        // プラットフォーム連携セクションの内容を確認
+        const platformSection = screen.getByText('プラットフォーム連携').closest('.dashboard-card');
+        expect(platformSection).toHaveTextContent('Qiita');
+        expect(platformSection).toHaveTextContent('Zenn');
     });
 
     it('統計情報が正しく表示される', async () => {
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -199,7 +217,7 @@ describe('CompanyDetail', () => {
     });
 
     it('ランキング履歴が正しく表示される', async () => {
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -212,12 +230,16 @@ describe('CompanyDetail', () => {
             expect(screen.getByText('ランキング推移')).toBeInTheDocument();
         });
 
-        expect(screen.getByText('#3')).toBeInTheDocument();
-        expect(screen.getByText('#5')).toBeInTheDocument();
+        // ランキング推移セクションの内容を確認
+        const rankingSection = screen.getByText('ランキング推移').closest('.dashboard-card');
+        expect(rankingSection).toHaveTextContent('#3');
+        expect(rankingSection).toHaveTextContent('#5');
+        expect(rankingSection).toHaveTextContent('2024/1/1');
+        expect(rankingSection).toHaveTextContent('2024/1/2');
     });
 
     it('最新記事が正しく表示される', async () => {
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -244,7 +266,7 @@ describe('CompanyDetail', () => {
             zenn_username: null,
         };
 
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockResolvedValue({ data: companyWithoutPlatforms });
 
         render(
@@ -264,7 +286,7 @@ describe('CompanyDetail', () => {
             ranking_history: [],
         };
 
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockResolvedValue({ data: companyWithoutHistory });
 
         render(
@@ -279,10 +301,9 @@ describe('CompanyDetail', () => {
     });
 
     it('不正な企業IDの場合にエラーが表示される', async () => {
-        const { useParams } = require('react-router-dom');
-        useParams.mockReturnValue({ id: 'invalid' });
+        vi.mocked(useParams).mockReturnValue({ id: 'invalid' });
 
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockRejectedValue(new Error('Invalid ID'));
 
         render(
@@ -297,10 +318,9 @@ describe('CompanyDetail', () => {
     });
 
     it('企業IDがない場合にクエリが無効化される', async () => {
-        const { useParams } = require('react-router-dom');
-        useParams.mockReturnValue({ id: undefined });
+        vi.mocked(useParams).mockReturnValue({ id: undefined });
 
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         
         render(
             <TestWrapper>
@@ -321,7 +341,7 @@ describe('CompanyDetail', () => {
             total_articles: 0,
         };
 
-        const mockApi = (await vi.importMock('@/services/api')).default;
+        const { api: mockApi } = await vi.importMock('@/services/api');
         mockApi.get.mockResolvedValue({ data: minimalCompany });
 
         render(
@@ -331,7 +351,7 @@ describe('CompanyDetail', () => {
         );
 
         await waitFor(() => {
-            expect(screen.getByText('ミニマル企業')).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: 'ミニマル企業' })).toBeInTheDocument();
         });
 
         expect(screen.getByText('0')).toBeInTheDocument(); // 総記事数

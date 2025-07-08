@@ -282,8 +282,8 @@ class CompanyRankingHistoryServiceTest extends TestCase
 
     public function test_get_top_ranking_risers(): void
     {
-        $company1 = Company::factory()->create(['name' => 'Company 1']);
-        $company2 = Company::factory()->create(['name' => 'Company 2']);
+        $company1 = Company::factory()->create(['name' => 'Company 1', 'is_active' => true]);
+        $company2 = Company::factory()->create(['name' => 'Company 2', 'is_active' => true]);
         $calculatedAt = Carbon::now();
 
         // 履歴データを作成
@@ -321,8 +321,8 @@ class CompanyRankingHistoryServiceTest extends TestCase
 
     public function test_get_top_ranking_fallers(): void
     {
-        $company1 = Company::factory()->create(['name' => 'Company 1']);
-        $company2 = Company::factory()->create(['name' => 'Company 2']);
+        $company1 = Company::factory()->create(['name' => 'Company 1', 'is_active' => true]);
+        $company2 = Company::factory()->create(['name' => 'Company 2', 'is_active' => true]);
         $calculatedAt = Carbon::now();
 
         // 履歴データを作成

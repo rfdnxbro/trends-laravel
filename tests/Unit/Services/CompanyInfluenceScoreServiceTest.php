@@ -96,8 +96,8 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         Article::factory()->create([
             'company_id' => $singleArticleCompany->id,
             'platform_id' => $platform->id,
-            'bookmark_count' => 5,
-            'likes_count' => 2,
+            'bookmark_count' => 3,
+            'likes_count' => 1,
             'published_at' => Carbon::create(2024, 1, 3),
         ]);
 

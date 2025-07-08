@@ -70,7 +70,8 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
         // Act
         $job->handle($this->scoreService);
 
-        // Assert - ログの呼び出しが検証される（shouldReceiveで）
+        // Assert - ジョブが正常に完了したことを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -112,7 +113,8 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
         // Act
         $job->handle($this->scoreService);
 
-        // Assert - ログの呼び出しが検証される
+        // Assert - ジョブが正常に完了したことを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -140,6 +142,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
         $job->handle($this->scoreService);
 
         // Assert - 基準日がnullでも正常に動作することを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -199,6 +202,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
         $job->handle($this->scoreService);
 
         // Assert - ログに実行時間が含まれることを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -254,7 +258,8 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
         // Act
         $job->failed($exception);
 
-        // Assert - ログが出力されることを確認（shouldReceiveで検証）
+        // Assert - 失敗ログが出力されることを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -332,6 +337,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
         $job->handle($this->scoreService);
 
         // Assert - サービスが正しいパラメータで呼ばれることを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -358,6 +364,7 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
         $job->handle($this->scoreService);
 
         // Assert - サービスが正しいパラメータで呼ばれることを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -401,5 +408,6 @@ class CalculateCompanyInfluenceScoresJobTest extends TestCase
         $job->handle($this->scoreService);
 
         // Assert - 処理企業数が正しくカウントされることを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 }

@@ -69,7 +69,8 @@ class GenerateCompanyRankingsJobTest extends TestCase
         // Act
         $job->handle($this->rankingService);
 
-        // Assert - ログの呼び出しが検証される（shouldReceiveで）
+        // Assert - ジョブが正常に完了したことを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -115,7 +116,8 @@ class GenerateCompanyRankingsJobTest extends TestCase
         // Act
         $job->handle($this->rankingService);
 
-        // Assert - ログの呼び出しが検証される
+        // Assert - ジョブが正常に完了したことを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -138,6 +140,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
         $job->handle($this->rankingService);
 
         // Assert - 基準日がnullでも正常に動作することを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -230,7 +233,8 @@ class GenerateCompanyRankingsJobTest extends TestCase
         // Act
         $job->failed($exception);
 
-        // Assert - ログが出力されることを確認（shouldReceiveで検証）
+        // Assert - 失敗ログが出力されることを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -254,6 +258,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
         $job->failed($exception);
 
         // Assert - 参照日がnullでも正常に動作することを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -325,6 +330,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
         $job->handle($this->rankingService);
 
         // Assert - 空の結果でも正常に処理されることを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -360,6 +366,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
         $job->handle($this->rankingService);
 
         // Assert - 全期間で空の結果でも正常に処理されることを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]
@@ -405,6 +412,7 @@ class GenerateCompanyRankingsJobTest extends TestCase
         $job->handle($this->rankingService);
 
         // Assert - 企業数の計算が正しく行われることを確認
+        $this->assertTrue(true); // Mockeryの期待値が満たされれば成功
     }
 
     #[Test]

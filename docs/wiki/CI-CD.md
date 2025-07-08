@@ -112,25 +112,17 @@ jobs:
           php artisan config:cache
           php artisan migrate --force
       
-      - name: 並列テストを実行
-        run: |
-          # PHPテストをバックグラウンドで実行
-          php artisan test --parallel &
-          PHP_TEST_PID=$!
-          
-          # フロントエンドテストをバックグラウンドで実行
-          npm test &
-          FRONTEND_TEST_PID=$!
-          
-          # コードスタイルチェックを実行
-          vendor/bin/pint --test
-          
-          # 静的解析を実行
-          vendor/bin/phpstan analyse --memory-limit=1G
-          
-          # 並列テストの完了を待機
-          wait $PHP_TEST_PID
-          wait $FRONTEND_TEST_PID
+      - name: PHPテストを実行
+        run: php artisan test
+      
+      - name: コードスタイルチェックを実行
+        run: vendor/bin/pint --test
+      
+      - name: 静的解析を実行
+        run: vendor/bin/phpstan analyse --memory-limit=1G
+      
+      - name: フロントエンドテストを実行
+        run: npm test
       
       - name: スクレイピングサービスをテスト
         run: |
@@ -166,11 +158,33 @@ jobs:
 - **確実な品質保証**: エラー隠蔽なしの設計
 
 ### パフォーマンス最適化（v2.0）
-- **キャッシュ戦略**: Composer・npmキャッシュでdependencies再取得を削減
-- **並列実行**: PHPテストとフロントエンドテストの同時実行
-- **条件付き実行**: `[skip ci]`メッセージでの不要ビルドスキップ
-- **実行時間改善**: 89秒 → 55-60秒（30-40%短縮）
-- **日本語対応**: ワークフロー名・ステップ名の日本語化
+- **キャッシュ戦略**: Composer・npmキャッシュでdependencies再取得を削減 ✅
+- **条件付き実行**: `[skip ci]`メッセージでの不要ビルドスキップ ✅
+- **日本語対応**: ワークフロー名・ステップ名の日本語化 ✅
+- **並列実行**: エラーハンドリング問題により一旦無効化 ⚠️
+- **現在の実行時間**: 90秒（改善前: 89秒）
+- **キャッシュ効果**: 初回実行後は20-30秒短縮見込み
+
+## 📊 パフォーマンス改善の詳細
+
+### 実装した最適化
+| 項目 | 状況 | 効果 |
+|------|------|------|
+| **Composerキャッシュ** | ✅ 実装済み | dependencies再取得を削減 |
+| **npmキャッシュ** | ✅ 実装済み | node_modules再構築を削減 |
+| **条件付き実行** | ✅ 実装済み | `[skip ci]`で不要ビルド回避 |
+| **日本語化** | ✅ 実装済み | 可読性向上 |
+| **並列実行** | ⚠️ 無効化 | エラーハンドリング問題により保留 |
+
+### キャッシュ効果の詳細
+- **初回実行**: フルダウンロード（90秒）
+- **2回目以降**: キャッシュヒット時（推定60-70秒）
+- **頻繁なPush**: 継続的な短縮効果
+
+### 将来の改善計画
+1. **並列実行の再実装**: エラーハンドリング改善後
+2. **マトリックス戦略**: 複数PHP/Nodeバージョン対応時
+3. **段階的実行**: 軽量チェック先行で早期フィードバック
 
 ## 現在の開発フロー
 
@@ -179,12 +193,15 @@ jobs:
 PR作成時に自動実行される項目：
 
 ```bash
-# 以下がCI/CDで自動実行されます（並列実行対応）
-php artisan test --parallel  # PHPUnitテスト（並列実行）
-npm test                     # フロントエンドテスト（並列実行）
+# 以下がCI/CDで自動実行されます（順次実行）
+php artisan test             # PHPUnitテスト
 vendor/bin/pint --test       # コードスタイルチェック
 vendor/bin/phpstan analyse   # 静的解析
+npm test                     # フロントエンドテスト
 npm run build               # フロントエンドビルド
+
+# キャッシュ戦略
+# Composer・npmキャッシュによりdependencies再取得を削減
 
 # 条件付き実行
 # コミットメッセージに[skip ci]が含まれている場合はスキップ

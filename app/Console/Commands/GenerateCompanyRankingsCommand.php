@@ -28,7 +28,7 @@ class GenerateCompanyRankingsCommand extends Command
     protected $description = '企業の期間別ランキングを生成します';
 
     /**
-     * Execute the console command.
+     * コンソールコマンドを実行
      */
     public function handle(CompanyRankingService $rankingService)
     {

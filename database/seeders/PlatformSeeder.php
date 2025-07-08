@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 class PlatformSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * データベースシードを実行
      */
     public function run(): void
     {

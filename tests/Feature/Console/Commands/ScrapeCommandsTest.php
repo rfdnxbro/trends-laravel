@@ -10,7 +10,7 @@ class ScrapeCommandsTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Test scrape:all command with dry-run option
+     * scrape:allコマンドのdry-runオプションテスト
      */
     public function test_scrape_all_command_with_dry_run(): void
     {
@@ -21,7 +21,7 @@ class ScrapeCommandsTest extends TestCase
     }
 
     /**
-     * Test scrape:platform command with valid platform
+     * 有効なプラットフォームでのscrape:platformコマンドテスト
      */
     public function test_scrape_platform_command_with_valid_platform(): void
     {
@@ -32,7 +32,7 @@ class ScrapeCommandsTest extends TestCase
     }
 
     /**
-     * Test scrape:platform command with invalid platform
+     * 無効なプラットフォームでのscrape:platformコマンドテスト
      */
     public function test_scrape_platform_command_with_invalid_platform(): void
     {
@@ -43,7 +43,7 @@ class ScrapeCommandsTest extends TestCase
     }
 
     /**
-     * Test scrape:schedule command with platform option
+     * プラットフォームオプション付きscrape:scheduleコマンドテスト
      */
     public function test_scrape_schedule_command_with_platform(): void
     {
@@ -72,7 +72,7 @@ class ScrapeCommandsTest extends TestCase
     }
 
     /**
-     * Test that all platforms are available in scrape:platform command
+     * scrape:platformコマンドで全プラットフォームが利用可能かテスト
      */
     public function test_all_platforms_are_available(): void
     {

@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
 class RealisticTestDataSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * データベースシードを実行
      */
     public function run(): void
     {
@@ -30,7 +30,7 @@ class RealisticTestDataSeeder extends Seeder
     }
 
     /**
-     * Create realistic platforms.
+     * リアルなプラットフォームを作成
      */
     private function createPlatforms(): void
     {
@@ -46,7 +46,7 @@ class RealisticTestDataSeeder extends Seeder
     }
 
     /**
-     * Create realistic tech companies.
+     * リアルなテック企業を作成
      */
     private function createTechCompanies(): void
     {
@@ -82,7 +82,7 @@ class RealisticTestDataSeeder extends Seeder
     }
 
     /**
-     * Create realistic tech articles.
+     * リアルなテック記事を作成
      */
     private function createTechArticles(): void
     {
@@ -113,7 +113,7 @@ class RealisticTestDataSeeder extends Seeder
     }
 
     /**
-     * Create realistic influence scores.
+     * リアルな影響力スコアを作成
      */
     private function createInfluenceScores(): void
     {
@@ -151,7 +151,7 @@ class RealisticTestDataSeeder extends Seeder
     }
 
     /**
-     * Create realistic rankings.
+     * リアルなランキングを作成
      */
     private function createRankings(): void
     {
@@ -185,7 +185,7 @@ class RealisticTestDataSeeder extends Seeder
     }
 
     /**
-     * Generate realistic article titles.
+     * リアルな記事タイトルを生成
      */
     private function generateRealisticTitle(): string
     {
@@ -216,7 +216,7 @@ class RealisticTestDataSeeder extends Seeder
     }
 
     /**
-     * Generate realistic author names.
+     * リアルな著者名を生成
      */
     private function generateAuthorName(): string
     {
@@ -230,7 +230,7 @@ class RealisticTestDataSeeder extends Seeder
     }
 
     /**
-     * Generate realistic bookmark counts.
+     * リアルなブックマーク数を生成
      */
     private function generateRealisticBookmarkCount(): int
     {
@@ -248,7 +248,7 @@ class RealisticTestDataSeeder extends Seeder
     }
 
     /**
-     * Generate realistic likes counts.
+     * リアルないいね数を生成
      */
     private function generateRealisticLikesCount(): int
     {
@@ -266,7 +266,7 @@ class RealisticTestDataSeeder extends Seeder
     }
 
     /**
-     * Generate periods for the given type.
+     * 指定タイプの期間を生成
      */
     private function generatePeriods(string $periodType, int $count): array
     {

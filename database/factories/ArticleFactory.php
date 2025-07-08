@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class ArticleFactory extends Factory
 {
     /**
-     * Define the model's default state.
+     * モデルのデフォルト状態を定義
      *
      * @return array<string, mixed>
      */
@@ -41,7 +41,7 @@ class ArticleFactory extends Factory
     }
 
     /**
-     * Generate a tech-related title.
+     * 技術系のタイトルを生成
      */
     private function generateTechTitle(): string
     {
@@ -73,7 +73,7 @@ class ArticleFactory extends Factory
     }
 
     /**
-     * Get domain for platform.
+     * プラットフォームのドメインを取得
      */
     private function getDomainForPlatform(string $platform): string
     {
@@ -86,7 +86,7 @@ class ArticleFactory extends Factory
     }
 
     /**
-     * Create a popular article.
+     * 人気記事を作成
      */
     public function popular(): static
     {
@@ -97,7 +97,7 @@ class ArticleFactory extends Factory
     }
 
     /**
-     * Create a recent article.
+     * 最近の記事を作成
      */
     public function recent(): static
     {
@@ -108,7 +108,7 @@ class ArticleFactory extends Factory
     }
 
     /**
-     * Create an article for a specific platform.
+     * 特定プラットフォーム用の記事を作成
      */
     public function forPlatform(string $platform): static
     {
@@ -119,7 +119,7 @@ class ArticleFactory extends Factory
     }
 
     /**
-     * Create an article with low engagement.
+     * 低エンゲージメントの記事を作成
      */
     public function lowEngagement(): static
     {
@@ -130,7 +130,7 @@ class ArticleFactory extends Factory
     }
 
     /**
-     * Create an article with high engagement.
+     * 高エンゲージメントの記事を作成
      */
     public function highEngagement(): static
     {

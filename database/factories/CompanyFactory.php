@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CompanyFactory extends Factory
 {
     /**
-     * Define the model's default state.
+     * モデルのデフォルト状態を定義
      *
      * @return array<string, mixed>
      */
@@ -30,7 +30,7 @@ class CompanyFactory extends Factory
     }
 
     /**
-     * Create an inactive company.
+     * 非アクティブな企業を作成
      */
     public function inactive(): static
     {
@@ -40,7 +40,7 @@ class CompanyFactory extends Factory
     }
 
     /**
-     * Create a tech company with realistic data.
+     * リアルなデータでテック企業を作成
      */
     public function techCompany(): static
     {
@@ -81,7 +81,7 @@ class CompanyFactory extends Factory
     }
 
     /**
-     * Create a company with high activity.
+     * アクティブな企業を作成
      */
     public function active(): static
     {

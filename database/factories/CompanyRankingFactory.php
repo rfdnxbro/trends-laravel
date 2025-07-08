@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CompanyRankingFactory extends Factory
 {
     /**
-     * Define the model's default state.
+     * モデルのデフォルト状態を定義
      *
      * @return array<string, mixed>
      */
@@ -32,7 +32,7 @@ class CompanyRankingFactory extends Factory
     }
 
     /**
-     * Create a ranking for a specific period.
+     * 特定期間のランキングを作成
      */
     public function forPeriod(string $period): static
     {
@@ -42,7 +42,7 @@ class CompanyRankingFactory extends Factory
     }
 
     /**
-     * Create a top ranking (1-10).
+     * 上位ランキング（1-10位）を作成
      */
     public function topRanking(): static
     {
@@ -55,7 +55,7 @@ class CompanyRankingFactory extends Factory
     }
 
     /**
-     * Create a low ranking (51-100).
+     * 下位ランキング（51-100位）を作成
      */
     public function lowRanking(): static
     {

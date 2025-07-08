@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CompanyInfluenceScoreFactory extends Factory
 {
     /**
-     * Define the model's default state.
+     * モデルのデフォルト状態を定義
      *
      * @return array<string, mixed>
      */
@@ -33,7 +33,7 @@ class CompanyInfluenceScoreFactory extends Factory
     }
 
     /**
-     * Create a score for a specific period type.
+     * 特定期間タイプのスコアを作成
      */
     public function forPeriod(string $periodType): static
     {
@@ -43,7 +43,7 @@ class CompanyInfluenceScoreFactory extends Factory
     }
 
     /**
-     * Create a high influence score.
+     * 高影響力スコアを作成
      */
     public function highInfluence(): static
     {
@@ -55,7 +55,7 @@ class CompanyInfluenceScoreFactory extends Factory
     }
 
     /**
-     * Create a low influence score.
+     * 低影響力スコアを作成
      */
     public function lowInfluence(): static
     {

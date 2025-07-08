@@ -187,8 +187,6 @@ curl "https://api.trends.example.com/api/search/articles?q=React&days=7&min_book
 
 ## 関連ドキュメント
 
-- [企業ランキングAPI詳細](../api/company-ranking-api.md)
-- [企業詳細API詳細](../api/company-detail-api.md)
-- [検索API詳細](../api/search-api.md)
-- [技術スタック](技術スタック.md)
-- [開発フロー](開発フロー.md)
+- [技術スタック](技術スタック)
+- [開発フロー](開発フロー)
+- [フロントエンド実装](フロントエンド実装)

@@ -63,25 +63,17 @@ jobs:
           php artisan config:cache
           php artisan migrate --force
       
-      - name: 並列テストを実行
-        run: |
-          # PHPテストをバックグラウンドで実行
-          php artisan test --parallel &
-          PHP_TEST_PID=$!
-          
-          # フロントエンドテストをバックグラウンドで実行
-          npm test &
-          FRONTEND_TEST_PID=$!
-          
-          # コードスタイルチェックを実行
-          vendor/bin/pint --test
-          
-          # 静的解析を実行
-          vendor/bin/phpstan analyse --memory-limit=1G
-          
-          # 並列テストの完了を待機
-          wait $PHP_TEST_PID
-          wait $FRONTEND_TEST_PID
+      - name: PHPテストを実行
+        run: php artisan test
+      
+      - name: コードスタイルチェックを実行
+        run: vendor/bin/pint --test
+      
+      - name: 静的解析を実行
+        run: vendor/bin/phpstan analyse --memory-limit=1G
+      
+      - name: フロントエンドテストを実行
+        run: npm test
       
       - name: スクレイピングサービスをテスト
         run: |

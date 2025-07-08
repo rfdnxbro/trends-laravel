@@ -2,9 +2,9 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
-import CompanyDetail from '../CompanyDetail';
-import { api } from '../../services/api';
+import { BrowserRouter, useParams } from 'react-router-dom';
+import CompanyDetail from '@/pages/CompanyDetail';
+import { api } from '@/services/api';
 
 // React Router のパラメータをモック
 vi.mock('react-router-dom', async () => {
@@ -16,8 +16,8 @@ vi.mock('react-router-dom', async () => {
 });
 
 // API のモック
-vi.mock('../../services/api', () => ({
-    api: {
+vi.mock('@/services/api', () => ({
+    default: {
         get: vi.fn(),
     },
 }));
@@ -82,12 +82,11 @@ describe('CompanyDetail', () => {
         vi.clearAllMocks();
         
         // デフォルトで企業ID 1 を設定
-        const { useParams } = require('react-router-dom');
-        useParams.mockReturnValue({ id: '1' });
+        vi.mocked(useParams).mockReturnValue({ id: '1' });
     });
 
-    it('ローディング状態が正しく表示される', () => {
-        const { api: mockApi } = require('../../services/api');
+    it('ローディング状態が正しく表示される', async () => {
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockImplementation(() => new Promise(() => {})); // 永続的なローディング
 
         render(
@@ -101,7 +100,7 @@ describe('CompanyDetail', () => {
     });
 
     it('企業データが正常に表示される', async () => {
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -122,7 +121,7 @@ describe('CompanyDetail', () => {
     });
 
     it('エラー状態が正しく表示される', async () => {
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockRejectedValue(new Error('API Error'));
 
         render(
@@ -140,7 +139,7 @@ describe('CompanyDetail', () => {
     });
 
     it('パンくずナビゲーションが正しく表示される', async () => {
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -158,7 +157,7 @@ describe('CompanyDetail', () => {
     });
 
     it('プラットフォーム連携情報が正しく表示される', async () => {
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -180,7 +179,7 @@ describe('CompanyDetail', () => {
     });
 
     it('統計情報が正しく表示される', async () => {
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -200,7 +199,7 @@ describe('CompanyDetail', () => {
     });
 
     it('ランキング履歴が正しく表示される', async () => {
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -218,7 +217,7 @@ describe('CompanyDetail', () => {
     });
 
     it('最新記事が正しく表示される', async () => {
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockResolvedValue({ data: mockCompanyData });
 
         render(
@@ -245,7 +244,7 @@ describe('CompanyDetail', () => {
             zenn_username: null,
         };
 
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockResolvedValue({ data: companyWithoutPlatforms });
 
         render(
@@ -265,7 +264,7 @@ describe('CompanyDetail', () => {
             ranking_history: [],
         };
 
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockResolvedValue({ data: companyWithoutHistory });
 
         render(
@@ -283,7 +282,7 @@ describe('CompanyDetail', () => {
         const { useParams } = require('react-router-dom');
         useParams.mockReturnValue({ id: 'invalid' });
 
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockRejectedValue(new Error('Invalid ID'));
 
         render(
@@ -297,11 +296,11 @@ describe('CompanyDetail', () => {
         });
     });
 
-    it('企業IDがない場合にクエリが無効化される', () => {
+    it('企業IDがない場合にクエリが無効化される', async () => {
         const { useParams } = require('react-router-dom');
         useParams.mockReturnValue({ id: undefined });
 
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         
         render(
             <TestWrapper>
@@ -322,7 +321,7 @@ describe('CompanyDetail', () => {
             total_articles: 0,
         };
 
-        const { api: mockApi } = require('../../services/api');
+        const mockApi = (await vi.importMock('@/services/api')).default;
         mockApi.get.mockResolvedValue({ data: minimalCompany });
 
         render(

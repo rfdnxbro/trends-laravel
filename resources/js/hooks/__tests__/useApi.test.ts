@@ -2,13 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-import { useApi, useCompanies, useCompany, useRankings } from '../useApi';
+import { useApi, useCompanies, useCompany, useRankings } from '@/hooks/useApi';
 
 // API のモック
-vi.mock('../../services/api', () => ({
+vi.mock('@/services/api', () => ({
     default: {
         get: vi.fn(),
-    },
+        post: vi.fn(),
+        put: vi.fn(),
+        delete: vi.fn(),
+    }
 }));
 
 const createWrapper = () => {
@@ -33,8 +36,8 @@ describe('useApi hooks', () => {
     describe('useApi', () => {
         it('API呼び出しが成功する', async () => {
             const mockData = { id: 1, name: 'Test Data' };
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValue({ data: mockData });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValue({ data: mockData });
 
             const { result } = renderHook(
                 () => useApi(['test'], '/test'),
@@ -48,12 +51,12 @@ describe('useApi hooks', () => {
             });
 
             expect(result.current.data).toEqual(mockData);
-            expect(api.get).toHaveBeenCalledWith('/test');
+            expect(mockApi.get).toHaveBeenCalledWith('/test');
         });
 
         it('API呼び出しでエラーが発生する', async () => {
-            const api = require('../../services/api').default;
-            api.get.mockRejectedValue(new Error('API Error'));
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockRejectedValue(new Error('API Error'));
 
             const { result } = renderHook(
                 () => useApi(['test'], '/test'),
@@ -72,8 +75,8 @@ describe('useApi hooks', () => {
 
         it('カスタムオプションが適用される', async () => {
             const mockData = { id: 1, name: 'Test Data' };
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValue({ data: mockData });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValue({ data: mockData });
 
             const customOptions = {
                 enabled: false,
@@ -88,13 +91,13 @@ describe('useApi hooks', () => {
             // enabled: false なので、初期状態でローディングされない
             expect(result.current.isLoading).toBe(false);
             expect(result.current.data).toBeUndefined();
-            expect(api.get).not.toHaveBeenCalled();
+            expect(mockApi.get).not.toHaveBeenCalled();
         });
 
         it('QueryKeyが正しく設定される', async () => {
             const mockData = { id: 1, name: 'Test Data' };
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValue({ data: mockData });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValue({ data: mockData });
 
             const queryKey = ['custom', 'test', 'key'];
 
@@ -117,8 +120,8 @@ describe('useApi hooks', () => {
                 data: [{ id: 1, name: 'Company 1' }],
                 meta: { total: 1, page: 1 },
             };
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValue({ data: mockData });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValue({ data: mockData });
 
             const { result } = renderHook(
                 () => useCompanies(),
@@ -129,7 +132,7 @@ describe('useApi hooks', () => {
                 expect(result.current.isSuccess).toBe(true);
             });
 
-            expect(api.get).toHaveBeenCalledWith('/companies?page=1&limit=10');
+            expect(mockApi.get).toHaveBeenCalledWith('/companies?page=1&limit=10');
             expect(result.current.data).toEqual(mockData);
         });
 
@@ -138,8 +141,8 @@ describe('useApi hooks', () => {
                 data: [{ id: 1, name: 'Company 1' }],
                 meta: { total: 1, page: 2 },
             };
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValue({ data: mockData });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValue({ data: mockData });
 
             const { result } = renderHook(
                 () => useCompanies(2, 20),
@@ -150,13 +153,13 @@ describe('useApi hooks', () => {
                 expect(result.current.isSuccess).toBe(true);
             });
 
-            expect(api.get).toHaveBeenCalledWith('/companies?page=2&limit=20');
+            expect(mockApi.get).toHaveBeenCalledWith('/companies?page=2&limit=20');
             expect(result.current.data).toEqual(mockData);
         });
 
         it('企業一覧取得でエラーが発生する', async () => {
-            const api = require('../../services/api').default;
-            api.get.mockRejectedValue(new Error('Companies API Error'));
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockRejectedValue(new Error('Companies API Error'));
 
             const { result } = renderHook(
                 () => useCompanies(),
@@ -176,8 +179,8 @@ describe('useApi hooks', () => {
             const mockData = {
                 data: { id: 123, name: 'Test Company', description: 'Test Description' },
             };
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValue({ data: mockData });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValue({ data: mockData });
 
             const { result } = renderHook(
                 () => useCompany(123),
@@ -188,13 +191,13 @@ describe('useApi hooks', () => {
                 expect(result.current.isSuccess).toBe(true);
             });
 
-            expect(api.get).toHaveBeenCalledWith('/companies/123');
+            expect(mockApi.get).toHaveBeenCalledWith('/companies/123');
             expect(result.current.data).toEqual(mockData);
         });
 
         it('企業取得でエラーが発生する', async () => {
-            const api = require('../../services/api').default;
-            api.get.mockRejectedValue(new Error('Company not found'));
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockRejectedValue(new Error('Company not found'));
 
             const { result } = renderHook(
                 () => useCompany(999),
@@ -209,9 +212,9 @@ describe('useApi hooks', () => {
         });
 
         it('異なる企業IDで正しくキャッシュが分離される', async () => {
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValueOnce({ data: { data: { id: 1, name: 'Company 1' } } });
-            api.get.mockResolvedValueOnce({ data: { data: { id: 2, name: 'Company 2' } } });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValueOnce({ data: { data: { id: 1, name: 'Company 1' } } });
+            mockApi.get.mockResolvedValueOnce({ data: { data: { id: 2, name: 'Company 2' } } });
 
             const { result: result1 } = renderHook(
                 () => useCompany(1),
@@ -228,8 +231,8 @@ describe('useApi hooks', () => {
                 expect(result2.current.isSuccess).toBe(true);
             });
 
-            expect(api.get).toHaveBeenCalledWith('/companies/1');
-            expect(api.get).toHaveBeenCalledWith('/companies/2');
+            expect(mockApi.get).toHaveBeenCalledWith('/companies/1');
+            expect(mockApi.get).toHaveBeenCalledWith('/companies/2');
         });
     });
 
@@ -239,8 +242,8 @@ describe('useApi hooks', () => {
                 data: [{ id: 1, company_name: 'Top Company', rank: 1 }],
                 meta: { total: 1 },
             };
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValue({ data: mockData });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValue({ data: mockData });
 
             const { result } = renderHook(
                 () => useRankings(),
@@ -251,7 +254,7 @@ describe('useApi hooks', () => {
                 expect(result.current.isSuccess).toBe(true);
             });
 
-            expect(api.get).toHaveBeenCalledWith('/rankings?period=monthly');
+            expect(mockApi.get).toHaveBeenCalledWith('/rankings?period=monthly');
             expect(result.current.data).toEqual(mockData);
         });
 
@@ -260,8 +263,8 @@ describe('useApi hooks', () => {
                 data: [{ id: 1, company_name: 'Top Company', rank: 1 }],
                 meta: { total: 1 },
             };
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValue({ data: mockData });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValue({ data: mockData });
 
             const { result } = renderHook(
                 () => useRankings('weekly'),
@@ -272,13 +275,13 @@ describe('useApi hooks', () => {
                 expect(result.current.isSuccess).toBe(true);
             });
 
-            expect(api.get).toHaveBeenCalledWith('/rankings?period=weekly');
+            expect(mockApi.get).toHaveBeenCalledWith('/rankings?period=weekly');
             expect(result.current.data).toEqual(mockData);
         });
 
         it('ランキング取得でエラーが発生する', async () => {
-            const api = require('../../services/api').default;
-            api.get.mockRejectedValue(new Error('Rankings API Error'));
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockRejectedValue(new Error('Rankings API Error'));
 
             const { result } = renderHook(
                 () => useRankings('daily'),
@@ -293,9 +296,9 @@ describe('useApi hooks', () => {
         });
 
         it('異なる期間で正しくキャッシュが分離される', async () => {
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValueOnce({ data: { data: [{ period: 'daily' }] } });
-            api.get.mockResolvedValueOnce({ data: { data: [{ period: 'weekly' }] } });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValueOnce({ data: { data: [{ period: 'daily' }] } });
+            mockApi.get.mockResolvedValueOnce({ data: { data: [{ period: 'weekly' }] } });
 
             const { result: result1 } = renderHook(
                 () => useRankings('daily'),
@@ -312,15 +315,15 @@ describe('useApi hooks', () => {
                 expect(result2.current.isSuccess).toBe(true);
             });
 
-            expect(api.get).toHaveBeenCalledWith('/rankings?period=daily');
-            expect(api.get).toHaveBeenCalledWith('/rankings?period=weekly');
+            expect(mockApi.get).toHaveBeenCalledWith('/rankings?period=daily');
+            expect(mockApi.get).toHaveBeenCalledWith('/rankings?period=weekly');
         });
     });
 
     describe('ローディング状態の管理', () => {
-        it('初期状態では isLoading が true である', () => {
-            const api = require('../../services/api').default;
-            api.get.mockImplementation(() => new Promise(() => {})); // 永続的なローディング
+        it('初期状態では isLoading が true である', async () => {
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockImplementation(() => new Promise(() => {})); // 永続的なローディング
 
             const { result } = renderHook(
                 () => useApi(['test'], '/test'),
@@ -335,8 +338,8 @@ describe('useApi hooks', () => {
 
         it('成功時に正しい状態になる', async () => {
             const mockData = { success: true };
-            const api = require('../../services/api').default;
-            api.get.mockResolvedValue({ data: mockData });
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockResolvedValue({ data: mockData });
 
             const { result } = renderHook(
                 () => useApi(['test'], '/test'),
@@ -352,8 +355,8 @@ describe('useApi hooks', () => {
         });
 
         it('エラー時に正しい状態になる', async () => {
-            const api = require('../../services/api').default;
-            api.get.mockRejectedValue(new Error('Test Error'));
+            const mockApi = (await vi.importMock('@/services/api')).default;
+            mockApi.get.mockRejectedValue(new Error('Test Error'));
 
             const { result } = renderHook(
                 () => useApi(['test'], '/test'),

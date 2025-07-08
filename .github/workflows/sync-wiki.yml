@@ -1,4 +1,4 @@
-name: Sync Wiki
+name: Wiki同期
 
 on:
   push:
@@ -15,12 +15,12 @@ jobs:
       contents: write
     
     steps:
-      - name: Checkout repository
+      - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
-      - name: Sync to Wiki
+      - name: Wikiに同期
         uses: Andrew-Chen-Wang/github-wiki-action@v4
         with:
           path: docs/wiki/

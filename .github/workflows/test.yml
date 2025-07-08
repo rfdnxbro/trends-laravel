@@ -1,4 +1,4 @@
-name: Test
+name: テスト
 
 on:
   pull_request:
@@ -10,59 +10,72 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
-    # SQLite in-memory database is used for testing
-    # No external services needed
+    # コミットメッセージに[skip ci]が含まれている場合はスキップ
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    
+    # テスト用にSQLite in-memoryデータベースを使用
+    # 外部サービスは不要
     
     steps:
-      - name: Checkout code
+      - name: コードをチェックアウト
         uses: actions/checkout@v4
       
-      - name: Setup PHP
+      - name: PHPセットアップ
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
           coverage: xdebug
       
-      - name: Setup Node.js
+      - name: Node.jsセットアップ
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
       
-      - name: Install PHP dependencies
+      - name: Composer依存関係をキャッシュ
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache
+            vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+      
+      - name: PHP依存関係をインストール
         run: |
           composer install --no-interaction --prefer-dist --optimize-autoloader
       
-      - name: Install Node.js dependencies
+      - name: Node.js依存関係をインストール
         run: npm ci
       
-      - name: Create environment file
+      - name: 環境ファイルを作成
         run: |
           cp .env.ci .env
           php artisan key:generate
       
-      - name: Build frontend assets
+      - name: フロントエンドアセットをビルド
         run: npm run build
       
-      - name: Configure database
+      - name: データベースを設定
         run: |
           php artisan config:cache
           php artisan migrate --force
       
-      - name: Run PHPUnit tests
+      - name: PHPテストを実行
         run: php artisan test
       
-      - name: Run Laravel Pint (code style check)
+      - name: コードスタイルチェックを実行
         run: vendor/bin/pint --test
       
-      - name: Run PHPStan (static analysis)
+      - name: 静的解析を実行
         run: vendor/bin/phpstan analyse --memory-limit=1G
       
-      - name: Run frontend tests
+      - name: フロントエンドテストを実行
         run: npm test
       
-      - name: Test scraping services
+      - name: スクレイピングサービスをテスト
         run: |
           php artisan test --filter=Scraper
           php artisan test --filter=ScrapeCommand

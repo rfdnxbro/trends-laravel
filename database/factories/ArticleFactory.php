@@ -22,7 +22,7 @@ class ArticleFactory extends Factory
             'platform_id' => Platform::factory(),
             'company_id' => Company::factory(),
             'title' => $this->faker->sentence(6),
-            'url' => $this->faker->url(),
+            'url' => $this->faker->unique()->url(),
             'domain' => $this->faker->domainName(),
             'platform' => $this->faker->randomElement(['Qiita', 'Zenn', 'はてなブログ', 'note']),
             'author_name' => $this->faker->name(),

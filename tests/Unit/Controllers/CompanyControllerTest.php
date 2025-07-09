@@ -6,7 +6,6 @@ use App\Http\Controllers\Api\CompanyController;
 use App\Services\CompanyInfluenceScoreService;
 use App\Services\CompanyRankingService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Validator;
 use Mockery;
 use Tests\TestCase;
@@ -62,7 +61,7 @@ class CompanyControllerTest extends TestCase
     public function test_articles_with_invalid_company_id()
     {
         $companyId = 999;
-        $request = new Request();
+        $request = new Request;
 
         \Validator::shouldReceive('make')
             ->andReturn(\Mockery::mock(Validator::class, function ($mock) {
@@ -81,7 +80,7 @@ class CompanyControllerTest extends TestCase
     public function test_scores_with_invalid_company_id()
     {
         $companyId = 999;
-        $request = new Request();
+        $request = new Request;
 
         \Validator::shouldReceive('make')
             ->andReturn(\Mockery::mock(Validator::class, function ($mock) {
@@ -100,7 +99,7 @@ class CompanyControllerTest extends TestCase
     public function test_rankings_with_invalid_company_id()
     {
         $companyId = 999;
-        $request = new Request();
+        $request = new Request;
 
         \Validator::shouldReceive('make')
             ->andReturn(\Mockery::mock(Validator::class, function ($mock) {

@@ -19,7 +19,7 @@ class CompanyControllerFeatureTest extends TestCase
         parent::setUp();
     }
 
-    public function test_企業詳細取得_ap_iで有効な企業idの場合に正常なレスポンスが返される()
+    public function test_企業詳細取得_apiで有効な企業idの場合に正常なレスポンスが返される()
     {
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
@@ -46,7 +46,7 @@ class CompanyControllerFeatureTest extends TestCase
             ]);
     }
 
-    public function test_企業詳細取得_ap_iで存在しない企業idの場合に400が返される()
+    public function test_企業詳細取得_apiで存在しない企業idの場合に400が返される()
     {
         $response = $this->getJson('/api/companies/999');
 
@@ -56,14 +56,14 @@ class CompanyControllerFeatureTest extends TestCase
             ]);
     }
 
-    public function test_企業詳細取得_ap_iで無効な企業idの場合にバリデーションエラーが返される()
+    public function test_企業詳細取得_apiで無効な企業idの場合にバリデーションエラーが返される()
     {
         $response = $this->getJson('/api/companies/invalid');
 
         $response->assertStatus(500);
     }
 
-    public function test_企業記事一覧取得_ap_iで有効な企業idの場合に正常なレスポンスが返される()
+    public function test_企業記事一覧取得_apiで有効な企業idの場合に正常なレスポンスが返される()
     {
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
@@ -98,7 +98,7 @@ class CompanyControllerFeatureTest extends TestCase
             ]);
     }
 
-    public function test_企業記事一覧取得_ap_iで存在しない企業idの場合に400が返される()
+    public function test_企業記事一覧取得_apiで存在しない企業idの場合に400が返される()
     {
         $response = $this->getJson('/api/companies/999/articles');
 
@@ -108,7 +108,7 @@ class CompanyControllerFeatureTest extends TestCase
             ]);
     }
 
-    public function test_企業記事一覧取得_ap_iでページネーションパラメータが正しく動作する()
+    public function test_企業記事一覧取得_apiでページネーションパラメータが正しく動作する()
     {
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
@@ -126,7 +126,7 @@ class CompanyControllerFeatureTest extends TestCase
         $this->assertEquals(10, $data['meta']['per_page']);
     }
 
-    public function test_企業スコア履歴取得_ap_iで有効な企業idの場合に正常なレスポンスが返される()
+    public function test_企業スコア履歴取得_apiで有効な企業idの場合に正常なレスポンスが返される()
     {
         $company = Company::factory()->create();
         CompanyInfluenceScore::factory()->count(3)->create([
@@ -149,7 +149,7 @@ class CompanyControllerFeatureTest extends TestCase
             ]);
     }
 
-    public function test_企業スコア履歴取得_ap_iで存在しない企業idの場合に400が返される()
+    public function test_企業スコア履歴取得_apiで存在しない企業idの場合に400が返される()
     {
         $response = $this->getJson('/api/companies/999/scores');
 
@@ -159,7 +159,7 @@ class CompanyControllerFeatureTest extends TestCase
             ]);
     }
 
-    public function test_企業ランキング取得_ap_iで有効な企業idの場合に正常なレスポンスが返される()
+    public function test_企業ランキング取得_apiで有効な企業idの場合に正常なレスポンスが返される()
     {
         $company = Company::factory()->create();
         CompanyRanking::factory()->create([
@@ -180,7 +180,7 @@ class CompanyControllerFeatureTest extends TestCase
             ]);
     }
 
-    public function test_企業ランキング取得_ap_iで存在しない企業idの場合に400が返される()
+    public function test_企業ランキング取得_apiで存在しない企業idの場合に400が返される()
     {
         $response = $this->getJson('/api/companies/999/rankings');
 
@@ -190,7 +190,7 @@ class CompanyControllerFeatureTest extends TestCase
             ]);
     }
 
-    public function test_企業ランキング取得_ap_iで履歴を含む場合に履歴データも返される()
+    public function test_企業ランキング取得_apiで履歴を含む場合に履歴データも返される()
     {
         $company = Company::factory()->create();
         CompanyRanking::factory()->count(3)->create([
@@ -210,7 +210,7 @@ class CompanyControllerFeatureTest extends TestCase
             ]);
     }
 
-    public function test_企業記事一覧取得_ap_iでmin_bookmarksフィルタが正しく動作する()
+    public function test_企業記事一覧取得_apiでmin_bookmarksフィルタが正しく動作する()
     {
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
@@ -236,7 +236,7 @@ class CompanyControllerFeatureTest extends TestCase
         $this->assertEquals(1, $data['meta']['total']);
     }
 
-    public function test_企業記事一覧取得_ap_iでdaysフィルタが正しく動作する()
+    public function test_企業記事一覧取得_apiでdaysフィルタが正しく動作する()
     {
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();

@@ -130,7 +130,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('error', $responseData);
     }
 
-    public function test_有効な企業_i_dで企業ランキングを取得する()
+    public function test_有効な企業idで企業ランキングを取得する()
     {
         $request = new Request(['include_history' => false]);
         $mockRankings = [

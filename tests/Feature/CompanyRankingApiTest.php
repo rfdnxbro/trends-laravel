@@ -37,7 +37,7 @@ class CompanyRankingApiTest extends TestCase
         }
     }
 
-    public function test_get_period_types()
+    public function test_期間タイプ一覧を取得する()
     {
         $response = $this->getJson('/api/rankings/periods');
 
@@ -47,7 +47,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_get_ranking_by_period()
+    public function test_期間別でランキングを取得する()
     {
         $response = $this->getJson('/api/rankings/1m');
 
@@ -83,7 +83,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_get_ranking_by_period_with_pagination()
+    public function test_期間別ランキングでページングが動作する()
     {
         $response = $this->getJson('/api/rankings/1m?page=1&per_page=5');
 
@@ -92,7 +92,7 @@ class CompanyRankingApiTest extends TestCase
             ->assertJsonPath('meta.current_page', '1');
     }
 
-    public function test_get_ranking_by_period_with_sorting()
+    public function test_期間別ランキングでソートが動作する()
     {
         $response = $this->getJson('/api/rankings/1m?sort_by=total_score&sort_order=desc');
 
@@ -102,7 +102,7 @@ class CompanyRankingApiTest extends TestCase
         $this->assertTrue($data[0]['total_score'] >= $data[1]['total_score']);
     }
 
-    public function test_get_ranking_by_period_with_invalid_period()
+    public function test_無効な期間でランキング取得するとエラーが返る()
     {
         $response = $this->getJson('/api/rankings/invalid');
 
@@ -112,7 +112,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_get_top_ranking()
+    public function test_トップランキングを取得する()
     {
         $response = $this->getJson('/api/rankings/1m/top/5');
 
@@ -148,7 +148,7 @@ class CompanyRankingApiTest extends TestCase
             ->assertJsonPath('meta.limit', 5);
     }
 
-    public function test_get_top_ranking_with_invalid_limit()
+    public function test_無効なリミットでトップランキング取得するとエラーが返る()
     {
         $response = $this->getJson('/api/rankings/1m/top/200');
 
@@ -159,7 +159,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_get_company_ranking()
+    public function test_企業別ランキングを取得する()
     {
         $company = Company::first();
         $response = $this->getJson("/api/rankings/company/{$company->id}");
@@ -184,7 +184,7 @@ class CompanyRankingApiTest extends TestCase
             ->assertJsonPath('data.company_id', $company->id);
     }
 
-    public function test_get_company_ranking_with_history()
+    public function test_履歴付きで企業別ランキングを取得する()
     {
         $company = Company::first();
         $response = $this->getJson("/api/rankings/company/{$company->id}?include_history=true");
@@ -199,7 +199,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_get_company_ranking_with_invalid_company_id()
+    public function test_無効な企業_i_dでランキング取得するとエラーが返る()
     {
         $response = $this->getJson('/api/rankings/company/99999');
 
@@ -210,7 +210,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_get_statistics()
+    public function test_統計情報を取得する()
     {
         $response = $this->getJson('/api/rankings/statistics');
 
@@ -220,7 +220,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_get_ranking_risers()
+    public function test_ランキング上昇企業を取得する()
     {
         $response = $this->getJson('/api/rankings/1m/risers');
 
@@ -235,7 +235,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_get_ranking_risers_with_limit()
+    public function test_リミット付きでランキング上昇企業を取得する()
     {
         $response = $this->getJson('/api/rankings/1m/risers?limit=5');
 
@@ -243,7 +243,7 @@ class CompanyRankingApiTest extends TestCase
             ->assertJsonPath('meta.limit', '5');
     }
 
-    public function test_get_ranking_fallers()
+    public function test_ランキング下降企業を取得する()
     {
         $response = $this->getJson('/api/rankings/1m/fallers');
 
@@ -258,7 +258,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_get_ranking_change_statistics()
+    public function test_ランキング変動統計を取得する()
     {
         $response = $this->getJson('/api/rankings/1m/statistics');
 
@@ -268,7 +268,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_api_rate_limiting()
+    public function test_ap_iレート制限が動作する()
     {
         for ($i = 0; $i < 65; $i++) {
             $response = $this->getJson('/api/rankings/periods');
@@ -282,7 +282,7 @@ class CompanyRankingApiTest extends TestCase
         }
     }
 
-    public function test_api_caching()
+    public function test_ap_iキャッシュが動作する()
     {
         $response1 = $this->getJson('/api/rankings/1m');
         $response2 = $this->getJson('/api/rankings/1m');
@@ -293,7 +293,7 @@ class CompanyRankingApiTest extends TestCase
         $this->assertEquals($response1->json(), $response2->json());
     }
 
-    public function test_api_pagination_metadata()
+    public function test_ap_iページングメタデータが正常に返される()
     {
         $response = $this->getJson('/api/rankings/1m?per_page=3&page=2');
 
@@ -303,7 +303,7 @@ class CompanyRankingApiTest extends TestCase
             ->assertJsonPath('meta.total', 10);
     }
 
-    public function test_api_response_structure()
+    public function test_ap_iレスポンス構造が正常である()
     {
         $response = $this->getJson('/api/rankings/1m');
 

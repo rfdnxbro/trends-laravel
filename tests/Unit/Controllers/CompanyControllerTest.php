@@ -40,7 +40,7 @@ class CompanyControllerTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_無効な企業_i_dでshow呼び出し時にバリデーションエラーが返される()
+    public function test_無効な企業idでshow呼び出し時にバリデーションエラーが返される()
     {
         $companyId = 999;
 
@@ -58,7 +58,7 @@ class CompanyControllerTest extends TestCase
         $this->assertEquals('企業IDが無効です', $responseData['error']);
     }
 
-    public function test_無効な企業_i_dでarticles呼び出し時にバリデーションエラーが返される()
+    public function test_無効な企業idでarticles呼び出し時にバリデーションエラーが返される()
     {
         $companyId = 999;
         $request = new Request;
@@ -77,7 +77,7 @@ class CompanyControllerTest extends TestCase
         $this->assertEquals('企業IDが無効です', $responseData['error']);
     }
 
-    public function test_無効な企業_i_dでscores呼び出し時にバリデーションエラーが返される()
+    public function test_無効な企業idでscores呼び出し時にバリデーションエラーが返される()
     {
         $companyId = 999;
         $request = new Request;
@@ -96,7 +96,7 @@ class CompanyControllerTest extends TestCase
         $this->assertEquals('企業IDが無効です', $responseData['error']);
     }
 
-    public function test_無効な企業_i_dでrankings呼び出し時にバリデーションエラーが返される()
+    public function test_無効な企業idでrankings呼び出し時にバリデーションエラーが返される()
     {
         $companyId = 999;
         $request = new Request;

@@ -48,7 +48,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 企業名での検索が正常に動作する()
+    public function test_企業名での検索が正常に動作する()
     {
         $response = $this->getJson('/api/search/companies?q=Test');
 
@@ -79,7 +79,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 記事タイトルでの検索が正常に動作する()
+    public function test_記事タイトルでの検索が正常に動作する()
     {
         $response = $this->getJson('/api/search/articles?q=Laravel');
 
@@ -112,7 +112,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 統合検索が正常に動作する()
+    public function test_統合検索が正常に動作する()
     {
         $response = $this->getJson('/api/search?q=Test');
 
@@ -146,7 +146,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 検索タイプを指定した統合検索が正常に動作する()
+    public function test_検索タイプを指定した統合検索が正常に動作する()
     {
         $response = $this->getJson('/api/search?q=Test&type=companies');
 
@@ -174,7 +174,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 検索クエリが空の場合はバリデーションエラーが返される()
+    public function test_検索クエリが空の場合はバリデーションエラーが返される()
     {
         $response = $this->getJson('/api/search/companies?q=');
 
@@ -186,7 +186,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 検索クエリが長すぎる場合はバリデーションエラーが返される()
+    public function test_検索クエリが長すぎる場合はバリデーションエラーが返される()
     {
         $longQuery = str_repeat('a', 256);
         $response = $this->getJson("/api/search/companies?q={$longQuery}");
@@ -199,7 +199,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 記事検索でフィルタリングが正常に動作する()
+    public function test_記事検索でフィルタリングが正常に動作する()
     {
         // 古い記事を作成
         Article::factory()->create([
@@ -223,7 +223,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 検索結果の関連度スコアが正常に計算される()
+    public function test_検索結果の関連度スコアが正常に計算される()
     {
         // 完全一致の企業を作成
         $exactMatch = Company::factory()->create([
@@ -243,7 +243,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function レート制限が正常に動作する()
+    public function test_レート制限が正常に動作する()
     {
         // 60回リクエストして制限に達することを確認
         for ($i = 0; $i < 61; $i++) {
@@ -258,7 +258,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 無効な検索タイプを指定した場合バリデーションエラーが返される()
+    public function test_無効な検索タイプを指定した場合バリデーションエラーが返される()
     {
         $response = $this->getJson('/api/search?q=test&type=invalid');
 
@@ -270,7 +270,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 企業検索でlimitパラメータが正常に動作する()
+    public function test_企業検索でlimitパラメータが正常に動作する()
     {
         // 複数の企業を作成
         Company::factory()->count(10)->create([
@@ -285,7 +285,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function 著者名での記事検索が正常に動作する()
+    public function test_著者名での記事検索が正常に動作する()
     {
         $response = $this->getJson('/api/search/articles?q=test_author');
 

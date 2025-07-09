@@ -48,7 +48,7 @@ class RankingPeriodTest extends TestCase
         $this->assertEquals($expectedPeriods, $validPeriods);
     }
 
-    public function test_get_days_with_valid_periods()
+    public function test_有効な期間で日数を取得する()
     {
         $testCases = [
             '1w' => 7,
@@ -65,14 +65,14 @@ class RankingPeriodTest extends TestCase
         }
     }
 
-    public function test_get_days_with_invalid_period()
+    public function test_無効な期間で日数取得時に例外が発生する()
     {
         $this->assertNull(RankingPeriod::getDays('invalid'));
         $this->assertNull(RankingPeriod::getDays('2w'));
         $this->assertNull(RankingPeriod::getDays(''));
     }
 
-    public function test_is_valid_with_valid_periods()
+    public function test_有効な期間でバリデーションが成功する()
     {
         $validPeriods = ['1w', '1m', '3m', '6m', '1y', '3y', 'all'];
 
@@ -81,7 +81,7 @@ class RankingPeriodTest extends TestCase
         }
     }
 
-    public function test_is_valid_with_invalid_periods()
+    public function test_無効な期間でバリデーションが失敗する()
     {
         $invalidPeriods = ['invalid', '2w', '2m', '5y', '', 'weekly', 'monthly'];
 
@@ -90,7 +90,7 @@ class RankingPeriodTest extends TestCase
         }
     }
 
-    public function test_is_valid_with_invalid_types()
+    public function test_無効なタイプでバリデーションが失敗する()
     {
         // null、数値、真偽値などの非文字列型
         $this->assertFalse(RankingPeriod::isValid(null));
@@ -106,7 +106,7 @@ class RankingPeriodTest extends TestCase
         $this->assertFalse(RankingPeriod::isValid('30'));
     }
 
-    public function test_get_validation_rule()
+    public function test_バリデーションルールを取得する()
     {
         $validationRule = RankingPeriod::getValidationRule();
 
@@ -117,7 +117,7 @@ class RankingPeriodTest extends TestCase
         $this->assertEquals($expectedRule, $validationRule);
     }
 
-    public function test_get_error_message()
+    public function test_エラーメッセージを取得する()
     {
         $errorMessage = RankingPeriod::getErrorMessage();
 
@@ -129,7 +129,7 @@ class RankingPeriodTest extends TestCase
         $this->assertEquals($expectedMessage, $errorMessage);
     }
 
-    public function test_all_methods_return_consistent_data()
+    public function test_全メソッドが一貫したデータを返す()
     {
         $validPeriods = RankingPeriod::getValidPeriods();
         $typesKeys = array_keys(RankingPeriod::TYPES);
@@ -148,7 +148,7 @@ class RankingPeriodTest extends TestCase
         }
     }
 
-    public function test_validation_rule_contains_all_valid_periods()
+    public function test_バリデーションルールが全有効期間を含む()
     {
         $validationRule = RankingPeriod::getValidationRule();
         $validPeriods = RankingPeriod::getValidPeriods();
@@ -161,7 +161,7 @@ class RankingPeriodTest extends TestCase
         $this->assertEquals($validPeriods, $rulePeriods);
     }
 
-    public function test_error_message_contains_all_valid_periods()
+    public function test_エラーメッセージが全有効期間を含む()
     {
         $errorMessage = RankingPeriod::getErrorMessage();
         $validPeriods = RankingPeriod::getValidPeriods();
@@ -171,7 +171,7 @@ class RankingPeriodTest extends TestCase
         }
     }
 
-    public function test_types_constant_is_immutable()
+    public function test_期間タイプ定数が不変である()
     {
         // PHP定数は変更不可であることを確認
         $originalTypes = RankingPeriod::TYPES;
@@ -181,7 +181,7 @@ class RankingPeriodTest extends TestCase
         $this->assertEquals($originalTypes, RankingPeriod::TYPES);
     }
 
-    public function test_case_insensitivity()
+    public function test_大文字小文字を区別しない()
     {
         // 大文字小文字の違いで無効になることを確認
         $this->assertFalse(RankingPeriod::isValid('1W'));
@@ -194,7 +194,7 @@ class RankingPeriodTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('periodDataProvider')]
-    public function test_period_data_with_data_provider($period, $expectedDays, $expectedValid)
+    public function test_期間データプロバイダーテスト($period, $expectedDays, $expectedValid)
     {
         $this->assertEquals($expectedDays, RankingPeriod::getDays($period));
         $this->assertEquals($expectedValid, RankingPeriod::isValid($period));
@@ -216,7 +216,7 @@ class RankingPeriodTest extends TestCase
         ];
     }
 
-    public function test_edge_cases_with_special_characters()
+    public function test_特殊文字のエッジケース()
     {
         $specialCases = [
             '1w ',  // 末尾スペース
@@ -231,7 +231,7 @@ class RankingPeriodTest extends TestCase
         }
     }
 
-    public function test_performance_with_large_data_set()
+    public function test_大量データでのパフォーマンス()
     {
         // パフォーマンステスト: 大量の呼び出しでも問題ないことを確認
         $startTime = microtime(true);

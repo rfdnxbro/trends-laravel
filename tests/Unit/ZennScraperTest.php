@@ -22,12 +22,12 @@ class ZennScraperTest extends TestCase
         $this->scraper = new ZennScraper;
     }
 
-    public function test_scraper_implements_base_scraper_interface(): void
+    public function test_スクレイパーがベーススクレイパーインターフェースを実装する(): void
     {
         $this->assertInstanceOf(\App\Services\BaseScraper::class, $this->scraper);
     }
 
-    public function test_scraper_has_correct_configuration(): void
+    public function test_スクレイパーが正しい設定を持つ(): void
     {
         $reflection = new \ReflectionClass($this->scraper);
 
@@ -44,7 +44,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals(Platform::getRateLimit(Platform::ZENN), $requestsPerMinuteProperty->getValue($this->scraper));
     }
 
-    public function test_scrape_trending_articles_with_mocked_response(): void
+    public function test_モックレスポンスでトレンド記事をスクレイピングする(): void
     {
         $mockHtml = '
             <article>
@@ -87,7 +87,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals('zenn', $articles[1]['platform']);
     }
 
-    public function test_identify_company_account(): void
+    public function test_企業アカウントを正しく特定する(): void
     {
         $company = Company::factory()->create([
             'name' => 'テスト企業',
@@ -105,7 +105,7 @@ class ZennScraperTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function test_normalize_and_save_data(): void
+    public function test_データの正規化と保存が正常に動作する(): void
     {
         $company = Company::factory()->create([
             'name' => 'テスト企業',
@@ -145,7 +145,7 @@ class ZennScraperTest extends TestCase
         ]);
     }
 
-    public function test_handle_extraction_errors_gracefully(): void
+    public function test_抽出エラーを適切に処理する(): void
     {
         $mockHtml = '<div>Invalid HTML structure</div>';
 
@@ -159,7 +159,7 @@ class ZennScraperTest extends TestCase
         $this->assertEmpty($articles);
     }
 
-    public function test_handle_network_errors(): void
+    public function test_ネットワークエラーを処理する(): void
     {
         Http::fake([
             'https://zenn.dev' => Http::response('', 500),
@@ -169,7 +169,7 @@ class ZennScraperTest extends TestCase
         $this->scraper->scrapeTrendingArticles();
     }
 
-    public function test_timeout_configuration(): void
+    public function test_タイムアウト設定が正常に動作する(): void
     {
         $this->scraper->setTimeout(60);
 
@@ -180,7 +180,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals(60, $timeoutProperty->getValue($this->scraper));
     }
 
-    public function test_retry_configuration(): void
+    public function test_リトライ設定が正常に動作する(): void
     {
         $this->scraper->setRetryOptions(5, 2);
 
@@ -195,7 +195,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals(2, $delaySecondsProperty->getValue($this->scraper));
     }
 
-    public function test_rate_limit_configuration(): void
+    public function test_レートリミット設定が正常に動作する(): void
     {
         $this->scraper->setRateLimit(10);
 

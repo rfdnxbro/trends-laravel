@@ -21,7 +21,7 @@ class QiitaScraperTest extends TestCase
         $this->scraper = new QiitaScraper;
     }
 
-    public function test_scraper_initialization()
+    public function test_スクレイパーの初期化が正常に動作する()
     {
         $this->assertInstanceOf(QiitaScraper::class, $this->scraper);
 
@@ -31,7 +31,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals(Platform::getRateLimit(Platform::QIITA), $property->getValue($this->scraper));
     }
 
-    public function test_parse_qiita_trend_html()
+    public function test_qiita_htm_lの解析が正常に動作する()
     {
         $mockHtml = $this->getMockQiitaHtml();
 
@@ -52,7 +52,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('qiita', $result[0]['platform']);
     }
 
-    public function test_identify_company_account()
+    public function test_企業アカウントを正しく特定する()
     {
         $company = Company::factory()->create([
             'qiita_username' => 'company_user',
@@ -65,21 +65,21 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('テスト企業', $result->name);
     }
 
-    public function test_identify_company_account_not_found()
+    public function test_企業アカウントが見つからない場合の処理を行う()
     {
         $result = $this->scraper->identifyCompanyAccount('https://qiita.com/unknown_user');
 
         $this->assertNull($result);
     }
 
-    public function test_identify_company_account_with_null_url()
+    public function test_nullの_ur_lで企業アカウント特定を処理する()
     {
         $result = $this->scraper->identifyCompanyAccount(null);
 
         $this->assertNull($result);
     }
 
-    public function test_normalize_and_save_data()
+    public function test_データの正規化と保存が正常に動作する()
     {
         $company = Company::factory()->create([
             'qiita_username' => 'test_user',
@@ -111,7 +111,7 @@ class QiitaScraperTest extends TestCase
         ]);
     }
 
-    public function test_extract_title()
+    public function test_タイトルの抽出が正常に動作する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractTitle');
@@ -124,7 +124,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('テストタイトル', $title);
     }
 
-    public function test_extract_url()
+    public function test_ur_lの抽出が正常に動作する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractUrl');
@@ -137,7 +137,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('https://qiita.com/items/12345', $url);
     }
 
-    public function test_extract_likes_count()
+    public function test_いいね数の抽出が正常に動作する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractLikesCount');
@@ -150,7 +150,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals(123, $likesCount);
     }
 
-    public function test_extract_author()
+    public function test_著者の抽出が正常に動作する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthor');
@@ -164,7 +164,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('/user123', $author);
     }
 
-    public function test_extract_author_url()
+    public function test_著者_ur_lの抽出が正常に動作する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -177,7 +177,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('https://qiita.com/user123', $authorUrl);
     }
 
-    public function test_extract_published_at()
+    public function test_公開日の抽出が正常に動作する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractPublishedAt');
@@ -190,7 +190,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('2024-01-01T10:00:00Z', $publishedAt);
     }
 
-    public function test_handles_parsing_errors_gracefully()
+    public function test_解析エラーを適切に処理する()
     {
         $malformedHtml = '<html><body><div class="invalid">broken</div></body></html>';
 
@@ -204,7 +204,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEmpty($result);
     }
 
-    public function test_handles_missing_elements_gracefully()
+    public function test_缠尺要素を適切に処理する()
     {
         $incompleteHtml = '
         <html>

@@ -40,7 +40,7 @@ class CompanyRankingControllerTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_get_ranking_by_period_with_valid_period()
+    public function test_有効な期間でランキングを期間別に取得する()
     {
         $request = new Request(['page' => 1, 'per_page' => 10]);
         $mockRankings = [
@@ -75,7 +75,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('meta', $responseData);
     }
 
-    public function test_get_ranking_by_period_with_invalid_period()
+    public function test_無効な期間でランキング取得時にエラーが返される()
     {
         $request = new Request;
         $response = $this->controller->index($request, 'invalid');
@@ -85,7 +85,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('error', $responseData);
     }
 
-    public function test_get_top_ranking_with_valid_parameters()
+    public function test_有効なパラメータでトップランキングを取得する()
     {
         $request = new Request;
         $mockRankings = [
@@ -120,7 +120,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('meta', $responseData);
     }
 
-    public function test_get_top_ranking_with_invalid_limit()
+    public function test_無効なリミットでトップランキング取得時にエラーが返される()
     {
         $request = new Request;
         $response = $this->controller->top($request, '1m', 150);
@@ -130,7 +130,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('error', $responseData);
     }
 
-    public function test_get_company_ranking_with_valid_company_id()
+    public function test_有効な企業idで企業ランキングを取得する()
     {
         $request = new Request(['include_history' => false]);
         $mockRankings = [
@@ -169,7 +169,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertEquals(1, $responseData['data']['company_id']);
     }
 
-    public function test_get_statistics()
+    public function test_ランキング統計情報を取得する()
     {
         $mockStats = [
             '1m' => [
@@ -199,7 +199,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('data', $responseData);
     }
 
-    public function test_get_ranking_risers_with_valid_period()
+    public function test_有効な期間でランキング上昇企業を取得する()
     {
         $request = new Request(['limit' => 10]);
         $mockRisers = [
@@ -231,7 +231,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('meta', $responseData);
     }
 
-    public function test_get_ranking_fallers_with_valid_period()
+    public function test_有効な期間でランキング下降企業を取得する()
     {
         $request = new Request(['limit' => 10]);
         $mockFallers = [
@@ -263,7 +263,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('meta', $responseData);
     }
 
-    public function test_get_ranking_change_statistics_with_valid_period()
+    public function test_有効な期間でランキング変動統計を取得する()
     {
         $request = new Request;
         $mockStats = [
@@ -294,7 +294,7 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertArrayHasKey('data', $responseData);
     }
 
-    public function test_get_period_types()
+    public function test_期間タイプ一覧を取得する()
     {
         $response = $this->controller->periods();
 

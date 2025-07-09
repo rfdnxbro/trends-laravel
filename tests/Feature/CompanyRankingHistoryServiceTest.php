@@ -22,7 +22,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->service = new CompanyRankingHistoryService;
     }
 
-    public function test_record_ranking_history_with_no_previous_ranking(): void
+    public function test_前回ランキングがない場合の履歴記録(): void
     {
         $company = Company::factory()->create();
         $calculatedAt = Carbon::now();
@@ -45,7 +45,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEmpty($changes);
     }
 
-    public function test_record_ranking_history_with_rank_improvement(): void
+    public function test_ランキング上昇時の履歴記録(): void
     {
         $company = Company::factory()->create();
         $previousCalculatedAt = Carbon::now()->subHour();
@@ -87,7 +87,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEquals(2, $changes[0]['rank_change']); // 5 - 3 = 2 (improvement)
     }
 
-    public function test_record_ranking_history_with_rank_decline(): void
+    public function test_ランキング下降時の履歴記録(): void
     {
         $company = Company::factory()->create();
         $previousCalculatedAt = Carbon::now()->subHour();
@@ -129,7 +129,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEquals(-5, $changes[0]['rank_change']); // 2 - 7 = -5 (decline)
     }
 
-    public function test_record_ranking_history_with_rank_unchanged(): void
+    public function test_ランキング変動なし時の履歴記録(): void
     {
         $company = Company::factory()->create();
         $previousCalculatedAt = Carbon::now()->subHour();
@@ -171,7 +171,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEquals(0, $changes[0]['rank_change']); // 5 - 5 = 0 (unchanged)
     }
 
-    public function test_record_ranking_history_with_multiple_companies(): void
+    public function test_複数企業のランキング履歴記録(): void
     {
         $company1 = Company::factory()->create();
         $company2 = Company::factory()->create();
@@ -245,7 +245,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEquals(-1, $company1Change['rank_change']);
     }
 
-    public function test_get_company_ranking_history(): void
+    public function test_企業ランキング履歴を取得する(): void
     {
         $company = Company::factory()->create();
 
@@ -280,7 +280,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEquals(5, $history[1]->current_rank);
     }
 
-    public function test_get_top_ranking_risers(): void
+    public function test_トップランキング上昇企業を取得する(): void
     {
         $company1 = Company::factory()->create(['name' => 'Company 1', 'is_active' => true]);
         $company2 = Company::factory()->create(['name' => 'Company 2', 'is_active' => true]);
@@ -319,7 +319,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEquals(5, $risers[1]->rank_change);
     }
 
-    public function test_get_top_ranking_fallers(): void
+    public function test_トップランキング下降企業を取得する(): void
     {
         $company1 = Company::factory()->create(['name' => 'Company 1', 'is_active' => true]);
         $company2 = Company::factory()->create(['name' => 'Company 2', 'is_active' => true]);
@@ -358,7 +358,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEquals(-5, $fallers[1]->rank_change);
     }
 
-    public function test_get_ranking_change_statistics(): void
+    public function test_ランキング変動統計を取得する(): void
     {
         $company1 = Company::factory()->create();
         $company2 = Company::factory()->create();
@@ -409,7 +409,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEquals(3, $stats['max_fall']);
     }
 
-    public function test_cleanup_old_history(): void
+    public function test_古い履歴データをクリーンアップする(): void
     {
         $company = Company::factory()->create();
         $oldDate = Carbon::now()->subDays(400);
@@ -445,7 +445,7 @@ class CompanyRankingHistoryServiceTest extends TestCase
         $this->assertEquals(1, DB::table('company_ranking_history')->count());
     }
 
-    public function test_get_history_storage_stats(): void
+    public function test_履歴ストレージ統計を取得する(): void
     {
         $company = Company::factory()->create();
 

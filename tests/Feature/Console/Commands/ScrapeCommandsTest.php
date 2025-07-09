@@ -53,7 +53,7 @@ class ScrapeCommandsTest extends TestCase
     }
 
     /**
-     * Test scrape:schedule command with invalid platform
+     * 無効なプラットフォームでのscrape:scheduleコマンドテスト
      */
     public function test_scrape_schedule_command_with_invalid_platform(): void
     {
@@ -63,7 +63,7 @@ class ScrapeCommandsTest extends TestCase
     }
 
     /**
-     * Test scrape:schedule command in silent mode
+     * サイレントモードでのscrape:scheduleコマンドテスト
      */
     public function test_scrape_schedule_command_silent_mode(): void
     {

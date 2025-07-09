@@ -25,7 +25,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * スクレイパーの初期化をテスト
      */
     #[Test]
-    public function test_scraper_initialization()
+    public function test_スクレイパーの初期化が正常に動作する()
     {
         $this->assertInstanceOf(HatenaBookmarkScraper::class, $this->scraper);
 
@@ -39,7 +39,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * はてなブックマークHTMLの解析をテスト
      */
     #[Test]
-    public function test_parse_hatena_bookmark_html()
+    public function test_はてなブックマーク_htm_lの解析が正常に動作する()
     {
         $mockHtml = $this->getMockHatenaHtml();
 
@@ -63,7 +63,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * 企業ドメインの特定をテスト
      */
     #[Test]
-    public function test_identify_company_domain()
+    public function test_企業ドメインを正しく特定する()
     {
         $company = Company::factory()->create([
             'domain' => 'example.com',
@@ -80,7 +80,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * 企業ドメインが見つからない場合をテスト
      */
     #[Test]
-    public function test_identify_company_domain_not_found()
+    public function test_企業ドメインが見つからない場合の処理を行う()
     {
         $result = $this->scraper->identifyCompanyDomain('unknown.com');
 
@@ -91,7 +91,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * データの正規化と保存をテスト
      */
     #[Test]
-    public function test_normalize_and_save_data()
+    public function test_データの正規化と保存が正常に動作する()
     {
         $company = Company::factory()->create([
             'domain' => 'example.com',
@@ -125,7 +125,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * ドメインの抽出をテスト
      */
     #[Test]
-    public function test_extract_domain()
+    public function test_ドメインの抽出が正常に動作する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractDomain');
@@ -142,7 +142,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * 解析エラーの適切な処理をテスト
      */
     #[Test]
-    public function test_handles_parsing_errors_gracefully()
+    public function test_解析エラーを適切に処理する()
     {
         $malformedHtml = '<html><body><div class="invalid">broken</div></body></html>';
 

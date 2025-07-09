@@ -115,7 +115,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function test_show_存在しない企業_i_dで404エラーが返される()
+    public function test_show_存在しない企業idで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999');
@@ -128,7 +128,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function test_show_不正な企業_i_dでバリデーションエラーが返される()
+    public function test_show_不正な企業idでバリデーションエラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/0');
@@ -260,7 +260,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function test_articles_存在しない企業_i_dで404エラーが返される()
+    public function test_articles_存在しない企業idで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/articles');
@@ -393,7 +393,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function test_scores_存在しない企業_i_dで404エラーが返される()
+    public function test_scores_存在しない企業idで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/scores');
@@ -518,7 +518,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function test_rankings_存在しない企業_i_dで404エラーが返される()
+    public function test_rankings_存在しない企業idで404エラーが返される()
     {
         // Act
         $response = $this->getJson('/api/companies/99999/rankings');

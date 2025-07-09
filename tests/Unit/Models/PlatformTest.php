@@ -114,4 +114,38 @@ class PlatformTest extends TestCase
 
         $this->assertNotEquals($data['created_at'], $platform->created_at);
     }
+
+    public function test_articlesリレーションが正しく動作する()
+    {
+        $platform = Platform::factory()->create();
+
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $platform->articles());
+        $this->assertEquals(\App\Models\Article::class, $platform->articles()->getRelated()::class);
+    }
+
+    public function test_castsが正しく設定されている()
+    {
+        $platform = new Platform();
+        $casts = $platform->getCasts();
+
+        $this->assertEquals('boolean', $casts['is_active']);
+    }
+
+    public function test_name_unique制約のテスト()
+    {
+        $name = 'Test Platform';
+
+        Platform::create([
+            'name' => $name,
+            'base_url' => 'https://example.com',
+        ]);
+
+        // 同じ名前のプラットフォームは作成できない（unique制約がある）
+        $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
+        
+        Platform::create([
+            'name' => $name,
+            'base_url' => 'https://example2.com',
+        ]);
+    }
 }

@@ -7,13 +7,13 @@ use Tests\TestCase;
 
 class RankingPeriodTest extends TestCase
 {
-    public function test_types_constant_exists()
+    public function test_期間タイプ定数が存在する()
     {
         $this->assertIsArray(RankingPeriod::TYPES);
         $this->assertNotEmpty(RankingPeriod::TYPES);
     }
 
-    public function test_types_constant_contains_expected_periods()
+    public function test_期間タイプ定数が期待される期間を含む()
     {
         $expectedPeriods = ['1w', '1m', '3m', '6m', '1y', '3y', 'all'];
 
@@ -22,7 +22,7 @@ class RankingPeriodTest extends TestCase
         }
     }
 
-    public function test_types_constant_has_correct_values()
+    public function test_期間タイプ定数が正しい値を持つ()
     {
         $expectedValues = [
             '1w' => 7,
@@ -37,7 +37,7 @@ class RankingPeriodTest extends TestCase
         $this->assertEquals($expectedValues, RankingPeriod::TYPES);
     }
 
-    public function test_get_valid_periods()
+    public function test_有効な期間を取得する()
     {
         $validPeriods = RankingPeriod::getValidPeriods();
 

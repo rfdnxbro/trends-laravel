@@ -50,19 +50,19 @@ class CompanyServiceTest extends TestCase
         ]);
     }
 
-    public function test_company_has_articles_relationship()
+    public function test_企業が記事とのリレーションを持つ()
     {
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $this->company->articles);
         $this->assertCount(3, $this->company->articles);
     }
 
-    public function test_company_has_rankings_relationship()
+    public function test_企業がランキングとのリレーションを持つ()
     {
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $this->company->rankings);
         $this->assertCount(1, $this->company->rankings);
     }
 
-    public function test_company_resource_structure()
+    public function test_企業リソースの構造が正しい()
     {
         $rankings = ['1m' => $this->company->rankings->first()];
         $resource = new CompanyResource($this->company, $rankings);
@@ -80,7 +80,7 @@ class CompanyServiceTest extends TestCase
         $this->assertEquals($this->company->domain, $array['domain']);
     }
 
-    public function test_company_resource_current_rankings_format()
+    public function test_企業リソースの現在ランキングフォーマットが正しい()
     {
         $rankings = ['1m' => $this->company->rankings->first()];
         $resource = new CompanyResource($this->company, $rankings);
@@ -98,7 +98,7 @@ class CompanyServiceTest extends TestCase
         }
     }
 
-    public function test_article_resource_structure()
+    public function test_記事リソースの構造が正しい()
     {
         $article = $this->company->articles->first();
         $resource = new CompanyArticleResource($article);
@@ -118,7 +118,7 @@ class CompanyServiceTest extends TestCase
         $this->assertEquals($article->url, $array['url']);
     }
 
-    public function test_article_resource_company_data()
+    public function test_記事リソースの企業データが正しい()
     {
         $article = $this->company->articles->first();
         $resource = new CompanyArticleResource($article);
@@ -129,7 +129,7 @@ class CompanyServiceTest extends TestCase
         $this->assertEquals($this->company->id, $array['company']['id']);
     }
 
-    public function test_company_active_scope()
+    public function test_企業のアクティブスコープが正しく動作する()
     {
         Company::factory()->create(['is_active' => false]);
         Company::factory()->create(['is_active' => true]);
@@ -141,7 +141,7 @@ class CompanyServiceTest extends TestCase
         }
     }
 
-    public function test_article_recent_scope()
+    public function test_記事の最近スコープが正しく動作する()
     {
         Article::factory()->create([
             'company_id' => $this->company->id,
@@ -159,7 +159,7 @@ class CompanyServiceTest extends TestCase
         }
     }
 
-    public function test_article_popular_scope()
+    public function test_記事の人気スコープが正しく動作する()
     {
         Article::factory()->create([
             'company_id' => $this->company->id,
@@ -174,7 +174,7 @@ class CompanyServiceTest extends TestCase
         }
     }
 
-    public function test_company_article_relationship()
+    public function test_企業と記事のリレーションが正しい()
     {
         $article = $this->company->articles->first();
 
@@ -182,7 +182,7 @@ class CompanyServiceTest extends TestCase
         $this->assertEquals($this->company->id, $article->company->id);
     }
 
-    public function test_article_platform_relationship()
+    public function test_記事とプラットフォームのリレーションが正しい()
     {
         $article = $this->company->articles()->with('platform')->first();
 
@@ -190,7 +190,7 @@ class CompanyServiceTest extends TestCase
         $this->assertEquals($this->platform->id, $article->getRelation('platform')->id);
     }
 
-    public function test_company_resource_with_loaded_articles()
+    public function test_記事を読み込んだ企業リソースが正しい()
     {
         $companyWithArticles = Company::with('articles')->find($this->company->id);
         $resource = new CompanyResource($companyWithArticles);
@@ -201,7 +201,7 @@ class CompanyServiceTest extends TestCase
         $this->assertInstanceOf(\Illuminate\Http\Resources\Json\AnonymousResourceCollection::class, $array['recent_articles']);
     }
 
-    public function test_company_resource_without_rankings()
+    public function test_ランキングなしの企業リソースが正しい()
     {
         $resource = new CompanyResource($this->company);
         $array = $resource->toArray(request());
@@ -210,7 +210,7 @@ class CompanyServiceTest extends TestCase
         $this->assertEmpty($array['current_rankings']);
     }
 
-    public function test_company_model_fillable_attributes()
+    public function test_企業モデルの入力可能属性が正しい()
     {
         $fillable = [
             'name',
@@ -224,7 +224,7 @@ class CompanyServiceTest extends TestCase
         $this->assertEquals($fillable, $this->company->getFillable());
     }
 
-    public function test_company_model_casts()
+    public function test_企業モデルの型変換が正しい()
     {
         $casts = [
             'is_active' => 'boolean',
@@ -234,7 +234,7 @@ class CompanyServiceTest extends TestCase
         $this->assertEquals($casts, $this->company->getCasts());
     }
 
-    public function test_company_model_default_attributes()
+    public function test_企業モデルのデフォルト属性が正しい()
     {
         $newCompany = new Company;
         $this->assertTrue($newCompany->is_active);

@@ -40,7 +40,7 @@ class CompanyControllerTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_show_with_invalid_company_id()
+    public function test_無効な企業_i_dでshow呼び出し時にバリデーションエラーが返される()
     {
         $companyId = 999;
 
@@ -58,7 +58,7 @@ class CompanyControllerTest extends TestCase
         $this->assertEquals('企業IDが無効です', $responseData['error']);
     }
 
-    public function test_articles_with_invalid_company_id()
+    public function test_無効な企業_i_dでarticles呼び出し時にバリデーションエラーが返される()
     {
         $companyId = 999;
         $request = new Request;
@@ -77,7 +77,7 @@ class CompanyControllerTest extends TestCase
         $this->assertEquals('企業IDが無効です', $responseData['error']);
     }
 
-    public function test_scores_with_invalid_company_id()
+    public function test_無効な企業_i_dでscores呼び出し時にバリデーションエラーが返される()
     {
         $companyId = 999;
         $request = new Request;
@@ -96,7 +96,7 @@ class CompanyControllerTest extends TestCase
         $this->assertEquals('企業IDが無効です', $responseData['error']);
     }
 
-    public function test_rankings_with_invalid_company_id()
+    public function test_無効な企業_i_dでrankings呼び出し時にバリデーションエラーが返される()
     {
         $companyId = 999;
         $request = new Request;
@@ -115,29 +115,29 @@ class CompanyControllerTest extends TestCase
         $this->assertEquals('企業IDが無効です', $responseData['error']);
     }
 
-    public function test_constructor_properly_sets_dependencies()
+    public function test_コンストラクタで依存関係が正しく設定される()
     {
         $this->assertInstanceOf(CompanyController::class, $this->controller);
         $this->assertInstanceOf(CompanyRankingService::class, $this->rankingService);
         $this->assertInstanceOf(CompanyInfluenceScoreService::class, $this->scoreService);
     }
 
-    public function test_show_method_exists()
+    public function test_showメソッドが存在する()
     {
         $this->assertTrue(method_exists($this->controller, 'show'));
     }
 
-    public function test_articles_method_exists()
+    public function test_articlesメソッドが存在する()
     {
         $this->assertTrue(method_exists($this->controller, 'articles'));
     }
 
-    public function test_scores_method_exists()
+    public function test_scoresメソッドが存在する()
     {
         $this->assertTrue(method_exists($this->controller, 'scores'));
     }
 
-    public function test_rankings_method_exists()
+    public function test_rankingsメソッドが存在する()
     {
         $this->assertTrue(method_exists($this->controller, 'rankings'));
     }

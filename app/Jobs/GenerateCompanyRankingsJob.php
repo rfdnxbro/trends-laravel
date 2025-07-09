@@ -17,7 +17,7 @@ class GenerateCompanyRankingsJob implements ShouldQueue
     private ?Carbon $referenceDate;
 
     /**
-     * Create a new job instance.
+     * 新しいジョブインスタンスを作成
      */
     public function __construct(?string $periodType = null, ?Carbon $referenceDate = null)
     {
@@ -26,7 +26,7 @@ class GenerateCompanyRankingsJob implements ShouldQueue
     }
 
     /**
-     * Execute the job.
+     * ジョブを実行
      */
     public function handle(CompanyRankingService $rankingService): void
     {

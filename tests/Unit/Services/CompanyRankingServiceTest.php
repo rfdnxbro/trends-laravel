@@ -41,8 +41,8 @@ class CompanyRankingServiceTest extends TestCase
     public function test_generate_all_rankings_全期間のランキングを生成する()
     {
         // Arrange
-        $company1 = Company::factory()->create();
-        $company2 = Company::factory()->create();
+        $company1 = Company::factory()->create(['is_active' => true]);
+        $company2 = Company::factory()->create(['is_active' => true]);
 
         $mockScores = [
             (object) [
@@ -81,8 +81,8 @@ class CompanyRankingServiceTest extends TestCase
     public function test_generate_ranking_for_period_指定期間のランキングを生成する()
     {
         // Arrange
-        $company1 = Company::factory()->create();
-        $company2 = Company::factory()->create();
+        $company1 = Company::factory()->create(['is_active' => true]);
+        $company2 = Company::factory()->create(['is_active' => true]);
 
         $mockScores = [
             (object) [
@@ -129,9 +129,9 @@ class CompanyRankingServiceTest extends TestCase
     public function test_generate_ranking_for_period_同じスコアの場合同じ順位になる()
     {
         // Arrange
-        $company1 = Company::factory()->create();
-        $company2 = Company::factory()->create();
-        $company3 = Company::factory()->create();
+        $company1 = Company::factory()->create(['is_active' => true]);
+        $company2 = Company::factory()->create(['is_active' => true]);
+        $company3 = Company::factory()->create(['is_active' => true]);
 
         $mockScores = [
             (object) [
@@ -179,7 +179,7 @@ class CompanyRankingServiceTest extends TestCase
     public function test_get_ranking_for_period_指定期間のランキングを取得する()
     {
         // Arrange
-        $company = Company::factory()->create();
+        $company = Company::factory()->create(['is_active' => true]);
 
         CompanyRanking::factory()->create([
             'company_id' => $company->id,
@@ -228,7 +228,7 @@ class CompanyRankingServiceTest extends TestCase
     public function test_get_company_rankings_企業の全期間ランキングを取得する()
     {
         // Arrange
-        $company = Company::factory()->create();
+        $company = Company::factory()->create(['is_active' => true]);
 
         CompanyRanking::factory()->create([
             'company_id' => $company->id,
@@ -259,7 +259,7 @@ class CompanyRankingServiceTest extends TestCase
     public function test_get_company_rankings_ランキングがない期間はnullを返す()
     {
         // Arrange
-        $company = Company::factory()->create();
+        $company = Company::factory()->create(['is_active' => true]);
 
         // 1w期間のランキングのみ作成
         CompanyRanking::factory()->create([
@@ -281,8 +281,8 @@ class CompanyRankingServiceTest extends TestCase
     public function test_get_top_companies_ranking_history_上位企業の履歴を取得する()
     {
         // Arrange
-        $company1 = Company::factory()->create();
-        $company2 = Company::factory()->create();
+        $company1 = Company::factory()->create(['is_active' => true]);
+        $company2 = Company::factory()->create(['is_active' => true]);
 
         // 上位企業のランキング
         CompanyRanking::factory()->create([
@@ -327,8 +327,8 @@ class CompanyRankingServiceTest extends TestCase
     public function test_get_ranking_statistics_ランキング統計を取得する()
     {
         // Arrange
-        $company1 = Company::factory()->create();
-        $company2 = Company::factory()->create();
+        $company1 = Company::factory()->create(['is_active' => true]);
+        $company2 = Company::factory()->create(['is_active' => true]);
 
         CompanyRanking::factory()->create([
             'company_id' => $company1->id,
@@ -365,7 +365,7 @@ class CompanyRankingServiceTest extends TestCase
     public function test_get_company_ranking_history_企業のランキング履歴を取得する()
     {
         // Arrange
-        $company = Company::factory()->create();
+        $company = Company::factory()->create(['is_active' => true]);
 
         // 現在のランキング
         CompanyRanking::factory()->create([
@@ -436,7 +436,7 @@ class CompanyRankingServiceTest extends TestCase
     public function test_save_rankings_ランキングをデータベースに保存する()
     {
         // Arrange
-        $company = Company::factory()->create();
+        $company = Company::factory()->create(['is_active' => true]);
 
         $rankings = [
             [
@@ -473,7 +473,7 @@ class CompanyRankingServiceTest extends TestCase
     public function test_save_rankings_既存ランキングを更新する()
     {
         // Arrange
-        $company = Company::factory()->create();
+        $company = Company::factory()->create(['is_active' => true]);
 
         // 既存のランキング
         CompanyRanking::factory()->create([
@@ -526,7 +526,7 @@ class CompanyRankingServiceTest extends TestCase
     public function test_generate_rankings_concurrently_並行処理でランキングを生成する()
     {
         // Arrange
-        $company = Company::factory()->create();
+        $company = Company::factory()->create(['is_active' => true]);
 
         $this->scoreService
             ->shouldReceive('calculateAllCompaniesScore')
@@ -568,9 +568,9 @@ class CompanyRankingServiceTest extends TestCase
     public function test_create_rankings_スコア順でランキングを作成する()
     {
         // Arrange
-        $company1 = Company::factory()->create();
-        $company2 = Company::factory()->create();
-        $company3 = Company::factory()->create();
+        $company1 = Company::factory()->create(['is_active' => true]);
+        $company2 = Company::factory()->create(['is_active' => true]);
+        $company3 = Company::factory()->create(['is_active' => true]);
 
         // スコアは意図的に順序を逆に
         $scores = [

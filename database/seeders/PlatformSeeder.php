@@ -2,29 +2,30 @@
 
 namespace Database\Seeders;
 
+use App\Constants\Platform as PlatformConstants;
 use App\Models\Platform;
 use Illuminate\Database\Seeder;
 
 class PlatformSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * データベースシードを実行
      */
     public function run(): void
     {
         $platforms = [
             [
-                'name' => 'はてなブックマーク',
+                'name' => PlatformConstants::HATENA_BOOKMARK,
                 'base_url' => 'https://b.hatena.ne.jp/hotentry/it',
                 'is_active' => true,
             ],
             [
-                'name' => 'Qiita',
+                'name' => PlatformConstants::QIITA,
                 'base_url' => 'https://qiita.com/trend',
                 'is_active' => true,
             ],
             [
-                'name' => 'Zenn',
+                'name' => PlatformConstants::ZENN,
                 'base_url' => 'https://zenn.dev/',
                 'is_active' => true,
             ],

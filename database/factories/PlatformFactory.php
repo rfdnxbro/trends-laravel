@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class PlatformFactory extends Factory
 {
     /**
-     * Define the model's default state.
+     * モデルのデフォルト状態を定義
      *
      * @return array<string, mixed>
      */

@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 class CompanySeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * データベースシードを実行
      */
     public function run(): void
     {

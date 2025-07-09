@@ -20,7 +20,7 @@ class CompanyRankingApiTest extends TestCase
 
     private function setupTestData()
     {
-        $companies = Company::factory()->count(10)->create();
+        $companies = Company::factory()->count(10)->create(['is_active' => true]);
 
         foreach ($companies as $index => $company) {
             CompanyRanking::factory()->create([

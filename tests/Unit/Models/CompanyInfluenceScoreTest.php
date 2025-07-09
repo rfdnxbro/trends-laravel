@@ -265,4 +265,35 @@ class CompanyInfluenceScoreTest extends TestCase
         $this->assertEquals('100.00', $history->first()->total_score);
         $this->assertEquals('200.00', $history->last()->total_score);
     }
+
+    public function test_companyリレーションの_belongs_to関係が正しい()
+    {
+        $score = new CompanyInfluenceScore;
+
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class, $score->company());
+        $this->assertEquals(\App\Models\Company::class, $score->company()->getRelated()::class);
+    }
+
+    public function test_castsが正しく設定されている()
+    {
+        $score = new CompanyInfluenceScore;
+        $casts = $score->getCasts();
+
+        $this->assertEquals('date', $casts['period_start']);
+        $this->assertEquals('date', $casts['period_end']);
+        $this->assertEquals('decimal:2', $casts['total_score']);
+        $this->assertEquals('integer', $casts['article_count']);
+        $this->assertEquals('integer', $casts['total_bookmarks']);
+        $this->assertEquals('datetime', $casts['calculated_at']);
+    }
+
+    public function test_期間タイプの妥当性検証()
+    {
+        $validPeriodTypes = ['daily', 'weekly', 'monthly'];
+
+        foreach ($validPeriodTypes as $periodType) {
+            $score = CompanyInfluenceScore::factory()->create(['period_type' => $periodType]);
+            $this->assertEquals($periodType, $score->period_type);
+        }
+    }
 }

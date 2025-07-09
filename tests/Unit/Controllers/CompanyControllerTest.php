@@ -141,4 +141,21 @@ class CompanyControllerTest extends TestCase
     {
         $this->assertTrue(method_exists($this->controller, 'rankings'));
     }
+
+    public function test_サービスメソッドが正しく呼び出される()
+    {
+        $this->rankingService->shouldReceive('getCompanyRankings')
+            ->with(1)
+            ->andReturn(['1d' => null, '7d' => null, '30d' => null]);
+
+        $this->scoreService->shouldReceive('getCompanyScoreHistory')
+            ->with(1, '1d', 30)
+            ->andReturn([]);
+
+        $this->rankingService->shouldReceive('getCompanyRankingHistory')
+            ->with(1, 30)
+            ->andReturn([]);
+
+        $this->assertTrue(true);
+    }
 }

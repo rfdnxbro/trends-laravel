@@ -156,6 +156,89 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertEmpty($result);
     }
 
+    /**
+     * HTTPエラー時の処理をテスト
+     */
+    #[Test]
+    public function test_http_エラー時の処理が正常に動作する()
+    {
+        Http::fake([
+            'b.hatena.ne.jp/*' => Http::response('', 500),
+        ]);
+
+        try {
+            $result = $this->scraper->scrapePopularItEntries();
+            $this->assertIsArray($result);
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('HTTP Error', $e->getMessage());
+        }
+    }
+
+    /**
+     * ネットワークエラー時の処理をテスト
+     */
+    #[Test]
+    public function test_ネットワークエラー時の処理が正常に動作する()
+    {
+        Http::fake([
+            'b.hatena.ne.jp/*' => Http::response('Network error', 500),
+        ]);
+
+        try {
+            $result = $this->scraper->scrapePopularItEntries();
+            $this->assertIsArray($result);
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('HTTP Error', $e->getMessage());
+        }
+    }
+
+    /**
+     * 空のHTMLレスポンス時の処理をテスト
+     */
+    #[Test]
+    public function test_空の_htm_lレスポンス時の処理が正常に動作する()
+    {
+        Http::fake([
+            'b.hatena.ne.jp/*' => Http::response('', 200),
+        ]);
+
+        $result = $this->scraper->scrapePopularItEntries();
+
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /**
+     * リクエストヘッダーの設定をテスト
+     */
+    #[Test]
+    public function test_リクエストヘッダーが正しく設定されている()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $headersProperty = $reflection->getProperty('headers');
+        $headersProperty->setAccessible(true);
+        $headers = $headersProperty->getValue($this->scraper);
+
+        $this->assertArrayHasKey('Accept', $headers);
+        $this->assertArrayHasKey('Accept-Language', $headers);
+        $this->assertArrayHasKey('Cache-Control', $headers);
+        $this->assertArrayHasKey('Pragma', $headers);
+    }
+
+    /**
+     * ベースURLの設定をテスト
+     */
+    #[Test]
+    public function test_ベース_ur_lが正しく設定されている()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $baseUrlProperty = $reflection->getProperty('baseUrl');
+        $baseUrlProperty->setAccessible(true);
+        $baseUrl = $baseUrlProperty->getValue($this->scraper);
+
+        $this->assertEquals('https://b.hatena.ne.jp', $baseUrl);
+    }
+
     private function getMockHatenaHtml(): string
     {
         return '

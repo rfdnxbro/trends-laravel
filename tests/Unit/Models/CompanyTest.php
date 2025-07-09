@@ -135,4 +135,44 @@ class CompanyTest extends TestCase
 
         $this->assertNotEquals($data['created_at'], $company->created_at);
     }
+
+    public function test_rankingsリレーションが正しく動作する()
+    {
+        $company = Company::factory()->create();
+
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $company->rankings());
+        $this->assertEquals(\App\Models\CompanyRanking::class, $company->rankings()->getRelated()::class);
+    }
+
+    public function test_influence_scoresリレーションが正しく動作する()
+    {
+        $company = Company::factory()->create();
+
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $company->influenceScores());
+        $this->assertEquals(\App\Models\CompanyInfluenceScore::class, $company->influenceScores()->getRelated()::class);
+    }
+
+    public function test_articlesリレーションが正しく動作する()
+    {
+        $company = Company::factory()->create();
+
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $company->articles());
+        $this->assertEquals(\App\Models\Article::class, $company->articles()->getRelated()::class);
+    }
+
+    public function test_default_attributesが正しく設定されている()
+    {
+        $company = new Company;
+        $attributes = $company->getAttributes();
+
+        $this->assertTrue($attributes['is_active']);
+    }
+
+    public function test_castsが正しく設定されている()
+    {
+        $company = new Company;
+        $casts = $company->getCasts();
+
+        $this->assertEquals('boolean', $casts['is_active']);
+    }
 }

@@ -144,7 +144,7 @@ class CompanyTest extends TestCase
         $this->assertEquals(\App\Models\CompanyRanking::class, $company->rankings()->getRelated()::class);
     }
 
-    public function test_influenceScoresリレーションが正しく動作する()
+    public function test_influence_scoresリレーションが正しく動作する()
     {
         $company = Company::factory()->create();
 
@@ -162,7 +162,7 @@ class CompanyTest extends TestCase
 
     public function test_default_attributesが正しく設定されている()
     {
-        $company = new Company();
+        $company = new Company;
         $attributes = $company->getAttributes();
 
         $this->assertTrue($attributes['is_active']);
@@ -170,7 +170,7 @@ class CompanyTest extends TestCase
 
     public function test_castsが正しく設定されている()
     {
-        $company = new Company();
+        $company = new Company;
         $casts = $company->getCasts();
 
         $this->assertEquals('boolean', $casts['is_active']);

@@ -3,16 +3,13 @@
 namespace Tests\Unit\Console;
 
 use App\Console\Commands\ScrapeSchedule;
-use App\Services\HatenaBookmarkScraper;
-use App\Services\QiitaScraper;
-use App\Services\ZennScraper;
 use Tests\TestCase;
 
 class ScrapeScheduleCommandTest extends TestCase
 {
     public function test_コマンドの基本情報が正しく設定されている()
     {
-        $command = new ScrapeSchedule();
+        $command = new ScrapeSchedule;
 
         $this->assertEquals('scrape:schedule', $command->getName());
         $this->assertEquals('定期実行用のスクレイピングコマンド（cron job に最適化）', $command->getDescription());
@@ -20,18 +17,18 @@ class ScrapeScheduleCommandTest extends TestCase
 
     public function test_platformオプションが定義されている()
     {
-        $command = new ScrapeSchedule();
+        $command = new ScrapeSchedule;
         $definition = $command->getDefinition();
-        
+
         $this->assertTrue($definition->hasOption('platform'));
         $this->assertEquals('特定のプラットフォームのみ実行 (qiita, zenn, hatena)', $definition->getOption('platform')->getDescription());
     }
 
     public function test_silentオプションが定義されている()
     {
-        $command = new ScrapeSchedule();
+        $command = new ScrapeSchedule;
         $definition = $command->getDefinition();
-        
+
         $this->assertTrue($definition->hasOption('silent'));
         $this->assertEquals('詳細出力を抑制', $definition->getOption('silent')->getDescription());
     }
@@ -40,7 +37,7 @@ class ScrapeScheduleCommandTest extends TestCase
     {
         $reflection = new \ReflectionClass(ScrapeSchedule::class);
         $source = file_get_contents($reflection->getFileName());
-        
+
         $this->assertStringContainsString('qiita', $source);
         $this->assertStringContainsString('zenn', $source);
         $this->assertStringContainsString('hatena', $source);
@@ -53,7 +50,7 @@ class ScrapeScheduleCommandTest extends TestCase
     {
         $reflection = new \ReflectionClass(ScrapeSchedule::class);
         $source = file_get_contents($reflection->getFileName());
-        
+
         $this->assertStringContainsString('silent', $source);
         $this->assertStringContainsString('Log::', $source);
         $this->assertStringContainsString('microtime', $source);
@@ -63,7 +60,7 @@ class ScrapeScheduleCommandTest extends TestCase
     {
         $reflection = new \ReflectionClass(ScrapeSchedule::class);
         $source = file_get_contents($reflection->getFileName());
-        
+
         $this->assertStringContainsString('use Illuminate\Support\Facades\Log', $source);
     }
 
@@ -71,7 +68,7 @@ class ScrapeScheduleCommandTest extends TestCase
     {
         $reflection = new \ReflectionClass(ScrapeSchedule::class);
         $handleMethod = $reflection->getMethod('handle');
-        
+
         $this->assertTrue($handleMethod->isPublic());
         $this->assertEquals('handle', $handleMethod->getName());
     }
@@ -80,7 +77,7 @@ class ScrapeScheduleCommandTest extends TestCase
     {
         $reflection = new \ReflectionClass(ScrapeSchedule::class);
         $source = file_get_contents($reflection->getFileName());
-        
+
         $this->assertStringContainsString('startTime', $source);
         $this->assertStringContainsString('microtime(true)', $source);
     }
@@ -89,7 +86,7 @@ class ScrapeScheduleCommandTest extends TestCase
     {
         $reflection = new \ReflectionClass(ScrapeSchedule::class);
         $source = file_get_contents($reflection->getFileName());
-        
+
         $this->assertStringContainsString('$this->option(\'platform\')', $source);
         $this->assertStringContainsString('specificPlatform', $source);
         $this->assertStringContainsString('strtolower', $source);
@@ -99,7 +96,7 @@ class ScrapeScheduleCommandTest extends TestCase
     {
         $reflection = new \ReflectionClass(ScrapeSchedule::class);
         $source = file_get_contents($reflection->getFileName());
-        
+
         $this->assertStringContainsString('$this->option(\'silent\')', $source);
         $this->assertStringContainsString('isSilent', $source);
     }
@@ -108,7 +105,7 @@ class ScrapeScheduleCommandTest extends TestCase
     {
         $reflection = new \ReflectionClass(ScrapeSchedule::class);
         $source = file_get_contents($reflection->getFileName());
-        
+
         $this->assertStringContainsString('name', $source);
         $this->assertStringContainsString('class', $source);
         $this->assertStringContainsString('Qiita', $source);

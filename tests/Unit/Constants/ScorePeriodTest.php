@@ -20,7 +20,7 @@ class ScorePeriodTest extends TestCase
         $this->assertEquals($expected, ScorePeriod::ALL);
     }
 
-    public function test_getValidPeriodsが正しく全期間タイプを返す()
+    public function test_get_valid_periodsが正しく全期間タイプを返す()
     {
         $periods = ScorePeriod::getValidPeriods();
         $expected = ['daily', 'weekly', 'monthly'];
@@ -29,14 +29,14 @@ class ScorePeriodTest extends TestCase
         $this->assertEquals(ScorePeriod::ALL, $periods);
     }
 
-    public function test_isValidが有効な期間タイプでtrueを返す()
+    public function test_is_validが有効な期間タイプでtrueを返す()
     {
         $this->assertTrue(ScorePeriod::isValid('daily'));
         $this->assertTrue(ScorePeriod::isValid('weekly'));
         $this->assertTrue(ScorePeriod::isValid('monthly'));
     }
 
-    public function test_isValidが無効な期間タイプでfalseを返す()
+    public function test_is_validが無効な期間タイプでfalseを返す()
     {
         $this->assertFalse(ScorePeriod::isValid('invalid'));
         $this->assertFalse(ScorePeriod::isValid('yearly'));
@@ -44,7 +44,7 @@ class ScorePeriodTest extends TestCase
         $this->assertFalse(ScorePeriod::isValid('DAILY'));
     }
 
-    public function test_getValidationRuleが正しいバリデーションルール文字列を返す()
+    public function test_get_validation_ruleが正しいバリデーションルール文字列を返す()
     {
         $rule = ScorePeriod::getValidationRule();
         $expected = 'in:daily,weekly,monthly';
@@ -52,14 +52,14 @@ class ScorePeriodTest extends TestCase
         $this->assertEquals($expected, $rule);
     }
 
-    public function test_getDisplayNameが正しい表示名を返す()
+    public function test_get_display_nameが正しい表示名を返す()
     {
         $this->assertEquals('日次', ScorePeriod::getDisplayName('daily'));
         $this->assertEquals('週次', ScorePeriod::getDisplayName('weekly'));
         $this->assertEquals('月次', ScorePeriod::getDisplayName('monthly'));
     }
 
-    public function test_getDisplayNameが無効な期間タイプでそのまま返す()
+    public function test_get_display_nameが無効な期間タイプでそのまま返す()
     {
         $this->assertEquals('invalid', ScorePeriod::getDisplayName('invalid'));
         $this->assertEquals('yearly', ScorePeriod::getDisplayName('yearly'));

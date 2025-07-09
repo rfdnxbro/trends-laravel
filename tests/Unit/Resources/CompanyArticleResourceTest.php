@@ -30,7 +30,7 @@ class CompanyArticleResourceTest extends TestCase
             'likes_count' => 50,
         ]);
 
-        $request = new Request();
+        $request = new Request;
         $resource = new CompanyArticleResource($article);
         $result = $resource->toArray($request);
 
@@ -59,7 +59,7 @@ class CompanyArticleResourceTest extends TestCase
 
         $article->load('company');
 
-        $request = new Request();
+        $request = new Request;
         $resource = new CompanyArticleResource($article);
         $result = $resource->toArray($request);
 
@@ -82,7 +82,7 @@ class CompanyArticleResourceTest extends TestCase
 
         $article->load('platform');
 
-        $request = new Request();
+        $request = new Request;
         $resource = new CompanyArticleResource($article);
         $result = $resource->toArray($request);
 
@@ -100,7 +100,7 @@ class CompanyArticleResourceTest extends TestCase
             'platform_id' => $platform->id,
         ]);
 
-        $request = new Request();
+        $request = new Request;
         $resource = new CompanyArticleResource($article);
         $result = $resource->toArray($request);
 
@@ -122,7 +122,7 @@ class CompanyArticleResourceTest extends TestCase
 
         $article->match_score = 95.5;
 
-        $request = new Request();
+        $request = new Request;
         $resource = new CompanyArticleResource($article);
         $result = $resource->toArray($request);
 
@@ -138,14 +138,14 @@ class CompanyArticleResourceTest extends TestCase
             'platform_id' => $platform->id,
         ]);
 
-        $request = new Request();
+        $request = new Request;
         $resource = new CompanyArticleResource($article);
         $result = $resource->toArray($request);
 
         $expectedFields = [
-            'id', 'title', 'url', 'domain', 'platform', 'author_name', 
-            'author_url', 'published_at', 'bookmark_count', 'likes_count', 
-            'company', 'scraped_at'
+            'id', 'title', 'url', 'domain', 'platform', 'author_name',
+            'author_url', 'published_at', 'bookmark_count', 'likes_count',
+            'company', 'scraped_at',
         ];
 
         foreach ($expectedFields as $field) {
@@ -164,7 +164,7 @@ class CompanyArticleResourceTest extends TestCase
             'scraped_at' => '2024-01-15 12:00:00',
         ]);
 
-        $request = new Request();
+        $request = new Request;
         $resource = new CompanyArticleResource($article);
         $result = $resource->toArray($request);
 

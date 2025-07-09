@@ -125,7 +125,7 @@ class PlatformTest extends TestCase
 
     public function test_castsが正しく設定されている()
     {
-        $platform = new Platform();
+        $platform = new Platform;
         $casts = $platform->getCasts();
 
         $this->assertEquals('boolean', $casts['is_active']);
@@ -142,7 +142,7 @@ class PlatformTest extends TestCase
 
         // 同じ名前のプラットフォームは作成できない（unique制約がある）
         $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
-        
+
         Platform::create([
             'name' => $name,
             'base_url' => 'https://example2.com',

@@ -112,15 +112,16 @@ class CompanyInfluenceScoreService
             return 0.5; // 公開日が不明または期間外の場合は低い重み
         }
 
-        $periodDays = $periodEnd->diffInDays($periodStart);
-        $daysSinceStart = $publishedAt->diffInDays($periodStart);
+        // 期間を正しく計算（periodStartからperiodEndまでの日数）
+        $periodDays = $periodStart->diffInDays($periodEnd);
+        $daysSinceStart = $periodStart->diffInDays($publishedAt);
 
         // 期間内での相対的な新しさを計算（0.0～1.0）
-        $relativeNewness = $periodDays > 0 ? (1.0 - ($daysSinceStart / $periodDays)) : 1.0;
+        $relativeNewness = $periodDays > 0 ? ($daysSinceStart / $periodDays) : 1.0;
 
-        // 時間減衰を適用
+        // 時間減衰を適用（daysSinceStartが負にならないよう絶対値を使用）
         $decayFactor = self::WEIGHTS['time_decay_factor'];
-        $timeWeight = pow($decayFactor, $daysSinceStart);
+        $timeWeight = pow($decayFactor, abs($daysSinceStart));
 
         return max(0.1, $timeWeight * (0.5 + $relativeNewness * 0.5));
     }

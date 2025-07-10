@@ -323,7 +323,6 @@ class CompanyRankingApiTest extends TestCase
         }
     }
 
-    // E2Eテストから移行：企業ランキングAPI詳細検証
     public function test_週次ランキング_apiが正常に動作する()
     {
         $response = $this->getJson('/api/rankings/1w');
@@ -370,7 +369,6 @@ class CompanyRankingApiTest extends TestCase
         }
     }
 
-    // E2Eテストから移行：企業詳細API統合検証
     public function test_企業詳細_apiとの統合が正常に動作する()
     {
         // テストデータが存在することを確認

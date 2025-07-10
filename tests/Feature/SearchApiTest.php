@@ -296,7 +296,6 @@ class SearchApiTest extends TestCase
         $this->assertEquals('test_author', $articles[0]['author_name']);
     }
 
-    // E2Eテストから移行：API詳細検証
     #[Test]
     public function test_統合検索_apiの詳細レスポンス構造が正しい()
     {

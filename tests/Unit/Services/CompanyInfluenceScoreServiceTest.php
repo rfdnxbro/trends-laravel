@@ -485,6 +485,62 @@ class CompanyInfluenceScoreServiceTest extends TestCase
     }
 
     #[Test]
+    public function test_時間減衰計算で異常値が発生しない()
+    {
+        // Arrange
+        $company = Company::factory()->create();
+        $platform = Platform::factory()->create();
+
+        // 期間の終了日に近い記事を作成（以前は異常値の原因となっていた）
+        Article::factory()->create([
+            'company_id' => $company->id,
+            'platform_id' => $platform->id,
+            'bookmark_count' => 100,
+            'published_at' => Carbon::create(2024, 1, 6), // 期間終了近く
+        ]);
+
+        $periodStart = Carbon::create(2024, 1, 1);
+        $periodEnd = Carbon::create(2024, 1, 7);
+
+        // Act
+        $score = $this->service->calculateCompanyScore($company, 'weekly', $periodStart, $periodEnd);
+
+        // Assert - スコアが合理的な範囲内であることを確認
+        $this->assertGreaterThan(0, $score);
+        $this->assertLessThan(1000, $score); // 異常値（数万〜数十万）でないことを確認
+        
+        // より具体的には、ブックマーク数100の記事のスコアが1000未満であることを確認
+        // 以前の実装では333,038,444のような異常値が発生していた
+        $this->assertLessThan(500, $score); // より厳しい上限値
+    }
+
+    #[Test]
+    public function test_期間開始日と終了日が逆転している場合でも正常に動作する()
+    {
+        // Arrange
+        $company = Company::factory()->create();
+        $platform = Platform::factory()->create();
+
+        Article::factory()->create([
+            'company_id' => $company->id,
+            'platform_id' => $platform->id,
+            'bookmark_count' => 50,
+            'published_at' => Carbon::create(2024, 1, 3),
+        ]);
+
+        // 意図的に期間を逆転させる（以前の実装では異常値の原因となっていた）
+        $periodStart = Carbon::create(2024, 1, 7);
+        $periodEnd = Carbon::create(2024, 1, 1);
+
+        // Act
+        $score = $this->service->calculateCompanyScore($company, 'weekly', $periodStart, $periodEnd);
+
+        // Assert - エラーが発生せず、合理的なスコアが返されることを確認
+        $this->assertGreaterThanOrEqual(0, $score);
+        $this->assertLessThan(1000, $score);
+    }
+
+    #[Test]
     public function test_calculate_company_score_でログが出力される()
     {
         // Arrange

@@ -5,6 +5,21 @@ namespace App\Services;
 use App\Models\Company;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * 企業マッチングシステム
+ * 
+ * スクレイピングした記事データから企業を自動識別するサービス。
+ * データベースベースの動的検索により、新企業追加時にコード変更不要。
+ * 
+ * マッチング戦略（優先順序）:
+ * 1. URLパターンマッチング - 企業ブログ等のURL
+ * 2. ドメインマッチング - 企業ドメインでの一致
+ * 3. ユーザー名マッチング - QiitaやZennのアカウント名
+ * 4. キーワードマッチング - 記事タイトル内の企業名
+ * 5. Zenn組織マッチング - Zenn組織記事の検出
+ * 
+ * @see docs/wiki/企業マッチングシステム.md
+ */
 class CompanyMatcher
 {
     /**

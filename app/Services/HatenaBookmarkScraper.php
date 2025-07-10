@@ -53,6 +53,7 @@ class HatenaBookmarkScraper extends BaseScraper
                 $url = $this->extractUrl($node);
                 $bookmarkCount = $this->extractBookmarkCount($node);
                 $domain = $this->extractDomain($url);
+                $publishedAt = $this->extractPublishedAt($node);
 
                 if ($title && $url) {
                     $entries[] = [
@@ -60,6 +61,7 @@ class HatenaBookmarkScraper extends BaseScraper
                         'url' => $url,
                         'bookmark_count' => $bookmarkCount,
                         'domain' => $domain,
+                        'published_at' => $publishedAt,
                         'scraped_at' => now(),
                         'platform' => 'hatena_bookmark',
                     ];
@@ -126,6 +128,45 @@ class HatenaBookmarkScraper extends BaseScraper
         return $parsedUrl['host'] ?? '';
     }
 
+    protected function extractPublishedAt(Crawler $node): ?string
+    {
+        try {
+            // はてなブックマークの日時情報を取得
+            $selectors = [
+                '.entrylist-contents-date',
+                '.entrylist-contents-meta time',
+                'time[datetime]',
+                'time',
+                '[datetime]',
+            ];
+
+            foreach ($selectors as $selector) {
+                $timeElement = $node->filter($selector);
+                if ($timeElement->count() > 0) {
+                    $datetime = $timeElement->attr('datetime') ?: $timeElement->text();
+                    if ($datetime) {
+                        // 相対時間（例：「2時間前」）を現在時刻ベースで変換
+                        if (preg_match('/(.+)前/', $datetime, $matches)) {
+                            $timeStr = $matches[1];
+                            if (preg_match('/([0-9]+)時間/', $timeStr, $hourMatches)) {
+                                return now()->subHours((int) $hourMatches[1])->toDateTimeString();
+                            }
+                            if (preg_match('/([0-9]+)分/', $timeStr, $minuteMatches)) {
+                                return now()->subMinutes((int) $minuteMatches[1])->toDateTimeString();
+                            }
+                        }
+
+                        return $datetime;
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::debug('投稿日時抽出エラー', ['error' => $e->getMessage()]);
+        }
+
+        return null;
+    }
+
     public function identifyCompanyDomain(string $domain): ?Company
     {
         return Company::where('domain', $domain)->first();
@@ -134,18 +175,26 @@ class HatenaBookmarkScraper extends BaseScraper
     public function normalizeAndSaveData(array $entries): array
     {
         $savedEntries = [];
+        $hatenaPlatform = \App\Models\Platform::where('name', 'はてなブックマーク')->first();
+        $companyMatcher = new CompanyMatcher;
 
         foreach ($entries as $entry) {
             try {
-                $company = $this->identifyCompanyDomain($entry['domain']);
+                // 拡張された会社マッチングを使用
+                $articleData = array_merge($entry, [
+                    'platform' => 'hatena_bookmark',
+                ]);
+                $company = $companyMatcher->identifyCompany($articleData);
 
                 $article = Article::updateOrCreate(
                     ['url' => $entry['url']],
                     [
                         'title' => $entry['title'],
+                        'platform_id' => $hatenaPlatform?->id,
                         'company_id' => $company?->id,
                         'domain' => $entry['domain'],
                         'bookmark_count' => $entry['bookmark_count'],
+                        'published_at' => $entry['published_at'] ?? null,
                         'platform' => $entry['platform'],
                         'scraped_at' => $entry['scraped_at'],
                     ]

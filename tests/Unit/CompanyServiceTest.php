@@ -219,6 +219,12 @@ class CompanyServiceTest extends TestCase
             'logo_url',
             'website_url',
             'is_active',
+            'url_patterns',
+            'domain_patterns',
+            'keywords',
+            'zenn_organizations',
+            'qiita_username',
+            'zenn_username',
         ];
 
         $this->assertEquals($fillable, $this->company->getFillable());
@@ -229,6 +235,10 @@ class CompanyServiceTest extends TestCase
         $casts = [
             'is_active' => 'boolean',
             'id' => 'int',
+            'url_patterns' => 'array',
+            'domain_patterns' => 'array',
+            'keywords' => 'array',
+            'zenn_organizations' => 'array',
         ];
 
         $this->assertEquals($casts, $this->company->getCasts());

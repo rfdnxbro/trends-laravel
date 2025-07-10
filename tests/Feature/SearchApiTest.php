@@ -295,4 +295,55 @@ class SearchApiTest extends TestCase
         $this->assertCount(1, $articles);
         $this->assertEquals('test_author', $articles[0]['author_name']);
     }
+
+    // E2Eテストから移行：API詳細検証
+    #[Test]
+    public function test_統合検索_ap_iの詳細レスポンス構造が正しい()
+    {
+        $response = $this->getJson('/api/search?q=Test');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    // companies または articles が含まれる
+                ],
+                'meta' => [
+                    'total_results',
+                    'search_time',
+                    'query',
+                    'type',
+                    'filters' => [
+                        'days',
+                        'min_bookmarks',
+                    ],
+                ],
+            ]);
+
+        // データオブジェクトの構造確認
+        $data = $response->json('data');
+        $this->assertIsArray($data);
+
+        // メタデータの型確認
+        $meta = $response->json('meta');
+        $this->assertIsInt($meta['total_results']);
+        $this->assertIsFloat($meta['search_time']);
+        $this->assertIsString($meta['query']);
+    }
+
+    #[Test]
+    public function test_ap_iエラーハンドリングが適切に動作する()
+    {
+        // 空のクエリパラメータでエラーテスト
+        $response = $this->getJson('/api/search?q=');
+
+        $response->assertStatus(400)
+            ->assertJsonStructure([
+                'error',
+                'details',
+            ]);
+
+        $errorData = $response->json();
+        $this->assertArrayHasKey('error', $errorData);
+        $this->assertIsString($errorData['error']);
+    }
 }

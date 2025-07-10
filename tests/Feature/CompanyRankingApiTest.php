@@ -322,4 +322,81 @@ class CompanyRankingApiTest extends TestCase
             $this->assertArrayHasKey('calculated_at', $item);
         }
     }
+
+    // E2Eテストから移行：企業ランキングAPI詳細検証
+    public function test_週次ランキング_ap_iが正常に動作する()
+    {
+        $response = $this->getJson('/api/rankings/1w');
+
+        $response->assertStatus(Response::HTTP_OK)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'company' => [
+                            'id',
+                            'name',
+                            'domain',
+                            'logo_url',
+                        ],
+                        'rank_position',
+                        'total_score',
+                        'article_count',
+                        'total_bookmarks',
+                        'rank_change',
+                        'period' => [
+                            'start',
+                            'end',
+                        ],
+                        'calculated_at',
+                    ],
+                ],
+                'meta' => [
+                    'current_page',
+                    'per_page',
+                    'total',
+                    'last_page',
+                ],
+            ]);
+
+        // レスポンス内容の型チェック
+        $data = $response->json('data');
+        if (! empty($data)) {
+            $firstItem = $data[0];
+            $this->assertIsInt($firstItem['rank_position']);
+            $this->assertIsFloat($firstItem['total_score']);
+            $this->assertIsInt($firstItem['article_count']);
+            $this->assertIsInt($firstItem['total_bookmarks']);
+        }
+    }
+
+    // E2Eテストから移行：企業詳細API統合検証
+    public function test_企業詳細_ap_iとの統合が正常に動作する()
+    {
+        // テストデータが存在することを確認
+        $company = Company::first();
+        $this->assertNotNull($company, 'テスト用の企業データが存在しません');
+
+        // 企業詳細APIを呼び出し
+        $detailResponse = $this->getJson("/api/companies/{$company->id}");
+
+        $detailResponse->assertStatus(Response::HTTP_OK)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'domain',
+                    'description',
+                    'logo_url',
+                    'website_url',
+                    'is_active',
+                    'created_at',
+                    'updated_at',
+                ],
+            ]);
+
+        $detailData = $detailResponse->json();
+        $this->assertEquals($company->id, $detailData['data']['id']);
+        $this->assertIsString($detailData['data']['name']);
+    }
 }

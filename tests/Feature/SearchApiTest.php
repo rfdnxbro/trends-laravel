@@ -298,7 +298,7 @@ class SearchApiTest extends TestCase
 
     // E2Eテストから移行：API詳細検証
     #[Test]
-    public function test_統合検索_ap_iの詳細レスポンス構造が正しい()
+    public function test_統合検索_apiの詳細レスポンス構造が正しい()
     {
         $response = $this->getJson('/api/search?q=Test');
 
@@ -331,7 +331,7 @@ class SearchApiTest extends TestCase
     }
 
     #[Test]
-    public function test_ap_iエラーハンドリングが適切に動作する()
+    public function test_apiエラーハンドリングが適切に動作する()
     {
         // 空のクエリパラメータでエラーテスト
         $response = $this->getJson('/api/search?q=');

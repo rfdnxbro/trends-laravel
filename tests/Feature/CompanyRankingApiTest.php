@@ -268,7 +268,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_ap_iレート制限が動作する()
+    public function test_apiレート制限が動作する()
     {
         for ($i = 0; $i < 65; $i++) {
             $response = $this->getJson('/api/rankings/periods');
@@ -282,7 +282,7 @@ class CompanyRankingApiTest extends TestCase
         }
     }
 
-    public function test_ap_iキャッシュが動作する()
+    public function test_apiキャッシュが動作する()
     {
         $response1 = $this->getJson('/api/rankings/1m');
         $response2 = $this->getJson('/api/rankings/1m');
@@ -293,7 +293,7 @@ class CompanyRankingApiTest extends TestCase
         $this->assertEquals($response1->json(), $response2->json());
     }
 
-    public function test_ap_iページングメタデータが正常に返される()
+    public function test_apiページングメタデータが正常に返される()
     {
         $response = $this->getJson('/api/rankings/1m?per_page=3&page=2');
 
@@ -303,7 +303,7 @@ class CompanyRankingApiTest extends TestCase
             ->assertJsonPath('meta.total', 10);
     }
 
-    public function test_ap_iレスポンス構造が正常である()
+    public function test_apiレスポンス構造が正常である()
     {
         $response = $this->getJson('/api/rankings/1m');
 
@@ -324,7 +324,7 @@ class CompanyRankingApiTest extends TestCase
     }
 
     // E2Eテストから移行：企業ランキングAPI詳細検証
-    public function test_週次ランキング_ap_iが正常に動作する()
+    public function test_週次ランキング_apiが正常に動作する()
     {
         $response = $this->getJson('/api/rankings/1w');
 
@@ -371,7 +371,7 @@ class CompanyRankingApiTest extends TestCase
     }
 
     // E2Eテストから移行：企業詳細API統合検証
-    public function test_企業詳細_ap_iとの統合が正常に動作する()
+    public function test_企業詳細_apiとの統合が正常に動作する()
     {
         // テストデータが存在することを確認
         $company = Company::first();

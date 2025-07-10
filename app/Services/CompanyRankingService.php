@@ -165,6 +165,7 @@ class CompanyRankingService
             ->join('companies as c', 'cr.company_id', '=', 'c.id')
             ->select([
                 'cr.rank_position',
+                'c.id as company_id',
                 'c.name as company_name',
                 'c.domain',
                 'c.logo_url',

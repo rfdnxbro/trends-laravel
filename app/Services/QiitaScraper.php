@@ -278,18 +278,33 @@ class QiitaScraper extends BaseScraper
     public function normalizeAndSaveData(array $articles): array
     {
         $savedArticles = [];
+        $qiitaPlatform = \App\Models\Platform::where('name', 'Qiita')->first();
+        $companyMatcher = new CompanyMatcher;
 
         foreach ($articles as $article) {
             try {
-                $company = $this->identifyCompanyAccount($article['author_url']);
+                // author_nameを抽出（authorから@記号を削除）
+                $authorName = null;
+                if ($article['author']) {
+                    $authorName = ltrim(trim($article['author']), '/@');
+                }
+
+                // 拡張された会社マッチングを使用
+                $articleData = array_merge($article, [
+                    'author_name' => $authorName,
+                    'platform' => 'qiita',
+                ]);
+                $company = $companyMatcher->identifyCompany($articleData);
 
                 $savedArticle = Article::updateOrCreate(
                     ['url' => $article['url']],
                     [
                         'title' => $article['title'],
+                        'platform_id' => $qiitaPlatform?->id,
                         'company_id' => $company?->id,
                         'likes_count' => $article['likes_count'],
                         'author' => $article['author'],
+                        'author_name' => $authorName,
                         'author_url' => $article['author_url'],
                         'published_at' => $article['published_at'],
                         'platform' => $article['platform'],

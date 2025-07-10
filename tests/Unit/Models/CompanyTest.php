@@ -70,6 +70,12 @@ class CompanyTest extends TestCase
             'logo_url',
             'website_url',
             'is_active',
+            'url_patterns',
+            'domain_patterns',
+            'keywords',
+            'zenn_organizations',
+            'qiita_username',
+            'zenn_username',
         ];
 
         $this->assertEquals($expected, $fillable);

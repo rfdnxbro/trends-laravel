@@ -342,18 +342,39 @@ class ZennScraper extends BaseScraper
     public function normalizeAndSaveData(array $articles): array
     {
         $savedArticles = [];
+        $zennPlatform = \App\Models\Platform::where('name', 'Zenn')->first();
+        $companyMatcher = new CompanyMatcher;
 
         foreach ($articles as $article) {
             try {
-                $company = $this->identifyCompanyAccount($article['author_url']);
+                // author_nameを抽出（authorから会社名を除いたユーザー名を取得）
+                $authorName = null;
+                if ($article['author']) {
+                    $authorText = trim($article['author']);
+                    // 「in株式会社」や「in」で区切ってユーザー名を抽出
+                    if (preg_match('/(.+?)(?:in.+)/u', $authorText, $matches)) {
+                        $authorName = trim($matches[1]);
+                    } else {
+                        $authorName = $authorText;
+                    }
+                }
+
+                // 拡張された会社マッチングを使用
+                $articleData = array_merge($article, [
+                    'author_name' => $authorName,
+                    'platform' => 'zenn',
+                ]);
+                $company = $companyMatcher->identifyCompany($articleData);
 
                 $savedArticle = Article::updateOrCreate(
                     ['url' => $article['url']],
                     [
                         'title' => $article['title'],
+                        'platform_id' => $zennPlatform?->id,
                         'company_id' => $company?->id,
                         'likes_count' => $article['likes_count'],
                         'author' => $article['author'],
+                        'author_name' => $authorName,
                         'author_url' => $article['author_url'],
                         'published_at' => $article['published_at'],
                         'platform' => $article['platform'],

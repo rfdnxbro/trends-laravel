@@ -60,7 +60,7 @@ npx playwright test
 #### 3. PR作成前の必須チェック
 **PR作成前に必ず以下をすべて実行し、エラーがないことを確認する：**
 ```bash
-php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memory-limit=1G && npm test && npm run build && npx playwright test
+php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memory-limit=1G && npm test && npm run build && npm run test:e2e
 ```
 
 #### 4. PR作成後のCI確認
@@ -79,17 +79,28 @@ php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memor
 ### E2Eテスト実行
 ```bash
 # E2Eテスト実行
-npx playwright test
+npm run test:e2e
 
 # E2Eテストレポート表示
 npx playwright show-report
 
 # E2Eテストをヘッドレスモードで実行
-npx playwright test --headed
+npm run test:e2e:headed
+
+# デバッグモードで実行
+npm run test:e2e:debug
+
+# UIモードで実行
+npm run test:e2e:ui
 
 # 特定のテストファイルのみ実行
 npx playwright test tests/e2e/homepage.spec.ts
 ```
+
+### CI/CD 並列実行
+- **Unit/Feature Tests**: 通常のCIワークフロー（約2分）
+- **E2E Tests**: 専用CIワークフロー（Playwright コンテナ、4並列、約1分）
+- **並列実行**: 両方同時実行でトータル時間短縮
 
 ### 開発コマンド詳細
 詳細な開発コマンドと環境設定は下記ドキュメントを参照：

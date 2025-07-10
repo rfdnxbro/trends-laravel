@@ -10,6 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
+    container:
+      image: serversideup/php:8.2-fpm-nginx-v3.2.1
+    
     # コミットメッセージに[skip ci]が含まれている場合はスキップ
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     
@@ -20,13 +23,6 @@ jobs:
       - name: コードをチェックアウト
         uses: actions/checkout@v4
       
-      - name: PHPセットアップ
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
-          coverage: xdebug
-      
       - name: Node.jsセットアップ
         uses: actions/setup-node@v4
         with:
@@ -36,16 +32,20 @@ jobs:
       - name: Composer依存関係をキャッシュ
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.composer/cache
-            vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          path: vendor
+          key: ${{ runner.os }}-composer-v2-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-composer-
+            ${{ runner.os }}-composer-v2-
+      
+      - name: PHP環境確認とXdebugインストール
+        run: |
+          php -v
+          composer --version
+          # Xdebugをインストール（カバレッジ用）
+          install-php-extensions xdebug
       
       - name: PHP依存関係をインストール
-        run: |
-          composer install --no-interaction --prefer-dist --optimize-autoloader
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
       
       - name: Node.js依存関係をインストール
         run: npm ci

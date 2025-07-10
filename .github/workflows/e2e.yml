@@ -14,8 +14,8 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[skip e2e]') }}
     
     container:
-      image: mcr.microsoft.com/playwright:v1.54.0-noble
-      options: --user 1001
+      image: serversideup/php:8.2-cli-v3.2.1
+      options: --user root
     
     services:
       mysql:
@@ -31,17 +31,16 @@ jobs:
       - name: コードをチェックアウト
         uses: actions/checkout@v4
       
-      - name: PHPセットアップ
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, dom, fileinfo, mysql, pdo_mysql
-      
       - name: Node.jsセットアップ
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+      
+      - name: Playwrightインストール
+        run: |
+          npm install -g @playwright/test@1.54.0
+          npx playwright install --with-deps chromium
       
       - name: PHP依存関係をインストール
         run: composer install --no-interaction --prefer-dist --optimize-autoloader

@@ -48,10 +48,55 @@ export interface DashboardStats {
     lastUpdated?: string;
 }
 
-export interface TopCompany extends Company {
-    influence_score: number;
-    ranking: number;
-    recent_articles?: Article[];
+export interface PeriodStats {
+    total_companies: number;
+    average_score: number;
+    max_score: number;
+    min_score: number;
+    total_articles: number;
+    total_bookmarks: number;
+    last_calculated: string;
+}
+
+export interface RankingStatsResponse {
+    data: {
+        "1w": PeriodStats;
+        "1m": PeriodStats;
+        "3m": PeriodStats;
+        "6m": PeriodStats;
+        "1y": PeriodStats;
+        "3y": PeriodStats;
+        "all": PeriodStats;
+    };
+}
+
+export interface TopCompany {
+    id: number | null;
+    company: {
+        id: number | null;
+        name: string;
+        domain: string;
+        logo_url: string | null;
+    };
+    rank_position: number;
+    total_score: number;
+    article_count: number;
+    total_bookmarks: number;
+    rank_change: number | null;
+    period: {
+        start: string;
+        end: string;
+    };
+    calculated_at: string;
+}
+
+export interface TopCompaniesResponse {
+    data: TopCompany[];
+    meta: {
+        period: string;
+        limit: number;
+        total: number;
+    };
 }
 
 // 検索関連型定義

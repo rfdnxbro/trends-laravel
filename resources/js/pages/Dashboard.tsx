@@ -1,20 +1,20 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../services/api';
-import { DashboardStats, TopCompany, QueryKeys } from '../types';
+import { RankingStatsResponse, TopCompaniesResponse, QueryKeys } from '../types';
 
 const Dashboard: React.FC = () => {
     // ダッシュボード統計データの取得
-    const { data: stats, isLoading: statsLoading } = useQuery({
+    const { data: statsResponse, isLoading: statsLoading } = useQuery({
         queryKey: QueryKeys.DASHBOARD_STATS,
-        queryFn: () => api.get<DashboardStats>('/api/dashboard/stats').then(res => res.data),
+        queryFn: () => api.get<RankingStatsResponse>('/api/rankings/statistics').then(res => res.data),
         retry: 1,
     });
 
     // 上位企業ランキングの取得  
-    const { data: topCompanies, isLoading: companiesLoading } = useQuery({
+    const { data: topCompaniesResponse, isLoading: companiesLoading } = useQuery({
         queryKey: QueryKeys.TOP_COMPANIES,
-        queryFn: () => api.get<TopCompany[]>('/api/companies/top?limit=10').then(res => res.data),
+        queryFn: () => api.get<TopCompaniesResponse>('/api/rankings/1m/top/10').then(res => res.data),
         retry: 1,
     });
 
@@ -33,7 +33,7 @@ const Dashboard: React.FC = () => {
                         {statsLoading ? (
                             <span className="loading-spinner inline-block"></span>
                         ) : (
-                            stats?.totalCompanies || '0'
+                            statsResponse?.data?.['1m']?.total_companies || '0'
                         )}
                     </p>
                 </div>
@@ -43,17 +43,17 @@ const Dashboard: React.FC = () => {
                         {statsLoading ? (
                             <span className="loading-spinner inline-block"></span>
                         ) : (
-                            stats?.totalArticles || '0'
+                            statsResponse?.data?.['1m']?.total_articles || '0'
                         )}
                     </p>
                 </div>
                 <div className="metric-card">
-                    <h3 className="metric-label mb-2">プラットフォーム数</h3>
+                    <h3 className="metric-label mb-2">総ブックマーク数</h3>
                     <p className="metric-value">
                         {statsLoading ? (
                             <span className="loading-spinner inline-block"></span>
                         ) : (
-                            stats?.totalPlatforms || '0'
+                            statsResponse?.data?.['1m']?.total_bookmarks || '0'
                         )}
                     </p>
                 </div>
@@ -82,13 +82,13 @@ const Dashboard: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {topCompanies?.map((company) => (
-                                        <tr key={company.id} className="hover:bg-gray-50">
-                                            <td className="font-medium">#{company.ranking}</td>
-                                            <td className="font-medium text-blue-900">{company.name}</td>
+                                    {topCompaniesResponse?.data?.map((company) => (
+                                        <tr key={company.id || company.company.name} className="hover:bg-gray-50">
+                                            <td className="font-medium">#{company.rank_position}</td>
+                                            <td className="font-medium text-blue-900">{company.company.name}</td>
                                             <td>
                                                 <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                    {company.influence_score.toFixed(2)}
+                                                    {company.total_score.toFixed(2)}
                                                 </span>
                                             </td>
                                             <td>
@@ -100,7 +100,7 @@ const Dashboard: React.FC = () => {
                                     ))}
                                 </tbody>
                             </table>
-                            {(!topCompanies || topCompanies.length === 0) && (
+                            {(!topCompaniesResponse?.data || topCompaniesResponse.data.length === 0) && (
                                 <div className="text-center py-8 text-gray-500">
                                     ランキングデータがありません
                                 </div>

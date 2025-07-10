@@ -508,7 +508,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         // Assert - スコアが合理的な範囲内であることを確認
         $this->assertGreaterThan(0, $score);
         $this->assertLessThan(1000, $score); // 異常値（数万〜数十万）でないことを確認
-        
+
         // より具体的には、ブックマーク数100の記事のスコアが1000未満であることを確認
         // 以前の実装では333,038,444のような異常値が発生していた
         $this->assertLessThan(500, $score); // より厳しい上限値

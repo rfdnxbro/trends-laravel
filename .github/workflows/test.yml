@@ -79,3 +79,9 @@ jobs:
         run: |
           php artisan test --filter=Scraper
           php artisan test --filter=ScrapeCommand
+      
+      - name: Playwrightブラウザをインストール
+        run: npx playwright install --with-deps chromium
+      
+      - name: E2Eテストを実行
+        run: npx playwright test

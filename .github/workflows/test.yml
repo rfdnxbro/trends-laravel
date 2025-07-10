@@ -83,6 +83,14 @@ jobs:
       - name: Playwrightブラウザをインストール
         run: npx playwright install --with-deps chromium
       
+      - name: E2E用のテストデータベースを準備
+        run: |
+          php artisan migrate:fresh --force
+          php artisan db:seed --force
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+      
       - name: Laravel開発サーバーを起動
         run: |
           php artisan serve --host=0.0.0.0 --port=8000 &
@@ -90,8 +98,12 @@ jobs:
           curl -f http://localhost:8000 || (echo "Laravel server failed to start" && exit 1)
         env:
           APP_URL: http://localhost:8000
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
       
       - name: E2Eテストを実行
         run: npx playwright test
         env:
           APP_URL: http://localhost:8000
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite

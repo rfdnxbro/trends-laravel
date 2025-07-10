@@ -46,7 +46,7 @@ Laravel Trendsプロジェクトでは、企業の技術コミュニティ影響
 | `GET /api/rankings/{period}/statistics` | 順位変動統計 | ✅ |
 | `GET /api/rankings/company/{company_id}` | 特定企業のランキング情報 | ✅ |
 
-**詳細ドキュメント**: [企業ランキングAPI](../api/company-ranking-api.md)
+**詳細ドキュメント**: `/storage/api-docs/api-docs.json` (OpenAPI仕様)
 
 ### 2. 企業詳細API 🏢
 
@@ -59,7 +59,7 @@ Laravel Trendsプロジェクトでは、企業の技術コミュニティ影響
 | `GET /api/companies/{company_id}/scores` | 影響力スコア履歴 | ✅ |
 | `GET /api/companies/{company_id}/rankings` | 企業のランキング情報 | ✅ |
 
-**詳細ドキュメント**: [企業詳細API](../api/company-detail-api.md)
+**詳細ドキュメント**: `/storage/api-docs/api-docs.json` (OpenAPI仕様)
 
 ### 3. 検索API 🔍
 
@@ -71,7 +71,7 @@ Laravel Trendsプロジェクトでは、企業の技術コミュニティ影響
 | `GET /api/search/articles` | 記事タイトル・著者名での記事検索 | ✅ |
 | `GET /api/search` | 企業・記事の統合検索 | ✅ |
 
-**詳細ドキュメント**: [検索API](../api/search-api.md)
+**詳細ドキュメント**: `/storage/api-docs/api-docs.json` (OpenAPI仕様)
 
 ## API共通仕様
 
@@ -141,20 +141,14 @@ Laravel Trendsプロジェクトでは、企業の技術コミュニティ影響
 
 ## 今後の拡張予定
 
-### 短期（次のスプリント）
-- [ ] **認証機能**: JWT トークンベース認証
-- [ ] **フィルタリング強化**: 技術スタック・企業規模での絞り込み
-- [ ] **レスポンス最適化**: GraphQL対応検討
-
-### 中期（3ヶ月以内）
-- [ ] **WebSocket API**: リアルタイム更新通知
-- [ ] **統計API**: より詳細な分析データ
-- [ ] **エクスポートAPI**: CSV/JSONでのデータエクスポート
-
-### 長期（6ヶ月以内）
-- [ ] **機械学習API**: トレンド予測・レコメンデーション
-- [ ] **外部連携API**: Slack・Teams通知
-- [ ] **アナリティクスAPI**: 利用状況分析
+- **認証機能**: JWT トークンベース認証
+- **フィルタリング強化**: 技術スタック・企業規模での絞り込み
+- **WebSocket API**: リアルタイム更新通知
+- **統計API**: より詳細な分析データ
+- **エクスポートAPI**: CSV/JSONでのデータエクスポート
+- **機械学習API**: トレンド予測・レコメンデーション
+- **外部連携API**: Slack・Teams通知
+- **アナリティクスAPI**: 利用状況分析
 
 ## 利用例
 
@@ -176,7 +170,7 @@ curl "https://api.trends.example.com/api/search/articles?q=React&days=7&min_book
 ## 開発者向け情報
 
 ### ローカル開発
-1. APIドキュメント確認: `docs/api/` ディレクトリ
+1. APIドキュメント確認: `/storage/api-docs/api-docs.json` (OpenAPI仕様)
 2. テスト実行: `php artisan test`
 3. APIルート確認: `php artisan route:list --path=api`
 

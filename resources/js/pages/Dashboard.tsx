@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { RankingStatsResponse, TopCompaniesResponse, QueryKeys } from '../types';
 
@@ -92,9 +93,12 @@ const Dashboard: React.FC = () => {
                                                 </span>
                                             </td>
                                             <td>
-                                                <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
+                                                <Link 
+                                                    to={`/companies/${company.company.id}`}
+                                                    className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                                                >
                                                     詳細を見る
-                                                </button>
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}

@@ -36,26 +36,9 @@ git switch -c feature/new-feature
 ```
 
 #### 2. 開発作業中の必須実行コマンド
-開発中は以下を定期的に実行してCIエラーを事前に防ぐ：
-```bash
-# テスト実行
-php artisan test
+開発中は定期的に品質チェックを実行してCIエラーを事前に防ぐ。
 
-# コードスタイルチェック（自動修正）
-vendor/bin/pint
-
-# 静的解析
-vendor/bin/phpstan analyse --memory-limit=1G
-
-# フロントエンドテスト実行
-npm test
-
-# フロントエンドビルド
-npm run build
-
-# E2Eテスト実行
-npx playwright test
-```
+**詳細な実行手順**: [開発フロー.md](docs/wiki/開発フロー.md)を参照
 
 #### 3. PR作成前の必須チェック
 **PR作成前に必ず以下をすべて実行し、エラーがないことを確認する：**
@@ -69,9 +52,7 @@ npx playwright test
 - **プロジェクト構造変更**: [プロジェクト概要.md](docs/wiki/プロジェクト概要.md)
 
 ##### 3.2 テスト・品質チェック実行
-```bash
-php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memory-limit=1G && npm test && npm run build && npm run test:e2e
-```
+**詳細な実行手順**: [開発フロー.md](docs/wiki/開発フロー.md)を参照
 
 #### 4. PR作成後のCI確認
 - **GitHub ActionsのCI/CDパイプラインが正常に完了することを必ず確認する**
@@ -88,26 +69,8 @@ php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memor
 - **mainブランチにmerge済みのdatabase/migrationsファイルを後から変更してはいけない**
 - 既存のmigrationファイルを変更する場合は、新しいmigrationファイルを作成する
 
-### E2Eテスト実行
-```bash
-# E2Eテスト実行
-npm run test:e2e
-
-# E2Eテストレポート表示
-npx playwright show-report
-
-# E2Eテストをヘッドレスモードで実行
-npm run test:e2e:headed
-
-# デバッグモードで実行
-npm run test:e2e:debug
-
-# UIモードで実行
-npm run test:e2e:ui
-
-# 特定のテストファイルのみ実行
-npx playwright test tests/e2e/homepage.spec.ts
-```
+### テスト実行
+**詳細な実行手順**: [開発フロー.md](docs/wiki/開発フロー.md)を参照
 
 ### CI/CD 並列実行
 - **Unit/Feature Tests**: 通常のCIワークフロー（約2分）

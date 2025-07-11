@@ -2,11 +2,11 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import RankingHistoryChart from '../RankingHistoryChart';
-import { RankingHistoryData } from '../../types/index';
+import { RankingHistoryData, MockChartProps } from '../../types/index';
 
 // Chart.jsのモック
 vi.mock('react-chartjs-2', () => ({
-    Line: ({ data, options, ...props }: any) => (
+    Line: ({ data, options, ...props }: MockChartProps) => (
         <div data-testid="line-chart" {...props}>
             <div data-testid="chart-data">{JSON.stringify(data)}</div>
             <div data-testid="chart-options">{JSON.stringify(options)}</div>

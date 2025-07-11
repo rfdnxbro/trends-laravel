@@ -59,6 +59,12 @@ Route::middleware(['throttle:60,1'])->group(function () {
         Route::get('{company_id}/rankings', [CompanyController::class, 'rankings']);
     });
 
+    // 記事 API
+    Route::prefix('articles')->group(function () {
+        // 記事一覧
+        Route::get('', [App\Http\Controllers\Api\ArticleController::class, 'index']);
+    });
+
     // 検索 API
     Route::prefix('search')->group(function () {
         // 企業検索

@@ -2,11 +2,11 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import TrendChart from '../TrendChart';
-import { TrendChartData } from '../../types/index';
+import { TrendChartData, MockChartProps } from '../../types/index';
 
 // Chart.jsのモック
 vi.mock('react-chartjs-2', () => ({
-    Bar: ({ data, options, ...props }: any) => (
+    Bar: ({ data, options, ...props }: MockChartProps) => (
         <div data-testid="bar-chart" {...props}>
             <div data-testid="chart-data">{JSON.stringify(data)}</div>
             <div data-testid="chart-options">{JSON.stringify(options)}</div>

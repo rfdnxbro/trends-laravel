@@ -66,211 +66,20 @@
 
 **ファイルパス:** `.github/workflows/test.yml`
 
-```yaml
-name: テスト
-
-on:
-  pull_request:
-    branches: [ main ]
-  push:
-    branches: [ main ]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    # コミットメッセージに[skip ci]が含まれている場合はスキップ
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
-    
-    # テスト用にSQLite in-memoryデータベースを使用
-    # 外部サービスは不要
-    
-    steps:
-      - name: コードをチェックアウト
-        uses: actions/checkout@v4
-      
-      - name: PHPセットアップ
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
-          coverage: xdebug
-      
-      - name: Node.jsセットアップ
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Composer依存関係をキャッシュ
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.composer/cache
-            vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-      
-      - name: PHP依存関係をインストール
-        run: |
-          composer install --no-interaction --prefer-dist --optimize-autoloader
-      
-      - name: Node.js依存関係をインストール
-        run: npm ci
-      
-      - name: 環境ファイルを作成
-        run: |
-          cp .env.ci .env
-          php artisan key:generate
-      
-      - name: フロントエンドアセットをビルド
-        run: npm run build
-      
-      - name: データベースを設定
-        run: |
-          php artisan config:cache
-          php artisan migrate --force
-      
-      - name: PHPテストを実行
-        run: php artisan test
-      
-      - name: コードスタイルチェックを実行
-        run: vendor/bin/pint --test
-      
-      - name: 静的解析を実行
-        run: vendor/bin/phpstan analyse --memory-limit=1G
-      
-      - name: フロントエンドテストを実行
-        run: npm test
-      
-      - name: スクレイピングサービスをテスト
-        run: |
-          php artisan test --filter=Scraper
-          php artisan test --filter=ScrapeCommand
-```
+詳細なワークフロー設定については、実際のファイルを参照してください：
+- ubuntu-latest + shivammathur/setup-php@v2
+- SQLite in-memory データベース使用
+- 全テスト実行 + 品質チェック + スクレイピングテスト
 
 ### E2E専用ワークフロー
 
 **ファイルパス:** `.github/workflows/e2e.yml`
 
-```yaml
-name: E2Eテスト
-
-on:
-  pull_request:
-    branches: [ main ]
-  push:
-    branches: [ main ]
-
-jobs:
-  e2e:
-    runs-on: ubuntu-latest
-    
-    # コミットメッセージに[skip e2e]が含まれている場合はスキップ
-    if: ${{ !contains(github.event.head_commit.message, '[skip e2e]') }}
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: trends_laravel_e2e
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
-        options: --health-cmd="pg_isready -U postgres" --health-interval=10s --health-timeout=5s --health-retries=3
-    
-    steps:
-      - name: コードをチェックアウト
-        uses: actions/checkout@v4
-      
-      - name: PHPセットアップ
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, dom, fileinfo, pgsql, pdo_pgsql
-          coverage: none
-      
-      - name: Node.js 20をセットアップ
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Composer依存関係をキャッシュ
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.composer/cache
-            vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-      
-      - name: PHP依存関係をインストール
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-      
-      - name: Node.js依存関係をインストール
-        run: npm ci
-      
-      - name: Playwrightブラウザインストール
-        run: npx playwright install --with-deps chromium
-      
-      - name: 環境ファイルを作成
-        run: |
-          cp .env.ci .env
-          php artisan key:generate
-      
-      - name: フロントエンドアセットをビルド
-        run: npm run build
-      
-      - name: データベースを設定
-        run: |
-          php artisan config:cache
-          php artisan migrate:fresh --force
-          php artisan db:seed --force
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_DATABASE: trends_laravel_e2e
-          DB_USERNAME: postgres
-          DB_PASSWORD: password
-      
-      - name: Laravel開発サーバーを起動
-        run: |
-          php artisan serve --host=0.0.0.0 --port=8000 &
-          sleep 10
-          curl -f http://localhost:8000 || (echo "Laravel server failed to start" && exit 1)
-        env:
-          APP_URL: http://localhost:8000
-          DB_CONNECTION: pgsql
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_DATABASE: trends_laravel_e2e
-          DB_USERNAME: postgres
-          DB_PASSWORD: password
-      
-      - name: E2Eテストを実行
-        run: npx playwright test --workers=4
-        env:
-          APP_URL: http://localhost:8000
-          DB_CONNECTION: pgsql
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_DATABASE: trends_laravel_e2e
-          DB_USERNAME: postgres
-          DB_PASSWORD: password
-      
-      - name: Playwrightレポートをアップロード
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
-```
+詳細なワークフロー設定については、実際のファイルを参照してください：
+- ubuntu-latest + shivammathur/setup-php@v2
+- PostgreSQL 15 + Laravel開発サーバー
+- Playwright + Chromium（4並列実行）
+- 失敗時レポート自動アップロード
 
 ## 🎯 現在の品質状況
 | 項目 | 状況 |
@@ -297,7 +106,7 @@ jobs:
 - **高速テスト環境**: SQLite in-memoryで外部依存なし
 - **完全な型安全性**: PHPStan レベル4で0エラー
 - **最適化されたビルド順序**: Viteアセット生成 → テスト実行
-- **クリーンなテストスイート**: 223の価値あるテスト
+- **クリーンなテストスイート**: 594の価値あるテスト
 - **警告ゼロ**: PHPUnitアトリビュート記法対応
 - **確実な品質保証**: エラー隠蔽なしの設計
 
@@ -338,30 +147,21 @@ jobs:
 
 ### 自動化されたチェック
 
-PR作成時に自動実行される項目：
+PR作成時に自動実行される項目の詳細は、以下のファイルを参照してください：
+- **メインCI**: `.github/workflows/test.yml`
+- **E2E CI**: `.github/workflows/e2e.yml`
 
-```bash
-# 以下がCI/CDで自動実行されます（順次実行）
-php artisan test             # PHPUnitテスト
-vendor/bin/pint --test       # コードスタイルチェック
-vendor/bin/phpstan analyse   # 静的解析
-npm test                     # フロントエンドテスト
-npm run build               # フロントエンドビルド
-
-# キャッシュ戦略
-# Composer・npmキャッシュによりdependencies再取得を削減
-
-# 条件付き実行
-# コミットメッセージに[skip ci]が含まれている場合はスキップ
-```
+**実行される主要チェック**:
+- PHPUnitテスト（429テスト）
+- コードスタイルチェック（Laravel Pint）
+- 静的解析（PHPStan）
+- フロントエンドテスト（158テスト）
+- スクレイピングテスト（56テスト）
+- E2Eテスト（7テスト）
 
 ### 手動チェック（必要に応じて）
 
-```bash
-# 開発環境での追加チェック
-php artisan queue:work --once --queue=scraping
-php artisan horizon:status
-```
+開発環境での追加チェック方法については、`CLAUDE.md`および`docs/wiki/開発フロー.md`を参照してください。
 
 ## 本番環境
 

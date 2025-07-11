@@ -28,7 +28,7 @@
 - **テストフレームワーク**: Playwright
 - **実行タイミング**: PR作成時、mainブランチへのプッシュ時
 - **ワークフローファイル**: `.github/workflows/e2e.yml`
-- **ワークフロー名**: `E2E Tests`
+- **ワークフロー名**: `E2Eテスト`
 - **実装状況**: ✅ **完全実装済み**
 - **テスト数**: 7個のブラウザテストケース
 - **環境**: PostgreSQL + Laravel開発サーバー
@@ -155,7 +155,7 @@ jobs:
 **ファイルパス:** `.github/workflows/e2e.yml`
 
 ```yaml
-name: E2E Tests
+name: E2Eテスト
 
 on:
   pull_request:

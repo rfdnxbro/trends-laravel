@@ -53,7 +53,7 @@ class ArticleControllerTest extends TestCase
             ]);
     }
 
-    public function test_企業_i_dでフィルタリングできること()
+    public function test_企業idでフィルタリングできること()
     {
         $company1 = Company::factory()->create();
         $company2 = Company::factory()->create();
@@ -79,7 +79,7 @@ class ArticleControllerTest extends TestCase
         }
     }
 
-    public function test_プラットフォーム_i_dでフィルタリングできること()
+    public function test_プラットフォームidでフィルタリングできること()
     {
         $company = Company::factory()->create();
         $platform1 = Platform::factory()->create();

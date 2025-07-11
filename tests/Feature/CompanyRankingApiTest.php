@@ -199,7 +199,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_無効な企業_i_dでランキング取得するとエラーが返る()
+    public function test_無効な企業idでランキング取得するとエラーが返る()
     {
         $response = $this->getJson('/api/rankings/company/99999');
 

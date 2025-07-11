@@ -2,30 +2,50 @@
 export interface Company {
     id: number;
     name: string;
+    domain: string;
     description?: string;
+    logo_url?: string;
+    website_url?: string;
     website?: string;
     hatena_username?: string;
     qiita_username?: string;
     zenn_username?: string;
     influence_score?: number;
     ranking?: number;
+    is_active?: boolean;
     created_at: string;
     updated_at: string;
+}
+
+export interface Platform {
+    id: number;
+    name: string;
+    base_url?: string;
+    is_active?: boolean;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface Article {
     id: number;
     title: string;
     url: string;
+    author_name?: string;
     published_at: string;
     bookmark_count: number;
-    like_count: number;
-    view_count: number;
-    company_id: number;
-    platform: string;
+    likes_count?: number;
+    like_count?: number;
+    view_count?: number;
+    company_id?: number;
+    platform_id?: number;
+    platform: Platform;
+    domain?: string;
+    author?: string;
+    author_url?: string;
+    scraped_at?: string;
     created_at: string;
     updated_at: string;
-    company?: Company;
+    company: Company | null;
 }
 
 export interface CompanyRanking {
@@ -131,12 +151,27 @@ export interface PaginatedResponse<T> {
     last_page: number;
     per_page: number;
     total: number;
-    links?: {
-        first?: string;
-        last?: string;
-        prev?: string;
-        next?: string;
-    };
+    from?: number;
+    to?: number;
+    first_page_url?: string;
+    last_page_url?: string;
+    next_page_url?: string;
+    prev_page_url?: string;
+    path?: string;
+    links?: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
+}
+
+// 記事一覧専用のページネーション型（後方互換性のため）
+export interface PaginationData {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    data: Article[];
 }
 
 // フォーム関連型定義

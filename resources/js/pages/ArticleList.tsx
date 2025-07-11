@@ -1,36 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
-
-interface Company {
-    id: number;
-    name: string;
-    domain: string;
-    logo_url?: string;
-}
-
-interface Platform {
-    id: number;
-    name: string;
-}
-
-interface Article {
-    id: number;
-    title: string;
-    url: string;
-    author_name?: string;
-    published_at: string;
-    bookmark_count: number;
-    company: Company | null;
-    platform: Platform;
-}
-
-interface PaginationData {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-    data: Article[];
-}
+import { Article, Company, Platform, PaginationData } from '../types';
 
 const ArticleList: React.FC = () => {
     const [articles, setArticles] = useState<PaginationData | null>(null);

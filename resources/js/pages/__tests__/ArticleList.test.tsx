@@ -3,8 +3,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import ArticleList from '../ArticleList';
+import { Article, Company, Platform, PaginationData } from '../../types';
 
-const mockArticles = {
+const mockArticles: PaginationData = {
     data: [
         {
             id: 1,
@@ -18,11 +19,16 @@ const mockArticles = {
                 name: 'Test Company',
                 domain: 'example.com',
                 logo_url: 'https://example.com/logo.png',
+                created_at: '2023-01-01T00:00:00Z',
+                updated_at: '2023-01-01T00:00:00Z',
             },
             platform: {
                 id: 1,
                 name: 'Test Platform',
             },
+            platform_id: 1,
+            created_at: '2023-01-01T00:00:00Z',
+            updated_at: '2023-01-01T00:00:00Z',
         },
         {
             id: 2,
@@ -35,12 +41,17 @@ const mockArticles = {
                 id: 2,
                 name: 'Test Company 2',
                 domain: 'example2.com',
-                logo_url: null,
+                logo_url: undefined,
+                created_at: '2023-01-02T00:00:00Z',
+                updated_at: '2023-01-02T00:00:00Z',
             },
             platform: {
                 id: 1,
                 name: 'Test Platform',
             },
+            platform_id: 1,
+            created_at: '2023-01-02T00:00:00Z',
+            updated_at: '2023-01-02T00:00:00Z',
         },
     ],
     current_page: 1,

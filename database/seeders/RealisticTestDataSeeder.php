@@ -35,13 +35,13 @@ class RealisticTestDataSeeder extends Seeder
     private function createPlatforms(): void
     {
         $platforms = [
-            ['name' => PlatformConstants::QIITA, 'domain' => 'qiita.com'],
-            ['name' => PlatformConstants::ZENN, 'domain' => 'zenn.dev'],
-            ['name' => PlatformConstants::HATENA_BOOKMARK, 'domain' => 'b.hatena.ne.jp'],
+            ['name' => PlatformConstants::QIITA, 'base_url' => 'https://qiita.com'],
+            ['name' => PlatformConstants::ZENN, 'base_url' => 'https://zenn.dev'],
+            ['name' => PlatformConstants::HATENA_BOOKMARK, 'base_url' => 'https://b.hatena.ne.jp'],
         ];
 
         foreach ($platforms as $platform) {
-            Platform::firstOrCreate($platform);
+            Platform::firstOrCreate(['name' => $platform['name']], $platform);
         }
     }
 

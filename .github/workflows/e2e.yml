@@ -38,8 +38,7 @@ jobs:
       - name: PostgreSQL PHP拡張をインストール
         run: |
           apt-get update
-          apt-get install -y libpq-dev
-          docker-php-ext-install pgsql pdo_pgsql
+          apt-get install -y php8.2-pgsql php8.2-pdo-pgsql
       
       - name: Playwrightブラウザインストール
         run: npx playwright install --with-deps chromium

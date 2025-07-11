@@ -14,14 +14,26 @@
 - **ワークフロー名**: `Wiki同期`
 - **実装状況**: ✅ 完全実装済み
 
-### 自動テストパイプライン
+### 自動テストパイプライン（統合CI）
 - **テストフレームワーク**: PHPUnit、vitest
 - **実行タイミング**: PR作成時、mainブランチへのプッシュ時
 - **ワークフローファイル**: `.github/workflows/test.yml`
 - **ワークフロー名**: `テスト`
 - **実装状況**: ✅ **完全実装済み**
-- **テスト数**: PHPUnit 223テスト、フロントエンド 64テスト
+- **テスト数**: PHPUnit 429テスト、フロントエンド 158テスト
 - **環境**: SQLite in-memory（高速・一貫性保証）
+- **CI統一化**: ubuntu-latest + shivammathur/setup-php@v2
+
+### E2E専用テストパイプライン
+- **テストフレームワーク**: Playwright
+- **実行タイミング**: PR作成時、mainブランチへのプッシュ時
+- **ワークフローファイル**: `.github/workflows/e2e.yml`
+- **ワークフロー名**: `E2E Tests`
+- **実装状況**: ✅ **完全実装済み**
+- **テスト数**: 7個のブラウザテストケース
+- **環境**: PostgreSQL + Laravel開発サーバー
+- **並列実行**: 4ワーカーで高速実行（約2分）
+- **MCP統合**: Claude Code連携でテスト自動化（issue #102実装完了）
 
 ### テストカバレッジレポート
 - **カバレッジ計測**: PHPUnit with Xdebug
@@ -42,7 +54,15 @@
 
 ## 🔧 実装されたテストパイプライン
 
-### ワークフローファイル
+### 並列実行アーキテクチャ
+
+**メインCIワークフロー** と **E2E専用ワークフロー** が並列実行され、トータル約2分でCI/CDが完了します。
+
+#### テスト責務分離
+- **メインCI**: Unit/Feature Tests + 品質チェック（SQLite）
+- **E2E CI**: ブラウザテスト + ユーザージャーニー検証（PostgreSQL）
+
+### メインCIワークフロー
 
 **ファイルパス:** `.github/workflows/test.yml`
 
@@ -130,14 +150,138 @@ jobs:
           php artisan test --filter=ScrapeCommand
 ```
 
+### E2E専用ワークフロー
+
+**ファイルパス:** `.github/workflows/e2e.yml`
+
+```yaml
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    
+    # コミットメッセージに[skip e2e]が含まれている場合はスキップ
+    if: ${{ !contains(github.event.head_commit.message, '[skip e2e]') }}
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: trends_laravel_e2e
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready -U postgres" --health-interval=10s --health-timeout=5s --health-retries=3
+    
+    steps:
+      - name: コードをチェックアウト
+        uses: actions/checkout@v4
+      
+      - name: PHPセットアップ
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, dom, fileinfo, pgsql, pdo_pgsql
+          coverage: none
+      
+      - name: Node.js 20をセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Composer依存関係をキャッシュ
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache
+            vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+      
+      - name: PHP依存関係をインストール
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      
+      - name: Node.js依存関係をインストール
+        run: npm ci
+      
+      - name: Playwrightブラウザインストール
+        run: npx playwright install --with-deps chromium
+      
+      - name: 環境ファイルを作成
+        run: |
+          cp .env.ci .env
+          php artisan key:generate
+      
+      - name: フロントエンドアセットをビルド
+        run: npm run build
+      
+      - name: データベースを設定
+        run: |
+          php artisan config:cache
+          php artisan migrate:fresh --force
+          php artisan db:seed --force
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: trends_laravel_e2e
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+      
+      - name: Laravel開発サーバーを起動
+        run: |
+          php artisan serve --host=0.0.0.0 --port=8000 &
+          sleep 10
+          curl -f http://localhost:8000 || (echo "Laravel server failed to start" && exit 1)
+        env:
+          APP_URL: http://localhost:8000
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: trends_laravel_e2e
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+      
+      - name: E2Eテストを実行
+        run: npx playwright test --workers=4
+        env:
+          APP_URL: http://localhost:8000
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: trends_laravel_e2e
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+      
+      - name: Playwrightレポートをアップロード
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+```
+
 ## 🎯 現在の品質状況
 | 項目 | 状況 |
 |------|------|
-| PHPUnitテスト | 223テストパス |
-| フロントエンドテスト | 64テストパス |
+| PHPUnitテスト | 429テストパス |
+| フロントエンドテスト | 158テストパス |
+| E2Eテスト | 7テストパス（Playwright） |
 | Laravel Pint | コードスタイル完全パス |
 | PHPStan | レベル4でエラー0 |
 | フロントエンドビルド | 本番ビルド成功 |
+| CI並列実行 | 約2分で完了 |
 
 ## 🚀 実装された品質保証
 
@@ -157,12 +301,13 @@ jobs:
 - **警告ゼロ**: PHPUnitアトリビュート記法対応
 - **確実な品質保証**: エラー隠蔽なしの設計
 
-### パフォーマンス最適化（v2.0）
+### パフォーマンス最適化（v3.0）
 - **キャッシュ戦略**: Composer・npmキャッシュでdependencies再取得を削減 ✅
-- **条件付き実行**: `[skip ci]`メッセージでの不要ビルドスキップ ✅
+- **条件付き実行**: `[skip ci]`/`[skip e2e]`メッセージでの不要ビルドスキップ ✅
 - **日本語対応**: ワークフロー名・ステップ名の日本語化 ✅
-- **並列実行**: エラーハンドリング問題により一旦無効化 ⚠️
-- **現在の実行時間**: 90秒（改善前: 89秒）
+- **並列実行**: メインCI + E2E CI の並列実行で高速化 ✅
+- **CI統一化**: ubuntu-latest + shivammathur/setup-php@v2 採用 ✅
+- **現在の実行時間**: 約2分（メインCI: 約2分、E2E CI: 約2分）
 - **キャッシュ効果**: 初回実行後は20-30秒短縮見込み
 
 ## 📊 パフォーマンス改善の詳細
@@ -172,9 +317,11 @@ jobs:
 |------|------|------|
 | **Composerキャッシュ** | ✅ 実装済み | dependencies再取得を削減 |
 | **npmキャッシュ** | ✅ 実装済み | node_modules再構築を削減 |
-| **条件付き実行** | ✅ 実装済み | `[skip ci]`で不要ビルド回避 |
+| **条件付き実行** | ✅ 実装済み | `[skip ci]`/`[skip e2e]`で不要ビルド回避 |
 | **日本語化** | ✅ 実装済み | 可読性向上 |
-| **並列実行** | ⚠️ 無効化 | エラーハンドリング問題により保留 |
+| **並列実行** | ✅ 実装済み | メインCI + E2E CI の並列実行 |
+| **CI統一化** | ✅ 実装済み | ubuntu-latest + shivammathur/setup-php@v2 |
+| **責務分離** | ✅ 実装済み | SQLite(Main) + PostgreSQL(E2E) |
 
 ### キャッシュ効果の詳細
 - **初回実行**: フルダウンロード（90秒）
@@ -182,9 +329,10 @@ jobs:
 - **頻繁なPush**: 継続的な短縮効果
 
 ### 将来の改善計画
-1. **並列実行の再実装**: エラーハンドリング改善後
-2. **マトリックス戦略**: 複数PHP/Nodeバージョン対応時
-3. **段階的実行**: 軽量チェック先行で早期フィードバック
+1. **マトリックス戦略**: 複数PHP/Nodeバージョン対応時
+2. **段階的実行**: 軽量チェック先行で早期フィードバック
+3. **自動デプロイメント**: 品質チェック完了後の自動デプロイ
+4. **E2Eテスト拡張**: より多くのユーザージャーニーカバレッジ
 
 ## 現在の開発フロー
 

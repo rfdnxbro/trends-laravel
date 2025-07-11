@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container: kirschbaumdevelopment/laravel-test-runner:8.2
     
     # コミットメッセージに[skip ci]が含まれている場合はスキップ
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
@@ -20,11 +21,13 @@ jobs:
       - name: コードをチェックアウト
         uses: actions/checkout@v4
       
-      - name: Node.jsセットアップ
-        uses: actions/setup-node@v4
+      - name: Node.js依存関係をキャッシュ
+        uses: actions/cache@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       
       - name: Composer依存関係をキャッシュ
         uses: actions/cache@v4
@@ -33,14 +36,6 @@ jobs:
           key: ${{ runner.os }}-composer-v2-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-v2-
-      
-      - name: PHPセットアップ (キャッシュ最適化)
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
-          coverage: xdebug
-          tools: composer:v2
       
       - name: PHP依存関係をインストール
         run: composer install --no-interaction --prefer-dist --optimize-autoloader

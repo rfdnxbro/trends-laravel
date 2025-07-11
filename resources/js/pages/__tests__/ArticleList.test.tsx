@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import ArticleList from '../ArticleList';
-import { Article, Company, Platform, PaginationData } from '../../types';
+import { Article, Company, Platform, PaginationData, MockFetch } from '../../types';
 
 const mockArticles: PaginationData = {
     data: [
@@ -61,7 +61,7 @@ const mockArticles: PaginationData = {
 };
 
 beforeEach(() => {
-    global.fetch = vi.fn();
+    global.fetch = vi.fn() as MockFetch;
 });
 
 afterEach(() => {
@@ -78,7 +78,7 @@ const renderArticleList = () => {
 
 describe('ArticleList', () => {
     it('記事一覧が正しく表示される', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as MockFetch).mockResolvedValueOnce({
             ok: true,
             json: async () => mockArticles,
         });
@@ -97,7 +97,7 @@ describe('ArticleList', () => {
     });
 
     it('企業のロゴが表示される', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as MockFetch).mockResolvedValueOnce({
             ok: true,
             json: async () => mockArticles,
         });
@@ -114,7 +114,7 @@ describe('ArticleList', () => {
     });
 
     it('ブックマーク数が表示される', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as MockFetch).mockResolvedValueOnce({
             ok: true,
             json: async () => mockArticles,
         });
@@ -130,7 +130,7 @@ describe('ArticleList', () => {
     });
 
     it('記事のリンクが正しく設定される', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as MockFetch).mockResolvedValueOnce({
             ok: true,
             json: async () => mockArticles,
         });
@@ -151,7 +151,7 @@ describe('ArticleList', () => {
     });
 
     it('ローディング状態が表示される', () => {
-        (global.fetch as any).mockImplementationOnce(
+        (global.fetch as MockFetch).mockImplementationOnce(
             () => new Promise(() => {}) // 永続的にpending状態
         );
 
@@ -161,7 +161,7 @@ describe('ArticleList', () => {
     });
 
     it('エラー状態が表示される', async () => {
-        (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+        (global.fetch as MockFetch).mockRejectedValueOnce(new Error('Network error'));
 
         renderArticleList();
 
@@ -173,7 +173,7 @@ describe('ArticleList', () => {
     });
 
     it('記事が見つからない場合のメッセージが表示される', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as MockFetch).mockResolvedValueOnce({
             ok: true,
             json: async () => ({
                 data: [],

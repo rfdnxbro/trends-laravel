@@ -299,3 +299,23 @@ export const QueryKeys = {
     TREND_CHART: (period: string) => ['trend-chart', period] as const,
     RANKING_HISTORY: (companyId: number, period: string) => ['ranking-history', companyId, period] as const,
 } as const;
+
+// テスト用の型定義
+export interface MockResponse {
+    ok: boolean;
+    json: () => Promise<PaginationData | ApiError>;
+}
+
+export interface MockFetch {
+    (url: string, options?: RequestInit): Promise<MockResponse>;
+    mockResolvedValueOnce: (value: MockResponse) => MockFetch;
+    mockRejectedValueOnce: (error: Error) => MockFetch;
+    mockImplementationOnce: (fn: () => Promise<MockResponse>) => MockFetch;
+}
+
+// Chart.js テスト用の型定義
+export interface MockChartProps {
+    data: ChartDataPoint[] | TimeSeriesData[] | TrendChartData | InfluenceChartData[] | RankingHistoryData[];
+    options?: ChartConfig;
+    [key: string]: unknown;
+}

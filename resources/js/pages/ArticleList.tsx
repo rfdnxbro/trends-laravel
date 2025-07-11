@@ -20,7 +20,7 @@ interface Article {
     author_name?: string;
     published_at: string;
     bookmark_count: number;
-    company: Company;
+    company: Company | null;
     platform: Platform;
 }
 
@@ -122,7 +122,7 @@ const ArticleList: React.FC = () => {
                                                 <div className="mt-2 flex items-center text-sm text-gray-500">
                                                     <div className="flex items-center space-x-4">
                                                         <div className="flex items-center space-x-2">
-                                                            {article.company.logo_url && (
+                                                            {article.company?.logo_url && (
                                                                 <img
                                                                     src={article.company.logo_url}
                                                                     alt={article.company.name}
@@ -130,7 +130,7 @@ const ArticleList: React.FC = () => {
                                                                 />
                                                             )}
                                                             <span className="font-medium text-gray-900">
-                                                                {article.company.name}
+                                                                {article.company?.name || '不明な企業'}
                                                             </span>
                                                         </div>
                                                         <span className="text-gray-300">•</span>

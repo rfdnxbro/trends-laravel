@@ -74,3 +74,8 @@ jobs:
       
       - name: フロントエンドテストを実行
         run: npm test
+      
+      - name: スクレイピングサービスをテスト
+        run: |
+          php artisan test --filter=Scraper
+          php artisan test --filter=ScrapeCommand

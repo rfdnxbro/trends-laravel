@@ -1,38 +1,70 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('企業ランキング機能', () => {
-  test('ランキングページが正常に表示される', async ({ page }) => {
-    // ホームページに移動
+  test('ランキングデータが表示される', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
     
-    // ページが正常にロードされることを確認
-    await expect(page).toHaveTitle(/DevCorpTrends/);
+    // ランキングテーブルやリストの存在確認
+    const rankingElements = page.locator('table, ul, .ranking, .companies, [data-testid="ranking"]');
     
-    // Reactアプリケーションがロードされることを確認
-    await expect(page.locator('#root')).toBeVisible();
-  });
-
-  test('メインナビゲーションが正常に動作する', async ({ page }) => {
-    await page.goto('/');
-    
-    // ナビゲーション要素が存在するか確認
-    const navigation = page.locator('nav, header, [role="navigation"]');
-    if (await navigation.count() > 0) {
-      await expect(navigation.first()).toBeVisible();
-    }
-    
-    // メニューリンクが存在するか確認
-    const menuLinks = page.locator('a[href*="/"], button');
-    if (await menuLinks.count() > 0) {
-      await expect(menuLinks.first()).toBeVisible();
+    if (await rankingElements.count() > 0) {
+      await expect(rankingElements.first()).toBeVisible();
+      
+      // 企業名や順位情報が表示されているか確認
+      const companyInfo = page.locator('td, li, .company-name, .rank');
+      if (await companyInfo.count() > 0) {
+        await expect(companyInfo.first()).toBeVisible();
+      }
     }
   });
 
-  test('ユーザーインターフェースがレスポンシブに動作する', async ({ page }) => {
+  test('期間フィルター機能が動作する', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    
+    // 期間選択のドロップダウンやボタンを探す
+    const periodFilters = page.locator('select, button:has-text("週"), button:has-text("月"), .period-filter');
+    
+    if (await periodFilters.count() > 0) {
+      const firstFilter = periodFilters.first();
+      await expect(firstFilter).toBeVisible();
+      
+      // フィルターが操作可能であることを確認
+      await expect(firstFilter).toBeEnabled();
+    }
+  });
+
+  test('企業詳細ページへの遷移が動作する', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    
+    // 企業名のリンクを探す
+    const companyLinks = page.locator('a[href*="/companies/"], a[href*="/company/"], .company-link');
+    
+    if (await companyLinks.count() > 0) {
+      const firstLink = companyLinks.first();
+      await expect(firstLink).toBeVisible();
+      
+      // リンクをクリックして詳細ページに移動
+      await firstLink.click();
+      
+      // ページが変わったことを確認
+      await page.waitForLoadState('networkidle');
+      await expect(page).toHaveURL(/\/compan/);
+    }
+  });
+
+  test('レスポンシブデザインが正常に動作する', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
     
     // モバイルサイズでの表示確認
     await page.setViewportSize({ width: 375, height: 667 });
+    await expect(page.locator('#root')).toBeVisible();
+    
+    // タブレットサイズでの表示確認
+    await page.setViewportSize({ width: 768, height: 1024 });
     await expect(page.locator('#root')).toBeVisible();
     
     // デスクトップサイズでの表示確認

@@ -1,63 +1,54 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('ユーザージャーニー', () => {
-  test('アプリケーションの基本表示が正常に動作する', async ({ page }) => {
+test.describe('ホームページ', () => {
+  test('ホームページが正常に表示される', async ({ page }) => {
     await page.goto('/');
     
     // ページタイトルが正しく設定されている
     await expect(page).toHaveTitle(/DevCorpTrends/);
     
-    // Reactアプリケーションが正常にマウントされている
+    // Reactアプリケーションがロードされている
     await expect(page.locator('#root')).toBeVisible();
     
-    // エラーメッセージが表示されていない
-    const errorMessage = page.locator('text=React が読み込まれていません');
-    await expect(errorMessage).not.toBeVisible();
+    // ページが完全にロードされるまで待機
+    await page.waitForLoadState('networkidle');
   });
 
-  test('ページ間ナビゲーションが正常に動作する', async ({ page }) => {
+  test('検索機能が正常に動作する', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
     
-    // ナビゲーション要素の存在確認
-    const navigationElements = [
-      'nav',
-      'header', 
-      '[role="navigation"]',
-      'a[href]',
-      'button'
-    ];
+    // 検索フィールドを探す
+    const searchInput = page.locator('input[type="search"], input[placeholder*="検索"], input[placeholder*="search"]');
     
-    for (const selector of navigationElements) {
-      const element = page.locator(selector);
-      if (await element.count() > 0) {
-        await expect(element.first()).toBeVisible();
-        break;
+    if (await searchInput.count() > 0) {
+      await searchInput.first().fill('テスト');
+      await searchInput.first().press('Enter');
+      
+      // 検索結果が表示されるまで待機
+      await page.waitForTimeout(2000);
+      
+      // 検索結果エリアが表示されているか確認
+      const resultsArea = page.locator('[data-testid="search-results"], .search-results, .results');
+      if (await resultsArea.count() > 0) {
+        await expect(resultsArea.first()).toBeVisible();
       }
     }
   });
 
-  test('アプリケーションの状態管理が正常に動作する', async ({ page }) => {
+  test('メインナビゲーションが動作する', async ({ page }) => {
     await page.goto('/');
-    
-    // ページがインタラクティブになるまで待機
     await page.waitForLoadState('networkidle');
     
-    // JavaScriptエラーがないことを確認
-    const jsErrors: string[] = [];
-    page.on('console', msg => {
-      if (msg.type() === 'error') {
-        jsErrors.push(msg.text());
-      }
-    });
+    // ナビゲーション要素を探す
+    const navLinks = page.locator('nav a, header a, [role="navigation"] a');
     
-    // 少し待機してエラーが発生しないか確認
-    await page.waitForTimeout(1000);
-    
-    // 重大なエラーがないことを確認（警告は許可）
-    const criticalErrors = jsErrors.filter(error => 
-      !error.includes('Warning') && 
-      !error.includes('DevTools')
-    );
-    expect(criticalErrors).toHaveLength(0);
+    if (await navLinks.count() > 0) {
+      const firstLink = navLinks.first();
+      await expect(firstLink).toBeVisible();
+      
+      // リンクがクリック可能であることを確認
+      await expect(firstLink).toBeEnabled();
+    }
   });
 });

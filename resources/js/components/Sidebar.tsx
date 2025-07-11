@@ -8,6 +8,7 @@ const Sidebar: React.FC = () => {
         { name: 'ダッシュボード', href: '/', current: location.pathname === '/' },
         { name: 'ランキング', href: '/rankings', current: location.pathname === '/rankings' },
         { name: '企業一覧', href: '/companies', current: location.pathname === '/companies' },
+        { name: '記事一覧', href: '/articles', current: location.pathname === '/articles' },
         { name: '検索', href: '/search', current: location.pathname === '/search' },
     ];
 

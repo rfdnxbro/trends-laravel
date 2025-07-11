@@ -15,14 +15,15 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[skip e2e]') }}
     
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:15
         env:
-          MYSQL_DATABASE: trends_laravel_e2e
-          MYSQL_ROOT_PASSWORD: password
+          POSTGRES_DB: trends_laravel_e2e
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
         ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+          - 5432:5432
+        options: --health-cmd="pg_isready -U postgres" --health-interval=10s --health-timeout=5s --health-retries=3
     
     steps:
       - name: コードをチェックアウト
@@ -33,6 +34,12 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+      
+      - name: PostgreSQL PHP拡張をインストール
+        run: |
+          apt-get update
+          apt-get install -y libpq-dev
+          docker-php-ext-install pgsql pdo_pgsql
       
       - name: Playwrightブラウザインストール
         run: npx playwright install --with-deps chromium
@@ -65,11 +72,11 @@ jobs:
           php artisan migrate:fresh --force
           php artisan db:seed --force
         env:
-          DB_CONNECTION: mysql
-          DB_HOST: mysql
-          DB_PORT: 3306
+          DB_CONNECTION: pgsql
+          DB_HOST: postgres
+          DB_PORT: 5432
           DB_DATABASE: trends_laravel_e2e
-          DB_USERNAME: root
+          DB_USERNAME: postgres
           DB_PASSWORD: password
       
       - name: Laravel開発サーバーを起動
@@ -79,22 +86,22 @@ jobs:
           curl -f http://localhost:8000 || (echo "Laravel server failed to start" && exit 1)
         env:
           APP_URL: http://localhost:8000
-          DB_CONNECTION: mysql
-          DB_HOST: mysql
-          DB_PORT: 3306
+          DB_CONNECTION: pgsql
+          DB_HOST: postgres
+          DB_PORT: 5432
           DB_DATABASE: trends_laravel_e2e
-          DB_USERNAME: root
+          DB_USERNAME: postgres
           DB_PASSWORD: password
       
       - name: E2Eテストを実行
         run: npx playwright test --workers=4
         env:
           APP_URL: http://localhost:8000
-          DB_CONNECTION: mysql
-          DB_HOST: mysql
-          DB_PORT: 3306
+          DB_CONNECTION: pgsql
+          DB_HOST: postgres
+          DB_PORT: 5432
           DB_DATABASE: trends_laravel_e2e
-          DB_USERNAME: root
+          DB_USERNAME: postgres
           DB_PASSWORD: password
       
       - name: Playwrightレポートをアップロード

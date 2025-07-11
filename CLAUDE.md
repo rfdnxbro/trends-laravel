@@ -59,6 +59,16 @@ npx playwright test
 
 #### 3. PR作成前の必須チェック
 **PR作成前に必ず以下をすべて実行し、エラーがないことを確認する：**
+
+##### 3.1 ドキュメント更新の確認
+**変更内容に応じて関連ドキュメントを必ず更新する：**
+- **新機能・API追加**: [開発フロー.md](docs/wiki/開発フロー.md)、[技術スタック.md](docs/wiki/技術スタック.md)
+- **環境設定・コマンド変更**: [開発環境.md](docs/wiki/開発環境.md)、CLAUDE.md
+- **CI/CD変更**: [CI-CD.md](docs/wiki/CI-CD.md)
+- **データベース変更**: [データベース設計.md](docs/wiki/データベース設計.md)
+- **プロジェクト構造変更**: [プロジェクト概要.md](docs/wiki/プロジェクト概要.md)
+
+##### 3.2 テスト・品質チェック実行
 ```bash
 php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memory-limit=1G && npm test && npm run build && npm run test:e2e
 ```
@@ -70,6 +80,8 @@ php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memor
 
 #### 5. 基本開発原則
 - **GitHubのissueを作成してからプルリクエストに紐づけて行う**
+- **コード変更時は対応するドキュメントも必ず同時更新する**
+- **ドキュメント更新なしでのPR作成は禁止**
 - 詳細な開発フロー: [開発フロー.md](docs/wiki/開発フロー.md)
 
 ### 開発禁止事項

@@ -14,14 +14,26 @@
 - **ワークフロー名**: `Wiki同期`
 - **実装状況**: ✅ 完全実装済み
 
-### 自動テストパイプライン
+### 自動テストパイプライン（統合CI）
 - **テストフレームワーク**: PHPUnit、vitest
 - **実行タイミング**: PR作成時、mainブランチへのプッシュ時
 - **ワークフローファイル**: `.github/workflows/test.yml`
 - **ワークフロー名**: `テスト`
 - **実装状況**: ✅ **完全実装済み**
-- **テスト数**: PHPUnit 223テスト、フロントエンド 64テスト
+- **テスト数**: PHPUnit 429テスト、フロントエンド 158テスト
 - **環境**: SQLite in-memory（高速・一貫性保証）
+- **CI統一化**: ubuntu-latest + shivammathur/setup-php@v2
+
+### E2E専用テストパイプライン
+- **テストフレームワーク**: Playwright
+- **実行タイミング**: PR作成時、mainブランチへのプッシュ時
+- **ワークフローファイル**: `.github/workflows/e2e.yml`
+- **ワークフロー名**: `E2Eテスト`
+- **実装状況**: ✅ **完全実装済み**
+- **テスト数**: 7個のブラウザテストケース
+- **環境**: PostgreSQL + Laravel開発サーバー
+- **並列実行**: 4ワーカーで高速実行（約2分）
+- **MCP統合**: Claude Code連携でテスト自動化（issue #102実装完了）
 
 ### テストカバレッジレポート
 - **カバレッジ計測**: PHPUnit with Xdebug
@@ -42,102 +54,43 @@
 
 ## 🔧 実装されたテストパイプライン
 
-### ワークフローファイル
+### 並列実行アーキテクチャ
+
+**メインCIワークフロー** と **E2E専用ワークフロー** が並列実行され、トータル約2分でCI/CDが完了します。
+
+#### テスト責務分離
+- **メインCI**: Unit/Feature Tests + 品質チェック（SQLite）
+- **E2E CI**: ブラウザテスト + ユーザージャーニー検証（PostgreSQL）
+
+### メインCIワークフロー
 
 **ファイルパス:** `.github/workflows/test.yml`
 
-```yaml
-name: テスト
+詳細なワークフロー設定については、実際のファイルを参照してください：
+- ubuntu-latest + shivammathur/setup-php@v2
+- SQLite in-memory データベース使用
+- 全テスト実行 + 品質チェック + スクレイピングテスト
 
-on:
-  pull_request:
-    branches: [ main ]
-  push:
-    branches: [ main ]
+### E2E専用ワークフロー
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    # コミットメッセージに[skip ci]が含まれている場合はスキップ
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
-    
-    # テスト用にSQLite in-memoryデータベースを使用
-    # 外部サービスは不要
-    
-    steps:
-      - name: コードをチェックアウト
-        uses: actions/checkout@v4
-      
-      - name: PHPセットアップ
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
-          coverage: xdebug
-      
-      - name: Node.jsセットアップ
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Composer依存関係をキャッシュ
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.composer/cache
-            vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-      
-      - name: PHP依存関係をインストール
-        run: |
-          composer install --no-interaction --prefer-dist --optimize-autoloader
-      
-      - name: Node.js依存関係をインストール
-        run: npm ci
-      
-      - name: 環境ファイルを作成
-        run: |
-          cp .env.ci .env
-          php artisan key:generate
-      
-      - name: フロントエンドアセットをビルド
-        run: npm run build
-      
-      - name: データベースを設定
-        run: |
-          php artisan config:cache
-          php artisan migrate --force
-      
-      - name: PHPテストを実行
-        run: php artisan test
-      
-      - name: コードスタイルチェックを実行
-        run: vendor/bin/pint --test
-      
-      - name: 静的解析を実行
-        run: vendor/bin/phpstan analyse --memory-limit=1G
-      
-      - name: フロントエンドテストを実行
-        run: npm test
-      
-      - name: スクレイピングサービスをテスト
-        run: |
-          php artisan test --filter=Scraper
-          php artisan test --filter=ScrapeCommand
-```
+**ファイルパス:** `.github/workflows/e2e.yml`
+
+詳細なワークフロー設定については、実際のファイルを参照してください：
+- ubuntu-latest + shivammathur/setup-php@v2
+- PostgreSQL 15 + Laravel開発サーバー
+- Playwright + Chromium（4並列実行）
+- 失敗時レポート自動アップロード
 
 ## 🎯 現在の品質状況
 | 項目 | 状況 |
 |------|------|
-| PHPUnitテスト | 223テストパス |
-| フロントエンドテスト | 64テストパス |
+| PHPUnitテスト | 429テストパス |
+| フロントエンドテスト | 158テストパス |
+| E2Eテスト | 7テストパス（Playwright） |
 | Laravel Pint | コードスタイル完全パス |
 | PHPStan | レベル4でエラー0 |
 | フロントエンドビルド | 本番ビルド成功 |
+| CI並列実行 | 約2分で完了 |
 
 ## 🚀 実装された品質保証
 
@@ -153,16 +106,17 @@ jobs:
 - **高速テスト環境**: SQLite in-memoryで外部依存なし
 - **完全な型安全性**: PHPStan レベル4で0エラー
 - **最適化されたビルド順序**: Viteアセット生成 → テスト実行
-- **クリーンなテストスイート**: 223の価値あるテスト
+- **クリーンなテストスイート**: 594の価値あるテスト
 - **警告ゼロ**: PHPUnitアトリビュート記法対応
 - **確実な品質保証**: エラー隠蔽なしの設計
 
-### パフォーマンス最適化（v2.0）
+### パフォーマンス最適化（v3.0）
 - **キャッシュ戦略**: Composer・npmキャッシュでdependencies再取得を削減 ✅
-- **条件付き実行**: `[skip ci]`メッセージでの不要ビルドスキップ ✅
+- **条件付き実行**: `[skip ci]`/`[skip e2e]`メッセージでの不要ビルドスキップ ✅
 - **日本語対応**: ワークフロー名・ステップ名の日本語化 ✅
-- **並列実行**: エラーハンドリング問題により一旦無効化 ⚠️
-- **現在の実行時間**: 90秒（改善前: 89秒）
+- **並列実行**: メインCI + E2E CI の並列実行で高速化 ✅
+- **CI統一化**: ubuntu-latest + shivammathur/setup-php@v2 採用 ✅
+- **現在の実行時間**: 約2分（メインCI: 約2分、E2E CI: 約2分）
 - **キャッシュ効果**: 初回実行後は20-30秒短縮見込み
 
 ## 📊 パフォーマンス改善の詳細
@@ -172,9 +126,11 @@ jobs:
 |------|------|------|
 | **Composerキャッシュ** | ✅ 実装済み | dependencies再取得を削減 |
 | **npmキャッシュ** | ✅ 実装済み | node_modules再構築を削減 |
-| **条件付き実行** | ✅ 実装済み | `[skip ci]`で不要ビルド回避 |
+| **条件付き実行** | ✅ 実装済み | `[skip ci]`/`[skip e2e]`で不要ビルド回避 |
 | **日本語化** | ✅ 実装済み | 可読性向上 |
-| **並列実行** | ⚠️ 無効化 | エラーハンドリング問題により保留 |
+| **並列実行** | ✅ 実装済み | メインCI + E2E CI の並列実行 |
+| **CI統一化** | ✅ 実装済み | ubuntu-latest + shivammathur/setup-php@v2 |
+| **責務分離** | ✅ 実装済み | SQLite(Main) + PostgreSQL(E2E) |
 
 ### キャッシュ効果の詳細
 - **初回実行**: フルダウンロード（90秒）
@@ -182,38 +138,30 @@ jobs:
 - **頻繁なPush**: 継続的な短縮効果
 
 ### 将来の改善計画
-1. **並列実行の再実装**: エラーハンドリング改善後
-2. **マトリックス戦略**: 複数PHP/Nodeバージョン対応時
-3. **段階的実行**: 軽量チェック先行で早期フィードバック
+1. **マトリックス戦略**: 複数PHP/Nodeバージョン対応時
+2. **段階的実行**: 軽量チェック先行で早期フィードバック
+3. **自動デプロイメント**: 品質チェック完了後の自動デプロイ
+4. **E2Eテスト拡張**: より多くのユーザージャーニーカバレッジ
 
 ## 現在の開発フロー
 
 ### 自動化されたチェック
 
-PR作成時に自動実行される項目：
+PR作成時に自動実行される項目の詳細は、以下のファイルを参照してください：
+- **メインCI**: `.github/workflows/test.yml`
+- **E2E CI**: `.github/workflows/e2e.yml`
 
-```bash
-# 以下がCI/CDで自動実行されます（順次実行）
-php artisan test             # PHPUnitテスト
-vendor/bin/pint --test       # コードスタイルチェック
-vendor/bin/phpstan analyse   # 静的解析
-npm test                     # フロントエンドテスト
-npm run build               # フロントエンドビルド
-
-# キャッシュ戦略
-# Composer・npmキャッシュによりdependencies再取得を削減
-
-# 条件付き実行
-# コミットメッセージに[skip ci]が含まれている場合はスキップ
-```
+**実行される主要チェック**:
+- PHPUnitテスト（429テスト）
+- コードスタイルチェック（Laravel Pint）
+- 静的解析（PHPStan）
+- フロントエンドテスト（158テスト）
+- スクレイピングテスト（56テスト）
+- E2Eテスト（7テスト）
 
 ### 手動チェック（必要に応じて）
 
-```bash
-# 開発環境での追加チェック
-php artisan queue:work --once --queue=scraping
-php artisan horizon:status
-```
+開発環境での追加チェック方法については、`CLAUDE.md`および`docs/wiki/開発フロー.md`を参照してください。
 
 ## 本番環境
 

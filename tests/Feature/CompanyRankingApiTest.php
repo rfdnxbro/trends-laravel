@@ -268,7 +268,7 @@ class CompanyRankingApiTest extends TestCase
             ]);
     }
 
-    public function test_ap_iレート制限が動作する()
+    public function test_apiレート制限が動作する()
     {
         for ($i = 0; $i < 65; $i++) {
             $response = $this->getJson('/api/rankings/periods');
@@ -282,7 +282,7 @@ class CompanyRankingApiTest extends TestCase
         }
     }
 
-    public function test_ap_iキャッシュが動作する()
+    public function test_apiキャッシュが動作する()
     {
         $response1 = $this->getJson('/api/rankings/1m');
         $response2 = $this->getJson('/api/rankings/1m');
@@ -293,7 +293,7 @@ class CompanyRankingApiTest extends TestCase
         $this->assertEquals($response1->json(), $response2->json());
     }
 
-    public function test_ap_iページングメタデータが正常に返される()
+    public function test_apiページングメタデータが正常に返される()
     {
         $response = $this->getJson('/api/rankings/1m?per_page=3&page=2');
 
@@ -303,7 +303,7 @@ class CompanyRankingApiTest extends TestCase
             ->assertJsonPath('meta.total', 10);
     }
 
-    public function test_ap_iレスポンス構造が正常である()
+    public function test_apiレスポンス構造が正常である()
     {
         $response = $this->getJson('/api/rankings/1m');
 
@@ -321,5 +321,80 @@ class CompanyRankingApiTest extends TestCase
             $this->assertArrayHasKey('period', $item);
             $this->assertArrayHasKey('calculated_at', $item);
         }
+    }
+
+    public function test_週次ランキング_apiが正常に動作する()
+    {
+        $response = $this->getJson('/api/rankings/1w');
+
+        $response->assertStatus(Response::HTTP_OK)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'company' => [
+                            'id',
+                            'name',
+                            'domain',
+                            'logo_url',
+                        ],
+                        'rank_position',
+                        'total_score',
+                        'article_count',
+                        'total_bookmarks',
+                        'rank_change',
+                        'period' => [
+                            'start',
+                            'end',
+                        ],
+                        'calculated_at',
+                    ],
+                ],
+                'meta' => [
+                    'current_page',
+                    'per_page',
+                    'total',
+                    'last_page',
+                ],
+            ]);
+
+        // レスポンス内容の型チェック
+        $data = $response->json('data');
+        if (! empty($data)) {
+            $firstItem = $data[0];
+            $this->assertIsInt($firstItem['rank_position']);
+            $this->assertIsFloat($firstItem['total_score']);
+            $this->assertIsInt($firstItem['article_count']);
+            $this->assertIsInt($firstItem['total_bookmarks']);
+        }
+    }
+
+    public function test_企業詳細_apiとの統合が正常に動作する()
+    {
+        // テストデータが存在することを確認
+        $company = Company::first();
+        $this->assertNotNull($company, 'テスト用の企業データが存在しません');
+
+        // 企業詳細APIを呼び出し
+        $detailResponse = $this->getJson("/api/companies/{$company->id}");
+
+        $detailResponse->assertStatus(Response::HTTP_OK)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'domain',
+                    'description',
+                    'logo_url',
+                    'website_url',
+                    'is_active',
+                    'created_at',
+                    'updated_at',
+                ],
+            ]);
+
+        $detailData = $detailResponse->json();
+        $this->assertEquals($company->id, $detailData['data']['id']);
+        $this->assertIsString($detailData['data']['name']);
     }
 }

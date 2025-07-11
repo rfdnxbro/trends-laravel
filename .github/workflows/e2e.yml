@@ -9,7 +9,6 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    container: kirschbaumdevelopment/laravel-test-runner:8.2
     
     # コミットメッセージに[skip e2e]が含まれている場合はスキップ
     if: ${{ !contains(github.event.head_commit.message, '[skip e2e]') }}
@@ -29,33 +28,37 @@ jobs:
       - name: コードをチェックアウト
         uses: actions/checkout@v4
       
+      - name: PHPセットアップ
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, dom, fileinfo, pgsql, pdo_pgsql
+          coverage: none
+      
       - name: Node.js 20をセットアップ
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
       
-      - name: PostgreSQL PHP拡張をインストール
-        run: |
-          apt-get update
-          apt-get install -y php8.2-pgsql php8.2-pdo-pgsql
-      
-      - name: Playwrightブラウザインストール
-        run: npx playwright install --with-deps chromium
-      
       - name: Composer依存関係をキャッシュ
         uses: actions/cache@v4
         with:
-          path: vendor
-          key: ${{ runner.os }}-composer-v2-${{ hashFiles('**/composer.lock') }}
+          path: |
+            ~/.composer/cache
+            vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-composer-v2-
+            ${{ runner.os }}-composer-
       
       - name: PHP依存関係をインストール
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
       
       - name: Node.js依存関係をインストール
         run: npm ci
+      
+      - name: Playwrightブラウザインストール
+        run: npx playwright install --with-deps chromium
       
       - name: 環境ファイルを作成
         run: |

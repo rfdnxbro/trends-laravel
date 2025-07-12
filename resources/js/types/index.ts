@@ -119,6 +119,33 @@ export interface TopCompaniesResponse {
     };
 }
 
+export interface CompaniesListResponse {
+    data: Company[];
+    meta: {
+        current_page: number;
+        per_page: number;
+        total: number;
+        last_page: number;
+        filters: {
+            search?: string;
+            domain?: string;
+            is_active?: boolean;
+            sort_by: string;
+            sort_order: string;
+        };
+    };
+}
+
+export interface CompanyListFilters {
+    search?: string;
+    domain?: string;
+    is_active?: boolean;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
+    page?: number;
+    per_page?: number;
+}
+
 // 検索関連型定義
 export interface SearchFilters {
     platforms?: string[];
@@ -291,6 +318,7 @@ export interface RankingHistoryChartProps {
 export const QueryKeys = {
     DASHBOARD_STATS: ['dashboard-stats'] as const,
     TOP_COMPANIES: ['top-companies'] as const,
+    COMPANIES_LIST: (filters?: CompanyListFilters) => ['companies-list', filters] as const,
     COMPANY_DETAIL: (id: number) => ['company-detail', id] as const,
     SEARCH_COMPANIES: (query: string) => ['search-companies', query] as const,
     SEARCH_RESULTS: (query: string, filters?: SearchFilters) => ['search-results', query, filters] as const,

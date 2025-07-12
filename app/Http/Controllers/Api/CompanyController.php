@@ -31,6 +31,166 @@ class CompanyController extends Controller
 
     /**
      * @OA\Get(
+     *     path="/api/companies",
+     *     tags={"企業一覧"},
+     *     summary="企業一覧取得",
+     *     description="企業の一覧を取得します。検索、フィルタリング、ソート機能を提供します。",
+     *
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="ページ番号",
+     *
+     *         @OA\Schema(type="integer", default=1, example=1)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="1ページあたりの件数（最大100）",
+     *
+     *         @OA\Schema(type="integer", default=20, maximum=100, example=20)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="企業名での検索",
+     *
+     *         @OA\Schema(type="string", example="株式会社")
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="domain",
+     *         in="query",
+     *         description="ドメインでの検索",
+     *
+     *         @OA\Schema(type="string", example="example.com")
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="is_active",
+     *         in="query",
+     *         description="アクティブ状態でのフィルタリング",
+     *
+     *         @OA\Schema(type="boolean", example=true)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="sort_by",
+     *         in="query",
+     *         description="ソート項目",
+     *
+     *         @OA\Schema(type="string", enum={"name", "created_at", "updated_at"}, default="name")
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="sort_order",
+     *         in="query",
+     *         description="ソート順序",
+     *
+     *         @OA\Schema(type="string", enum={"asc", "desc"}, default="asc")
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="企業一覧",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="per_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer"),
+     *                 @OA\Property(property="last_page", type="integer"),
+     *                 @OA\Property(property="filters", type="object")
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=400,
+     *         description="不正なリクエスト",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="error", type="string", example="リクエストパラメータが無効です")
+     *         )
+     *     )
+     * )
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'page' => 'integer|min:1',
+            'per_page' => 'integer|min:1',
+            'search' => 'string|max:255',
+            'domain' => 'string|max:255',
+            'is_active' => 'boolean',
+            'sort_by' => 'string|in:name,created_at,updated_at',
+            'sort_order' => 'string|in:asc,desc',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'リクエストパラメータが無効です',
+                'details' => $validator->errors(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $page = $request->get('page', 1);
+        $perPage = min($request->get('per_page', config('constants.pagination.default_per_page', 20)), 100);
+        $search = $request->get('search');
+        $domain = $request->get('domain');
+        $isActive = $request->get('is_active');
+        $sortBy = $request->get('sort_by', 'name');
+        $sortOrder = $request->get('sort_order', 'asc');
+
+        $cacheKey = "companies_list_{$page}_{$perPage}_".md5(json_encode($request->query()));
+
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($search, $domain, $isActive, $sortBy, $sortOrder, $perPage, $page) {
+            $query = Company::query();
+
+            if ($search) {
+                $query->where('name', 'like', "%{$search}%");
+            }
+
+            if ($domain) {
+                $query->where('domain', 'like', "%{$domain}%");
+            }
+
+            if ($isActive !== null) {
+                $query->where('is_active', $isActive);
+            } else {
+                $query->active();
+            }
+
+            $query->orderBy($sortBy, $sortOrder);
+
+            $companies = $query->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'data' => CompanyResource::collection($companies),
+                'meta' => [
+                    'current_page' => $companies->currentPage(),
+                    'per_page' => $companies->perPage(),
+                    'total' => $companies->total(),
+                    'last_page' => $companies->lastPage(),
+                    'filters' => [
+                        'search' => $search,
+                        'domain' => $domain,
+                        'is_active' => $isActive,
+                        'sort_by' => $sortBy,
+                        'sort_order' => $sortOrder,
+                    ],
+                ],
+            ]);
+        });
+    }
+
+    /**
+     * @OA\Get(
      *     path="/api/companies/{company_id}",
      *     tags={"企業詳細"},
      *     summary="企業詳細情報取得",

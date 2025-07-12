@@ -1,4 +1,4 @@
-name: テスト
+name: 品質チェック
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  quality-check:
     runs-on: ubuntu-latest
     
     # コミットメッセージに[skip ci]が含まれている場合はスキップ

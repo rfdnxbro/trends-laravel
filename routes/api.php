@@ -46,6 +46,9 @@ Route::middleware(['throttle:60,1'])->group(function () {
 
     // 企業詳細 API
     Route::prefix('companies')->group(function () {
+        // 企業一覧
+        Route::get('', [CompanyController::class, 'index']);
+
         // 企業詳細情報
         Route::get('{company_id}', [CompanyController::class, 'show']);
 

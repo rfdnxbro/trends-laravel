@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Layout from './Layout';
 import Dashboard from '../pages/Dashboard';
 import CompanyDetail from '../pages/CompanyDetail';
+import CompanyList from '../pages/CompanyList';
 import ArticleList from '../pages/ArticleList';
 
 const App: React.FC = () => {
@@ -11,8 +12,9 @@ const App: React.FC = () => {
             <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/articles" element={<ArticleList />} />
+                <Route path="/companies" element={<CompanyList />} />
                 <Route path="/companies/:id" element={<CompanyDetail />} />
+                <Route path="/articles" element={<ArticleList />} />
             </Routes>
         </Layout>
     );

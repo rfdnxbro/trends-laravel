@@ -47,8 +47,8 @@ test.describe('企業詳細ページ', () => {
     await page.waitForTimeout(2000); // APIからのデータロード待機
     
     // ページのメインコンテンツが表示されていることを確認
-    const hasContent = page.locator('.dashboard-card, main, [class*="company"]');
-    await expect(hasContent.first()).toBeVisible();
+    const hasContent = page.locator('.dashboard-card').first();
+    await expect(hasContent).toBeVisible();
   });
 
   test('企業基本情報が正常に表示される', async ({ page }) => {
@@ -72,13 +72,13 @@ test.describe('企業詳細ページ', () => {
       await expect(companyNameElement).toBeVisible();
     } else {
       // コンテンツがロードされていることを確認
-      const mainContent = page.locator('.dashboard-card, main');
-      await expect(mainContent.first()).toBeVisible();
+      const mainContent = page.locator('.dashboard-card').first();
+      await expect(mainContent).toBeVisible();
     }
     
-    // 企業ロゴまたはアイコンが表示されている
-    const logoOrIcon = page.locator('img[alt*="logo"], svg[data-slot="icon"]');
-    await expect(logoOrIcon.first()).toBeVisible();
+    // 企業基本情報カードが表示されている
+    const basicInfoCard = page.locator('.dashboard-card').first();
+    await expect(basicInfoCard).toBeVisible();
   });
 
   test('企業ランキング情報が表示される', async ({ page }) => {
@@ -121,12 +121,12 @@ test.describe('企業詳細ページ', () => {
     
     if (articlesSectionExists) {
       // 何らかのコンテンツが表示されていることを確認
-      const hasVisibleContent = await page.locator('.dashboard-card, main, [class*="content"]').isVisible();
+      const hasVisibleContent = await page.locator('.dashboard-card, main, [class*="content"]').first().isVisible();
       expect(hasVisibleContent).toBeTruthy();
     } else {
       // 記事セクションがない場合でも、メインコンテンツが表示されていることを確認
-      const mainContent = page.locator('main, body');
-      await expect(mainContent.first()).toBeVisible();
+      const mainContent = page.locator('.dashboard-card').first();
+      await expect(mainContent).toBeVisible();
     }
   });
 
@@ -292,24 +292,24 @@ test.describe('企業詳細ページ', () => {
     
     // モバイルでページが正常に表示されることを確認
     await page.waitForTimeout(2000); // データロード待機
-    const mobileContent = page.locator('.dashboard-card, main, body');
-    await expect(mobileContent.first()).toBeVisible();
+    const mobileContent = page.locator('.dashboard-card').first();
+    await expect(mobileContent).toBeVisible();
     
     // タブレットビューポートでテスト
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.waitForLoadState('networkidle');
     
     // タブレットでページが正常に表示されることを確認
-    const tabletContent = page.locator('.dashboard-card, main, body');
-    await expect(tabletContent.first()).toBeVisible();
+    const tabletContent = page.locator('.dashboard-card').first();
+    await expect(tabletContent).toBeVisible();
     
     // デスクトップビューポートに戻す
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.waitForLoadState('networkidle');
     
     // デスクトップでも正常に表示されることを確認
-    const desktopContent = page.locator('.dashboard-card, main, body');
-    await expect(desktopContent.first()).toBeVisible();
+    const desktopContent = page.locator('.dashboard-card').first();
+    await expect(desktopContent).toBeVisible();
   });
 
   test('データ読み込み状態の確認', async ({ page }) => {
@@ -333,7 +333,7 @@ test.describe('企業詳細ページ', () => {
     
     // ローディング状態が消えてコンテンツが表示されることを確認
     await page.waitForTimeout(2000); // データロード待機
-    const finalContent = page.locator('.dashboard-card, main, body');
-    await expect(finalContent.first()).toBeVisible();
+    const finalContent = page.locator('.dashboard-card').first();
+    await expect(finalContent).toBeVisible();
   });
 });

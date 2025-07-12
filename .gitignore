@@ -32,3 +32,4 @@ coverage.txt
 # Playwright E2E Test Results
 /playwright-report/
 /test-results/
+/coverage/

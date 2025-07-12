@@ -5,9 +5,9 @@ import { api } from '../services/api';
 import { Company, Article, QueryKeys } from '../types';
 
 interface CompanyDetailData extends Company {
-    recent_articles: Article[];
-    total_articles: number;
-    ranking_history: Array<{
+    recent_articles?: Article[];
+    total_articles?: number;
+    ranking_history?: Array<{
         date: string;
         rank: number;
         influence_score: number;
@@ -20,7 +20,7 @@ const CompanyDetail: React.FC = () => {
 
     const { data: company, isLoading, error } = useQuery({
         queryKey: QueryKeys.COMPANY_DETAIL(companyId),
-        queryFn: () => api.get<CompanyDetailData>(`/api/companies/${companyId}`).then(res => res.data),
+        queryFn: () => api.get<{data: CompanyDetailData}>(`/api/companies/${companyId}`).then(res => res.data.data),
         enabled: !!companyId,
         retry: 1,
     });
@@ -95,9 +95,9 @@ const CompanyDetail: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex flex-col space-y-2">
-                        {company.website && (
+                        {company.website_url && (
                             <a 
-                                href={company.website} 
+                                href={company.website_url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="btn-secondary text-center"
@@ -215,7 +215,7 @@ const CompanyDetail: React.FC = () => {
                                     </a>
                                 </h3>
                                 <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span>{article.platform}</span>
+                                    <span>{article.platform.name}</span>
                                     <span>{new Date(article.published_at).toLocaleDateString('ja-JP')}</span>
                                     {article.bookmark_count > 0 && (
                                         <span>ブックマーク: {article.bookmark_count}</span>

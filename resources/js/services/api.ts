@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { API_CONSTANTS } from '../constants/api';
+import { CompanyListFilters } from '../types';
 
 // Axios インスタンスの作成
 export const api = axios.create({
@@ -41,6 +42,18 @@ export const apiService = {
     getDashboardStats: () => api.get('/api/dashboard/stats'),
     
     // 企業関連
+    getCompanies: (filters?: CompanyListFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    params.append(key, String(value));
+                }
+            });
+        }
+        const queryString = params.toString();
+        return api.get(`/api/companies${queryString ? '?' + queryString : ''}`);
+    },
     getTopCompanies: (limit = API_CONSTANTS.DEFAULT_LIMIT) => api.get(`/api/companies/top?limit=${limit}`),
     getCompanyDetail: (id: number) => api.get(`/api/companies/${id}`),
     searchCompanies: (query: string) => api.get(`/api/companies/search?q=${query}`),

@@ -42,6 +42,7 @@ const CompanyCard: React.FC<CompanyCardProps> = ({
                         />
                     ) : null}
                     <BuildingOfficeIcon 
+                        data-testid="building-icon"
                         className={`w-12 h-12 text-gray-400 p-2 border border-gray-200 rounded-lg bg-gray-50 ${
                             company.logo_url ? 'hidden' : ''
                         }`} 

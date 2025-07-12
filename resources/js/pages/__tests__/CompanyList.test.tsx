@@ -181,13 +181,38 @@ describe('CompanyList', () => {
     });
 
     it('エラー状態が適切に表示される', async () => {
-        mockApiService.getCompanies.mockRejectedValue(new Error('API Error'));
+        // React Queryでリトライ無効の設定で確実にエラーを発生させる
+        const queryClient = new QueryClient({
+            defaultOptions: {
+                queries: {
+                    retry: false,
+                    refetchOnWindowFocus: false,
+                    staleTime: 0,
+                    cacheTime: 0,
+                },
+            },
+            logger: {
+                log: () => {},
+                warn: () => {},
+                error: () => {},
+            },
+        });
 
-        renderWithProviders(<CompanyList />);
+        // Promise.rejectを確実に発生させる
+        mockApiService.getCompanies.mockImplementation(() => Promise.reject(new Error('API Error')));
 
+        render(
+            <QueryClientProvider client={queryClient}>
+                <BrowserRouter>
+                    <CompanyList />
+                </BrowserRouter>
+            </QueryClientProvider>
+        );
+
+        // エラー状態まで待機（十分な時間を設ける）
         await waitFor(() => {
             expect(screen.getByText('企業一覧の読み込みに失敗しました')).toBeInTheDocument();
-        });
+        }, { timeout: 5000 });
 
         expect(screen.getByText('再読み込み')).toBeInTheDocument();
     });

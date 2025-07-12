@@ -35,7 +35,7 @@ describe('CompanyCard', () => {
         renderWithRouter(<CompanyCard company={mockCompany} />);
 
         expect(screen.getByText('Test Company')).toBeInTheDocument();
-        expect(screen.getByText('test.com')).toBeInTheDocument();
+        expect(screen.getAllByText('test.com')).toHaveLength(2); // ドメイン表示とウェブサイトリンクの2箇所
         expect(screen.getByText('これはテスト企業の説明文です。')).toBeInTheDocument();
     });
 
@@ -52,7 +52,7 @@ describe('CompanyCard', () => {
         
         renderWithRouter(<CompanyCard company={companyWithoutLogo} />);
 
-        const buildingIcon = screen.getByRole('img', { hidden: true });
+        const buildingIcon = screen.getByTestId('building-icon');
         expect(buildingIcon).toBeInTheDocument();
     });
 
@@ -91,7 +91,7 @@ describe('CompanyCard', () => {
 
         expect(screen.getByText('ウェブサイト')).toBeInTheDocument();
         
-        const websiteLink = screen.getByText('test.com');
+        const websiteLink = screen.getByRole('link', { name: 'test.com' });
         expect(websiteLink).toBeInTheDocument();
         expect(websiteLink).toHaveAttribute('href', 'https://test.com');
         expect(websiteLink).toHaveAttribute('target', '_blank');
@@ -166,7 +166,7 @@ describe('CompanyCard', () => {
         fireEvent.error(logoImage);
 
         // フォールバックアイコンが表示される
-        const buildingIcon = screen.getByRole('img', { hidden: true });
+        const buildingIcon = screen.getByTestId('building-icon');
         expect(buildingIcon).toBeInTheDocument();
     });
 
@@ -176,7 +176,7 @@ describe('CompanyCard', () => {
         renderWithRouter(<CompanyCard company={mockCompany} onClick={mockOnClick} />);
 
         // ウェブサイトリンクをクリック
-        const websiteLink = screen.getByText('test.com');
+        const websiteLink = screen.getByRole('link', { name: 'test.com' });
         fireEvent.click(websiteLink);
 
         // カードのonClickが呼ばれないことを確認

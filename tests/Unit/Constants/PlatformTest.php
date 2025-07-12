@@ -28,7 +28,7 @@ class PlatformTest extends TestCase
     }
 
     #[Test]
-    public function al_l定数が全プラットフォームを含む(): void
+    public function all定数が全プラットフォームを含む(): void
     {
         $expected = [
             'Qiita',
@@ -41,7 +41,7 @@ class PlatformTest extends TestCase
     }
 
     #[Test]
-    public function url_s定数が正しい_ur_lを含む(): void
+    public function urls定数が正しいurlを含む(): void
     {
         $expected = [
             'Qiita' => 'https://qiita.com',
@@ -53,7 +53,7 @@ class PlatformTest extends TestCase
     }
 
     #[Test]
-    public function rat_e_limit_s定数が正しい制限値を含む(): void
+    public function rate_limits定数が正しい制限値を含む(): void
     {
         $expected = [
             'Qiita' => 60,
@@ -114,7 +114,7 @@ class PlatformTest extends TestCase
 
     #[Test]
     #[DataProvider('プラットフォームURLのデータプロバイダー')]
-    public function get_urlが有効なプラットフォームで正しい_ur_lを返す(string $platform, string $expectedUrl): void
+    public function get_urlが有効なプラットフォームで正しいurlを返す(string $platform, string $expectedUrl): void
     {
         $this->assertSame($expectedUrl, Platform::getUrl($platform));
     }
@@ -159,7 +159,7 @@ class PlatformTest extends TestCase
     }
 
     #[Test]
-    public function al_l配列と_url_s配列のキーが一致する(): void
+    public function all配列とurls配列のキーが一致する(): void
     {
         $allPlatforms = Platform::ALL;
         $urlKeys = array_keys(Platform::URLS);
@@ -171,7 +171,7 @@ class PlatformTest extends TestCase
     }
 
     #[Test]
-    public function al_l配列と_rat_e_limit_s配列のキーが一致する(): void
+    public function all配列とrate_limits配列のキーが一致する(): void
     {
         $allPlatforms = Platform::ALL;
         $rateLimitKeys = array_keys(Platform::RATE_LIMITS);
@@ -183,7 +183,7 @@ class PlatformTest extends TestCase
     }
 
     #[Test]
-    public function url_s配列と_rat_e_limit_s配列のキーが一致する(): void
+    public function urls配列とrate_limits配列のキーが一致する(): void
     {
         $urlKeys = array_keys(Platform::URLS);
         $rateLimitKeys = array_keys(Platform::RATE_LIMITS);
@@ -207,7 +207,7 @@ class PlatformTest extends TestCase
     }
 
     #[Test]
-    public function ur_lが有効な形式である(): void
+    public function urlが有効な形式である(): void
     {
         foreach (Platform::URLS as $platform => $url) {
             $this->assertStringStartsWith('https://', $url, "プラットフォーム {$platform} のURLがHTTPSで始まらない");

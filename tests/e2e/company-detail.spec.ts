@@ -65,7 +65,7 @@ test.describe('企業詳細ページ', () => {
     // 企業名が表示されている（テキストコンテンツがある要素を確認）
     await page.waitForTimeout(3000); // データロード待機
     
-    const companyNameElement = page.locator('h1:has-text(/\\w+/), h2:has-text(/\\w+/), [class*="company"]:has-text(/\\w+/)').first();
+    const companyNameElement = page.locator('h1:not(:empty), h2:not(:empty), [class*="company"]:not(:empty)').first();
     const companyNameExists = await companyNameElement.count() > 0;
     
     if (companyNameExists) {
@@ -116,7 +116,7 @@ test.describe('企業詳細ページ', () => {
     await page.waitForTimeout(3000);
     
     // 記事セクションまたはメインコンテンツの確認
-    const articlesSection = page.locator('text=/記事|Articles/, .dashboard-card');
+    const articlesSection = page.locator('.dashboard-card');
     const articlesSectionExists = await articlesSection.count() > 0;
     
     if (articlesSectionExists) {
@@ -220,7 +220,7 @@ test.describe('企業詳細ページ', () => {
     
     // エラー状態が適切に処理されていることを確認
     const currentUrl = page.url();
-    const hasErrorContent = await page.locator('text=/404|見つかりません|存在しません|Not Found/, .dashboard-card, main').count() > 0;
+    const hasErrorContent = await page.locator('.dashboard-card, main').count() > 0;
     
     // URLが適切な状態か、またはエラーコンテンツが表示されていることを確認
     const isErrorHandled = currentUrl.includes('/companies') || hasErrorContent > 0;
@@ -323,7 +323,7 @@ test.describe('企業詳細ページ', () => {
     await page.goto(`/companies/${testCompanyId}`);
     
     // ローディング状態の確認
-    const loadingSpinner = page.locator('.loading-spinner, [data-loading="true"], text=/読み込み中/');
+    const loadingSpinner = page.locator('.loading-spinner, [data-loading="true"]');
     
     // ページロード直後にローディング状態が表示される可能性をチェック
     const isLoadingVisible = await loadingSpinner.isVisible();

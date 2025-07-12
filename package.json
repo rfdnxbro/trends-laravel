@@ -5,6 +5,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
+        "start": "concurrently \"php artisan serve\" \"npm run dev\"",
         "test": "vitest",
         "test:ui": "vitest --ui",
         "test:e2e": "playwright test",
@@ -20,7 +21,7 @@
         "@testing-library/user-event": "^14.6.1",
         "@vitejs/plugin-react": "^4.6.0",
         "axios": "^1.8.2",
-        "concurrently": "^9.0.1",
+        "concurrently": "^9.2.0",
         "jsdom": "^26.1.0",
         "laravel-vite-plugin": "^1.2.0",
         "tailwindcss": "^4.0.0",

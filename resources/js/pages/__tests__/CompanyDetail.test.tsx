@@ -26,7 +26,7 @@ const mockCompanyData = {
     id: 1,
     name: 'テスト企業',
     description: 'テスト企業の説明です',
-    website: 'https://example.com',
+    website_url: 'https://example.com',
     influence_score: 85.5,
     ranking: 3,
     hatena_username: 'test_hatena',
@@ -44,7 +44,7 @@ const mockCompanyData = {
             id: 1,
             title: 'テスト記事1',
             url: 'https://example.com/article1',
-            platform: 'Qiita',
+            platform: { name: 'Qiita' },
             published_at: '2024-01-01T00:00:00Z',
             bookmark_count: 10,
         },
@@ -52,7 +52,7 @@ const mockCompanyData = {
             id: 2,
             title: 'テスト記事2',
             url: 'https://example.com/article2',
-            platform: 'Zenn',
+            platform: { name: 'Zenn' },
             published_at: '2024-01-02T00:00:00Z',
             bookmark_count: 15,
         },
@@ -103,7 +103,7 @@ describe('CompanyDetail', () => {
 
     it('企業データが正常に表示される', async () => {
         const { api: mockApi } = await vi.importMock('@/services/api');
-        mockApi.get.mockResolvedValue({ data: mockCompanyData });
+        mockApi.get.mockResolvedValue({ data: { data: mockCompanyData } });
 
         render(
             <TestWrapper>
@@ -155,7 +155,7 @@ describe('CompanyDetail', () => {
 
     it('パンくずナビゲーションが正しく表示される', async () => {
         const { api: mockApi } = await vi.importMock('@/services/api');
-        mockApi.get.mockResolvedValue({ data: mockCompanyData });
+        mockApi.get.mockResolvedValue({ data: { data: mockCompanyData } });
 
         render(
             <TestWrapper>
@@ -173,7 +173,7 @@ describe('CompanyDetail', () => {
 
     it('プラットフォーム連携情報が正しく表示される', async () => {
         const { api: mockApi } = await vi.importMock('@/services/api');
-        mockApi.get.mockResolvedValue({ data: mockCompanyData });
+        mockApi.get.mockResolvedValue({ data: { data: mockCompanyData } });
 
         render(
             <TestWrapper>
@@ -198,7 +198,7 @@ describe('CompanyDetail', () => {
 
     it('統計情報が正しく表示される', async () => {
         const { api: mockApi } = await vi.importMock('@/services/api');
-        mockApi.get.mockResolvedValue({ data: mockCompanyData });
+        mockApi.get.mockResolvedValue({ data: { data: mockCompanyData } });
 
         render(
             <TestWrapper>
@@ -218,7 +218,7 @@ describe('CompanyDetail', () => {
 
     it('ランキング履歴が正しく表示される', async () => {
         const { api: mockApi } = await vi.importMock('@/services/api');
-        mockApi.get.mockResolvedValue({ data: mockCompanyData });
+        mockApi.get.mockResolvedValue({ data: { data: mockCompanyData } });
 
         render(
             <TestWrapper>
@@ -240,7 +240,7 @@ describe('CompanyDetail', () => {
 
     it('最新記事が正しく表示される', async () => {
         const { api: mockApi } = await vi.importMock('@/services/api');
-        mockApi.get.mockResolvedValue({ data: mockCompanyData });
+        mockApi.get.mockResolvedValue({ data: { data: mockCompanyData } });
 
         render(
             <TestWrapper>
@@ -267,7 +267,7 @@ describe('CompanyDetail', () => {
         };
 
         const { api: mockApi } = await vi.importMock('@/services/api');
-        mockApi.get.mockResolvedValue({ data: companyWithoutPlatforms });
+        mockApi.get.mockResolvedValue({ data: { data: companyWithoutPlatforms } });
 
         render(
             <TestWrapper>
@@ -287,7 +287,7 @@ describe('CompanyDetail', () => {
         };
 
         const { api: mockApi } = await vi.importMock('@/services/api');
-        mockApi.get.mockResolvedValue({ data: companyWithoutHistory });
+        mockApi.get.mockResolvedValue({ data: { data: companyWithoutHistory } });
 
         render(
             <TestWrapper>
@@ -342,7 +342,7 @@ describe('CompanyDetail', () => {
         };
 
         const { api: mockApi } = await vi.importMock('@/services/api');
-        mockApi.get.mockResolvedValue({ data: minimalCompany });
+        mockApi.get.mockResolvedValue({ data: { data: minimalCompany } });
 
         render(
             <TestWrapper>

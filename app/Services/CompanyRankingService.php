@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Constants\RankingConstants;
 use App\Constants\RankingPeriod;
+use App\Models\CompanyRanking;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -192,21 +193,12 @@ class CompanyRankingService
         $rankings = [];
 
         foreach (RankingPeriod::TYPES as $periodType => $days) {
-            $ranking = DB::table('company_rankings as cr')
-                ->join('companies as c', 'cr.company_id', '=', 'c.id')
-                ->select([
-                    'cr.rank_position',
-                    'cr.total_score',
-                    'cr.article_count',
-                    'cr.total_bookmarks',
-                    'cr.period_start',
-                    'cr.period_end',
-                    'cr.calculated_at',
-                ])
-                ->where('cr.company_id', $companyId)
-                ->where('cr.ranking_period', $periodType)
-                ->where('c.is_active', true)
-                ->orderBy('cr.calculated_at', 'desc')
+            $ranking = CompanyRanking::whereHas('company', function ($query) {
+                $query->where('is_active', true);
+            })
+                ->where('company_id', $companyId)
+                ->where('ranking_period', $periodType)
+                ->orderBy('calculated_at', 'desc')
                 ->first();
 
             $rankings[$periodType] = $ranking;

@@ -14,7 +14,7 @@ class ScrapeAll extends Command
      *
      * @var string
      */
-    protected $signature = 'scrape:all {--dry-run : データを保存せずに取得のみ行う}';
+    protected $signature = 'scrape:all {--dry-run : データを保存せずに取得のみ行う} {--no-progress : プログレスバーを非表示にする}';
 
     protected $description = '全プラットフォーム（Qiita、Zenn、はてなブックマーク）のトレンド記事をスクレイピングします';
 
@@ -28,8 +28,9 @@ class ScrapeAll extends Command
             'はてなブックマーク' => HatenaBookmarkScraper::class,
         ];
 
-        // テスト環境ではプログレスバーを無効化
-        if (app()->environment() !== 'testing') {
+        // プログレスバーは通常の出力レベル以上で表示
+        $progressBar = null;
+        if ($this->output->isVeryVerbose() || ($this->output->isVerbose() && ! $this->option('no-progress'))) {
             $progressBar = $this->output->createProgressBar(count($platforms));
             $progressBar->start();
         }
@@ -89,12 +90,12 @@ class ScrapeAll extends Command
                 }
             }
 
-            if (app()->environment() !== 'testing') {
+            if ($progressBar !== null) {
                 $progressBar->advance();
             }
         }
 
-        if (app()->environment() !== 'testing') {
+        if ($progressBar !== null) {
             $progressBar->finish();
         }
 

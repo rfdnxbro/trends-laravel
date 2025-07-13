@@ -469,7 +469,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * HTMLファイルを使用した統合テスト
      */
     #[Test]
-    public function test_正常な_htm_lサンプルファイルの解析()
+    public function test_正常なhtmlサンプルファイルの解析()
     {
         $html = file_get_contents(__DIR__.'/../Fixtures/hatena_sample.html');
 
@@ -490,7 +490,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * 壊れたHTMLファイルを使用したエラーハンドリングテスト
      */
     #[Test]
-    public function test_壊れた_htm_lファイルの処理()
+    public function test_壊れたhtmlファイルの処理()
     {
         $html = file_get_contents(__DIR__.'/../Fixtures/hatena_broken.html');
 
@@ -509,7 +509,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * 空要素HTMLファイルを使用した境界値テスト
      */
     #[Test]
-    public function test_空要素_htm_lファイルの処理()
+    public function test_空要素htmlファイルの処理()
     {
         $html = file_get_contents(__DIR__.'/../Fixtures/hatena_empty.html');
 
@@ -559,7 +559,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * normalizeAndSaveData - 重複URL時の更新テスト
      */
     #[Test]
-    public function test_normalize_and_save_data_重複_ur_l時の更新()
+    public function test_normalize_and_save_data_重複url時の更新()
     {
         // 最初の記事を作成
         $platform = \App\Models\Platform::factory()->create(['name' => 'はてなブックマーク']);
@@ -716,7 +716,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * HTTPエラー詳細テスト - 404エラー
      */
     #[Test]
-    public function test_htt_pエラー404処理()
+    public function test_httpエラー404処理()
     {
         Http::fake([
             'b.hatena.ne.jp/*' => Http::response('Not Found', 404),
@@ -739,7 +739,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * HTTPエラー詳細テスト - 403エラー
      */
     #[Test]
-    public function test_htt_pエラー403処理()
+    public function test_httpエラー403処理()
     {
         Http::fake([
             'b.hatena.ne.jp/*' => Http::response('Forbidden', 403),

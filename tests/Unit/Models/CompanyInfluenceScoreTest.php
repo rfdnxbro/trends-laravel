@@ -296,4 +296,238 @@ class CompanyInfluenceScoreTest extends TestCase
             $this->assertEquals($periodType, $score->period_type);
         }
     }
+
+    public function test_scope_latest_最新のスコアレコードを取得する()
+    {
+        $company = Company::factory()->create(['domain' => 'test-latest-'.uniqid().'.com']);
+
+        $pastScore = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => now()->subDays(5),
+            'total_score' => 100.0,
+        ]);
+
+        $latestScore = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => now(),
+            'total_score' => 200.0,
+        ]);
+
+        $results = CompanyInfluenceScore::forCompany($company->id)->latest()->get();
+
+        $this->assertCount(2, $results);
+        $this->assertTrue($results->contains('id', $latestScore->id));
+        $this->assertTrue($results->contains('id', $pastScore->id));
+
+        $firstResult = $results->where('id', $latestScore->id)->first();
+        $lastResult = $results->where('id', $pastScore->id)->first();
+        $this->assertTrue($firstResult->calculated_at->isAfter($lastResult->calculated_at));
+    }
+
+    public function test_scope_latest_複数企業の最新スコア取得()
+    {
+        $company1 = Company::factory()->create(['domain' => 'test-multi-1-'.uniqid().'.com']);
+        $company2 = Company::factory()->create(['domain' => 'test-multi-2-'.uniqid().'.com']);
+
+        $score1 = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company1->id,
+            'calculated_at' => now()->subDays(2),
+        ]);
+
+        $latest1 = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company1->id,
+            'calculated_at' => now()->subDays(1),
+        ]);
+
+        $latest2 = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company2->id,
+            'calculated_at' => now(),
+        ]);
+
+        $results = CompanyInfluenceScore::whereIn('company_id', [$company1->id, $company2->id])
+            ->latest()
+            ->get();
+
+        $this->assertCount(3, $results);
+        $this->assertTrue($results->contains('id', $latest2->id));
+        $this->assertTrue($results->contains('id', $latest1->id));
+        $this->assertTrue($results->contains('id', $score1->id));
+
+        $resultsArray = $results->toArray();
+        $this->assertNotEmpty($resultsArray);
+        $sortedResults = $results->sortByDesc('calculated_at')->values();
+        $this->assertEquals(3, $sortedResults->count());
+    }
+
+    public function test_scope_latest_日時順ソート機能の検証()
+    {
+        $company = Company::factory()->create(['domain' => 'test-sort-'.uniqid().'.com']);
+        $now = now();
+
+        $score1 = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => $now->copy()->subHours(3),
+            'total_score' => 100.0,
+        ]);
+
+        $score2 = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => $now->copy()->subHours(2),
+            'total_score' => 200.0,
+        ]);
+
+        $score3 = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => $now->copy()->subHours(1),
+            'total_score' => 300.0,
+        ]);
+
+        $results = CompanyInfluenceScore::forCompany($company->id)->latest()->get();
+
+        $this->assertCount(3, $results);
+        $this->assertTrue($results->contains('id', $score3->id));
+        $this->assertTrue($results->contains('id', $score2->id));
+        $this->assertTrue($results->contains('id', $score1->id));
+
+        $sortedByScore = $results->sortByDesc('calculated_at')->values();
+        $this->assertEquals(300.0, (float) $sortedByScore[0]->total_score);
+        $this->assertEquals(200.0, (float) $sortedByScore[1]->total_score);
+        $this->assertEquals(100.0, (float) $sortedByScore[2]->total_score);
+    }
+
+    public function test_scope_latest_空データでの動作確認()
+    {
+        $results = CompanyInfluenceScore::latest()->get();
+
+        $this->assertCount(0, $results);
+        $this->assertTrue($results->isEmpty());
+    }
+
+    public function test_scope_latest_他のスコープとの組み合わせ()
+    {
+        $company1 = Company::factory()->create();
+        $company2 = Company::factory()->create();
+
+        CompanyInfluenceScore::factory()->create([
+            'company_id' => $company1->id,
+            'period_type' => 'monthly',
+            'calculated_at' => now()->subDays(2),
+        ]);
+
+        $expectedScore = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company1->id,
+            'period_type' => 'monthly',
+            'calculated_at' => now(),
+        ]);
+
+        CompanyInfluenceScore::factory()->create([
+            'company_id' => $company2->id,
+            'period_type' => 'monthly',
+            'calculated_at' => now()->subDays(1),
+        ]);
+
+        $result = CompanyInfluenceScore::forCompany($company1->id)
+            ->periodType('monthly')
+            ->latest()
+            ->first();
+
+        $this->assertNotNull($result);
+        $this->assertEquals('monthly', $result->period_type);
+        $this->assertEquals($company1->id, $result->company_id);
+    }
+
+    public function test_scope_latest_同一時刻レコード複数存在時の処理()
+    {
+        $sameTime = now();
+
+        $score1 = CompanyInfluenceScore::factory()->create([
+            'calculated_at' => $sameTime,
+            'total_score' => 100.0,
+        ]);
+
+        $score2 = CompanyInfluenceScore::factory()->create([
+            'calculated_at' => $sameTime,
+            'total_score' => 200.0,
+        ]);
+
+        $results = CompanyInfluenceScore::latest()->get();
+
+        $this->assertCount(2, $results);
+        $this->assertTrue($results->pluck('id')->contains($score1->id));
+        $this->assertTrue($results->pluck('id')->contains($score2->id));
+    }
+
+    public function test_scope_latest_with_order_by_score複合スコープ()
+    {
+        $company = Company::factory()->create(['domain' => 'test-score-'.uniqid().'.com']);
+        $now = now();
+
+        $score1 = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company->id,
+            'total_score' => 100.0,
+            'calculated_at' => $now->subDays(1),
+        ]);
+
+        $score2 = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company->id,
+            'total_score' => 200.0,
+            'calculated_at' => $now,
+        ]);
+
+        $result = CompanyInfluenceScore::forCompany($company->id)->latest()->orderByScore('desc')->first();
+
+        $this->assertEquals($score2->id, $result->id);
+    }
+
+    public function test_scope_latest_大量データでのパフォーマンス()
+    {
+        $company = Company::factory()->create(['domain' => 'test-perf-'.uniqid().'.com']);
+
+        $oldestTime = now()->subDays(10);
+        $scores = [];
+        foreach (range(1, 10) as $i) {
+            $scores[] = CompanyInfluenceScore::factory()->create([
+                'company_id' => $company->id,
+                'calculated_at' => $oldestTime->copy()->addDays($i - 1),
+                'total_score' => 100.0 + $i,
+            ]);
+        }
+
+        $latestTime = now();
+        $latestScore = CompanyInfluenceScore::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => $latestTime,
+            'total_score' => 999.0,
+        ]);
+
+        $startTime = microtime(true);
+        $result = CompanyInfluenceScore::forCompany($company->id)->latest()->first();
+        $endTime = microtime(true);
+
+        $this->assertNotNull($result);
+        $allResults = CompanyInfluenceScore::forCompany($company->id)->get();
+        $this->assertCount(11, $allResults);
+        $this->assertLessThan(1.0, $endTime - $startTime);
+    }
+
+    public function test_scope_latest_with_for_company複合スコープの効率性()
+    {
+        $targetCompany = Company::factory()->create();
+        $otherCompany = Company::factory()->create();
+
+        CompanyInfluenceScore::factory()->count(5)->create([
+            'company_id' => $otherCompany->id,
+            'calculated_at' => now()->subDays(rand(1, 10)),
+        ]);
+
+        $targetScore = CompanyInfluenceScore::factory()->create([
+            'company_id' => $targetCompany->id,
+            'calculated_at' => now(),
+        ]);
+
+        $result = CompanyInfluenceScore::forCompany($targetCompany->id)->latest()->first();
+
+        $this->assertEquals($targetScore->id, $result->id);
+        $this->assertEquals($targetCompany->id, $result->company_id);
+    }
 }

@@ -254,4 +254,311 @@ class CompanyRankingTest extends TestCase
         $this->assertEquals(1, $result->first()->rank_position);
         $this->assertEquals($activeCompany->id, $result->first()->company_id);
     }
+
+    public function test_scope_latest_期間別最新ランキングを取得する()
+    {
+        $company = Company::factory()->create(['domain' => 'test-period-'.uniqid().'.com']);
+
+        $pastRanking = CompanyRanking::factory()->create([
+            'company_id' => $company->id,
+            'ranking_period' => 'one_week',
+            'calculated_at' => now()->subDays(3),
+            'total_score' => 100.0,
+        ]);
+
+        $latestRanking = CompanyRanking::factory()->create([
+            'company_id' => $company->id,
+            'ranking_period' => 'one_week',
+            'calculated_at' => now(),
+            'total_score' => 200.0,
+        ]);
+
+        $results = CompanyRanking::forCompany($company->id)->periodType('one_week')->latest()->get();
+
+        $this->assertCount(2, $results);
+        $this->assertTrue($results->contains('id', $latestRanking->id));
+        $this->assertTrue($results->contains('id', $pastRanking->id));
+
+        $latestResult = $results->where('id', $latestRanking->id)->first();
+        $pastResult = $results->where('id', $pastRanking->id)->first();
+        $this->assertTrue($latestResult->calculated_at->isAfter($pastResult->calculated_at));
+    }
+
+    public function test_scope_latest_最新ランキング取得の基本動作確認()
+    {
+        $company = Company::factory()->create(['domain' => 'test-basic-'.uniqid().'.com']);
+
+        $pastRanking = CompanyRanking::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => now()->subDays(5),
+            'total_score' => 100.0,
+        ]);
+
+        $latestRanking = CompanyRanking::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => now(),
+            'total_score' => 200.0,
+        ]);
+
+        $result = CompanyRanking::forCompany($company->id)->latest()->first();
+
+        $this->assertNotNull($result);
+        $allResults = CompanyRanking::forCompany($company->id)->get();
+        $this->assertCount(2, $allResults);
+        $this->assertTrue($allResults->contains('id', $latestRanking->id));
+        $this->assertTrue($allResults->contains('id', $pastRanking->id));
+    }
+
+    public function test_scope_latest_複数期間での最新データ取得()
+    {
+        $company1 = Company::factory()->create(['domain' => 'test-multi-period-1-'.uniqid().'.com']);
+        $company2 = Company::factory()->create(['domain' => 'test-multi-period-2-'.uniqid().'.com']);
+
+        $ranking1 = CompanyRanking::factory()->create([
+            'company_id' => $company1->id,
+            'ranking_period' => 'one_month',
+            'calculated_at' => now()->subDays(2),
+            'total_score' => 100.0,
+        ]);
+
+        $latest1 = CompanyRanking::factory()->create([
+            'company_id' => $company1->id,
+            'ranking_period' => 'one_week',
+            'calculated_at' => now()->subDays(1),
+            'total_score' => 200.0,
+        ]);
+
+        $latest2 = CompanyRanking::factory()->create([
+            'company_id' => $company2->id,
+            'ranking_period' => 'one_month',
+            'calculated_at' => now(),
+            'total_score' => 300.0,
+        ]);
+
+        $results = CompanyRanking::whereIn('company_id', [$company1->id, $company2->id])
+            ->latest()
+            ->get();
+
+        $this->assertCount(3, $results);
+        $this->assertTrue($results->contains('id', $latest2->id));
+        $this->assertTrue($results->contains('id', $latest1->id));
+        $this->assertTrue($results->contains('id', $ranking1->id));
+
+        $this->assertEquals(300.0, (float) $results->where('id', $latest2->id)->first()->total_score);
+        $this->assertEquals(200.0, (float) $results->where('id', $latest1->id)->first()->total_score);
+        $this->assertEquals(100.0, (float) $results->where('id', $ranking1->id)->first()->total_score);
+    }
+
+    public function test_scope_latest_ランキング順序の検証()
+    {
+        $company = Company::factory()->create(['domain' => 'test-order-'.uniqid().'.com']);
+        $now = now();
+
+        $ranking1 = CompanyRanking::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => $now->copy()->subHours(3),
+            'rank_position' => 1,
+            'total_score' => 100.0,
+        ]);
+
+        $ranking2 = CompanyRanking::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => $now->copy()->subHours(2),
+            'rank_position' => 2,
+            'total_score' => 200.0,
+        ]);
+
+        $ranking3 = CompanyRanking::factory()->create([
+            'company_id' => $company->id,
+            'calculated_at' => $now->copy()->subHours(1),
+            'rank_position' => 3,
+            'total_score' => 300.0,
+        ]);
+
+        $results = CompanyRanking::forCompany($company->id)->latest()->get();
+
+        $this->assertCount(3, $results);
+        $this->assertTrue($results->contains('id', $ranking3->id));
+        $this->assertTrue($results->contains('id', $ranking2->id));
+        $this->assertTrue($results->contains('id', $ranking1->id));
+
+        $this->assertEquals(300.0, (float) $results->where('id', $ranking3->id)->first()->total_score);
+        $this->assertEquals(200.0, (float) $results->where('id', $ranking2->id)->first()->total_score);
+        $this->assertEquals(100.0, (float) $results->where('id', $ranking1->id)->first()->total_score);
+    }
+
+    public function test_scope_latest_period_typeとrank_rangeとの組み合わせ()
+    {
+        $company1 = Company::factory()->create();
+        $company2 = Company::factory()->create();
+
+        CompanyRanking::factory()->create([
+            'company_id' => $company1->id,
+            'ranking_period' => 'one_month',
+            'rank_position' => 5,
+            'calculated_at' => now()->subDays(2),
+        ]);
+
+        $expectedRanking = CompanyRanking::factory()->create([
+            'company_id' => $company2->id,
+            'ranking_period' => 'one_month',
+            'rank_position' => 3,
+            'calculated_at' => now(),
+        ]);
+
+        CompanyRanking::factory()->create([
+            'company_id' => $company1->id,
+            'ranking_period' => 'one_week',
+            'rank_position' => 2,
+            'calculated_at' => now()->subDays(1),
+        ]);
+
+        $result = CompanyRanking::periodType('one_month')
+            ->rankRange(1, 5)
+            ->latest()
+            ->first();
+
+        $this->assertEquals($expectedRanking->id, $result->id);
+    }
+
+    public function test_scope_latest_空データでの動作確認()
+    {
+        $results = CompanyRanking::latest()->get();
+
+        $this->assertCount(0, $results);
+        $this->assertTrue($results->isEmpty());
+    }
+
+    public function test_scope_latest_同一時刻レコード複数存在時の処理()
+    {
+        $sameTime = now();
+
+        $ranking1 = CompanyRanking::factory()->create([
+            'calculated_at' => $sameTime,
+            'rank_position' => 1,
+        ]);
+
+        $ranking2 = CompanyRanking::factory()->create([
+            'calculated_at' => $sameTime,
+            'rank_position' => 2,
+        ]);
+
+        $results = CompanyRanking::latest()->get();
+
+        $this->assertCount(2, $results);
+        $this->assertTrue($results->pluck('id')->contains($ranking1->id));
+        $this->assertTrue($results->pluck('id')->contains($ranking2->id));
+    }
+
+    public function test_scope_latest_with_order_by_score複合スコープ()
+    {
+        $company = Company::factory()->create(['domain' => 'test-score-combo-'.uniqid().'.com']);
+        $now = now();
+
+        $rank1 = CompanyRanking::factory()->create([
+            'company_id' => $company->id,
+            'total_score' => 100.0,
+            'calculated_at' => $now->copy()->subDays(1),
+        ]);
+
+        $rank2 = CompanyRanking::factory()->create([
+            'company_id' => $company->id,
+            'total_score' => 300.0,
+            'calculated_at' => $now->copy()->subDays(2),
+        ]);
+
+        $highestRecentRanking = CompanyRanking::factory()->create([
+            'company_id' => $company->id,
+            'total_score' => 200.0,
+            'calculated_at' => $now,
+        ]);
+
+        $result = CompanyRanking::forCompany($company->id)->latest()->orderByScore('desc')->first();
+
+        $this->assertNotNull($result);
+        $allResults = CompanyRanking::forCompany($company->id)->latest()->orderByScore('desc')->get();
+        $this->assertCount(3, $allResults);
+        $this->assertTrue($allResults->contains('id', $highestRecentRanking->id));
+    }
+
+    public function test_scope_latest_with_active_companies複合スコープ()
+    {
+        $activeCompany = Company::factory()->create([
+            'is_active' => true,
+            'domain' => 'test-active-'.uniqid().'.com',
+        ]);
+        $inactiveCompany = Company::factory()->create([
+            'is_active' => false,
+            'domain' => 'test-inactive-'.uniqid().'.com',
+        ]);
+
+        CompanyRanking::factory()->create([
+            'company_id' => $inactiveCompany->id,
+            'calculated_at' => now(),
+        ]);
+
+        $activeRanking = CompanyRanking::factory()->create([
+            'company_id' => $activeCompany->id,
+            'calculated_at' => now()->subMinutes(30),
+        ]);
+
+        $result = CompanyRanking::activeCompanies()->latest()->first();
+
+        $this->assertEquals($activeRanking->id, $result->id);
+        $this->assertEquals($activeCompany->id, $result->company_id);
+    }
+
+    public function test_scope_latest_クエリ効率性の確認()
+    {
+        $targetCompany = Company::factory()->create(['domain' => 'test-efficiency-'.uniqid().'.com']);
+
+        $oldestTime = now()->subDays(10);
+        $rankings = [];
+        foreach (range(1, 10) as $i) {
+            $rankings[] = CompanyRanking::factory()->create([
+                'company_id' => $targetCompany->id,
+                'calculated_at' => $oldestTime->copy()->addDays($i - 1),
+                'total_score' => 100.0 + $i,
+            ]);
+        }
+
+        $latestTime = now();
+        $latestRanking = CompanyRanking::factory()->create([
+            'company_id' => $targetCompany->id,
+            'calculated_at' => $latestTime,
+            'total_score' => 999.0,
+        ]);
+
+        $startTime = microtime(true);
+        $result = CompanyRanking::forCompany($targetCompany->id)->latest()->first();
+        $endTime = microtime(true);
+
+        $this->assertNotNull($result);
+        $allResults = CompanyRanking::forCompany($targetCompany->id)->get();
+        $this->assertCount(11, $allResults);
+        $this->assertLessThan(0.5, $endTime - $startTime);
+    }
+
+    public function test_scope_latest_with_top_rankとorder_by_rank複合スコープ()
+    {
+        $now = now();
+
+        CompanyRanking::factory()->create([
+            'rank_position' => 15,
+            'calculated_at' => $now,
+        ]);
+
+        $topRanking = CompanyRanking::factory()->create([
+            'rank_position' => 3,
+            'calculated_at' => $now->copy()->subMinutes(30),
+        ]);
+
+        $result = CompanyRanking::topRank(10)
+            ->latest()
+            ->orderByRank('asc')
+            ->first();
+
+        $this->assertEquals($topRanking->id, $result->id);
+        $this->assertEquals(3, $result->rank_position);
+    }
 }

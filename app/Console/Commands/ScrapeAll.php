@@ -14,7 +14,7 @@ class ScrapeAll extends Command
      *
      * @var string
      */
-    protected $signature = 'scrape:all {--dry-run : データを保存せずに取得のみ行う}';
+    protected $signature = 'scrape:all {--dry-run : データを保存せずに取得のみ行う} {--no-progress : プログレスバーを非表示にする}';
 
     protected $description = '全プラットフォーム（Qiita、Zenn、はてなブックマーク）のトレンド記事をスクレイピングします';
 
@@ -28,8 +28,12 @@ class ScrapeAll extends Command
             'はてなブックマーク' => HatenaBookmarkScraper::class,
         ];
 
-        $progressBar = $this->output->createProgressBar(count($platforms));
-        $progressBar->start();
+        // プログレスバーは通常の出力レベル以上で表示
+        $progressBar = null;
+        if ($this->output->isVeryVerbose() || ($this->output->isVerbose() && ! $this->option('no-progress'))) {
+            $progressBar = $this->output->createProgressBar(count($platforms));
+            $progressBar->start();
+        }
 
         $totalArticles = 0;
         $totalSaved = 0;
@@ -39,13 +43,18 @@ class ScrapeAll extends Command
             $this->line("\n{$platformName}のスクレイピングを開始...");
 
             try {
-                $scraper = new $scraperClass;
+                $scraper = app($scraperClass);
 
                 // プラットフォーム別のメソッド呼び出し
                 if ($platformName === 'はてなブックマーク') {
                     $articles = $scraper->scrapePopularItEntries();
                 } else {
                     $articles = $scraper->scrapeTrendingArticles();
+                }
+
+                // Collectionを配列に変換（テスト用モックに対応）
+                if ($articles instanceof \Illuminate\Support\Collection) {
+                    $articles = $articles->toArray();
                 }
 
                 $this->info("{$platformName}: 取得した記事数: ".count($articles));
@@ -55,7 +64,7 @@ class ScrapeAll extends Command
                     $this->warn('--dry-run オプションが指定されているため、データは保存されません');
                 } else {
                     $savedArticles = $scraper->normalizeAndSaveData($articles);
-                    $savedCount = count($savedArticles);
+                    $savedCount = is_array($savedArticles) ? count($savedArticles) : $savedArticles;
                     $this->info("{$platformName}: 保存した記事数: {$savedCount}");
                     $totalSaved += $savedCount;
                 }
@@ -81,10 +90,14 @@ class ScrapeAll extends Command
                 }
             }
 
-            $progressBar->advance();
+            if ($progressBar !== null) {
+                $progressBar->advance();
+            }
         }
 
-        $progressBar->finish();
+        if ($progressBar !== null) {
+            $progressBar->finish();
+        }
 
         // 結果サマリーの表示
         $this->line("\n\n=== スクレイピング結果サマリー ===");

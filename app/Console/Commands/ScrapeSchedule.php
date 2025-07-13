@@ -40,6 +40,8 @@ class ScrapeSchedule extends Command
         $isSilent = $this->option('silent');
         $specificPlatform = $this->option('platform');
 
+        Log::info('スクレイピング実行開始');
+
         if (! $isSilent) {
             $this->info('定期スクレイピングを開始します...');
         }
@@ -50,7 +52,7 @@ class ScrapeSchedule extends Command
             $specificPlatform = strtolower($specificPlatform);
             if (! isset($this->platformMap[$specificPlatform])) {
                 $this->error("無効なプラットフォームです: {$specificPlatform}");
-                Log::error('ScrapeSchedule: 無効なプラットフォーム指定', ['platform' => $specificPlatform]);
+                Log::warning("無効なプラットフォーム: {$specificPlatform}");
 
                 return Command::FAILURE;
             }
@@ -70,7 +72,7 @@ class ScrapeSchedule extends Command
             }
 
             try {
-                $scraper = new $scraperClass;
+                $scraper = app($scraperClass);
 
                 // プラットフォーム別のメソッド呼び出し
                 if ($platformName === 'はてなブックマーク') {
@@ -78,10 +80,15 @@ class ScrapeSchedule extends Command
                 } else {
                     $articles = $scraper->scrapeTrendingArticles();
                 }
+
+                // Collectionを配列に変換（テスト用モックに対応）
+                if ($articles instanceof \Illuminate\Support\Collection) {
+                    $articles = $articles->toArray();
+                }
                 $totalArticles += count($articles);
 
                 $savedArticles = $scraper->normalizeAndSaveData($articles);
-                $savedCount = count($savedArticles);
+                $savedCount = is_array($savedArticles) ? count($savedArticles) : $savedArticles;
                 $totalSaved += $savedCount;
 
                 if (! $isSilent) {
@@ -89,7 +96,7 @@ class ScrapeSchedule extends Command
                 }
 
                 // 成功ログ
-                Log::info("ScrapeSchedule: {$platformName} 完了", [
+                Log::info("{$platformName}: {$savedCount}件保存", [
                     'platform' => $platformKey,
                     'articles_fetched' => count($articles),
                     'articles_saved' => $savedCount,
@@ -104,7 +111,7 @@ class ScrapeSchedule extends Command
                 }
 
                 // エラーログ
-                Log::error("ScrapeSchedule: {$platformName} エラー", [
+                Log::error("{$platformName}: エラー - {$e->getMessage()}", [
                     'platform' => $platformKey,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
@@ -126,7 +133,7 @@ class ScrapeSchedule extends Command
         $executionTime = round(microtime(true) - $startTime, 2);
 
         // 実行結果のログ
-        Log::info('ScrapeSchedule: 実行完了', [
+        Log::info("スクレイピング実行完了: 取得:{$totalArticles} 保存:{$totalSaved} 実行時間:{$executionTime}秒", [
             'total_articles_fetched' => $totalArticles,
             'total_articles_saved' => $totalSaved,
             'execution_time_seconds' => $executionTime,

@@ -7,5 +7,3 @@ parameters:
         - app/
         - routes/
     treatPhpDocTypesAsCertain: false
-    ignoreErrors:
-        - '#Variable \$scraper might not be defined#'

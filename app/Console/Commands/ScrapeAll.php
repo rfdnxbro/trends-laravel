@@ -39,7 +39,7 @@ class ScrapeAll extends Command
             $this->line("\n{$platformName}のスクレイピングを開始...");
 
             try {
-                $scraper = new $scraperClass;
+                $scraper = app($scraperClass);
 
                 // プラットフォーム別のメソッド呼び出し
                 if ($platformName === 'はてなブックマーク') {
@@ -48,14 +48,20 @@ class ScrapeAll extends Command
                     $articles = $scraper->scrapeTrendingArticles();
                 }
 
+                // Collectionを配列に変換（テスト用モックに対応）
+                if ($articles instanceof \Illuminate\Support\Collection) {
+                    $articles = $articles->toArray();
+                }
+
                 $this->info("{$platformName}: 取得した記事数: ".count($articles));
                 $totalArticles += count($articles);
 
                 if ($this->option('dry-run')) {
+                    $scraper->normalizeAndSaveData($articles, true);
                     $this->warn('--dry-run オプションが指定されているため、データは保存されません');
                 } else {
-                    $savedArticles = $scraper->normalizeAndSaveData($articles);
-                    $savedCount = count($savedArticles);
+                    $savedArticles = $scraper->normalizeAndSaveData($articles, false);
+                    $savedCount = is_array($savedArticles) ? count($savedArticles) : $savedArticles;
                     $this->info("{$platformName}: 保存した記事数: {$savedCount}");
                     $totalSaved += $savedCount;
                 }

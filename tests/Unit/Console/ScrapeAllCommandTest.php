@@ -107,35 +107,35 @@ class ScrapeAllCommandTest extends TestCase
         $qiitaMock = Mockery::mock(QiitaScraper::class);
         $qiitaMock->shouldReceive('scrapeTrendingArticles')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test'],
-            ]));
+            ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), false)
-            ->andReturn(1);
+            ->with(Mockery::type('array'), false)
+            ->andReturn([['id' => 1]]);
 
         $zennMock = Mockery::mock(ZennScraper::class);
         $zennMock->shouldReceive('scrapeTrendingArticles')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Zenn Article', 'url' => 'https://zenn.dev/test'],
-            ]));
+            ]);
         $zennMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), false)
-            ->andReturn(1);
+            ->with(Mockery::type('array'), false)
+            ->andReturn([['id' => 1]]);
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
         $hatenaMock->shouldReceive('scrapePopularItEntries')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Hatena Article', 'url' => 'https://b.hatena.ne.jp/test'],
-            ]));
+            ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), false)
-            ->andReturn(1);
+            ->with(Mockery::type('array'), false)
+            ->andReturn([['id' => 1]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
         $this->app->instance(ZennScraper::class, $zennMock);
@@ -151,35 +151,35 @@ class ScrapeAllCommandTest extends TestCase
         $qiitaMock = Mockery::mock(QiitaScraper::class);
         $qiitaMock->shouldReceive('scrapeTrendingArticles')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test'],
-            ]));
+            ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), true)
-            ->andReturn(0);
+            ->with(Mockery::type('array'), true)
+            ->andReturn([]);
 
         $zennMock = Mockery::mock(ZennScraper::class);
         $zennMock->shouldReceive('scrapeTrendingArticles')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Zenn Article', 'url' => 'https://zenn.dev/test'],
-            ]));
+            ]);
         $zennMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), true)
-            ->andReturn(0);
+            ->with(Mockery::type('array'), true)
+            ->andReturn([]);
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
         $hatenaMock->shouldReceive('scrapePopularItEntries')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Hatena Article', 'url' => 'https://b.hatena.ne.jp/test'],
-            ]));
+            ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), true)
-            ->andReturn(0);
+            ->with(Mockery::type('array'), true)
+            ->andReturn([]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
         $this->app->instance(ZennScraper::class, $zennMock);
@@ -198,31 +198,31 @@ class ScrapeAllCommandTest extends TestCase
         $qiitaMock->shouldReceive('scrapeTrendingArticles')
             ->once()
             ->andThrow(new \Exception('Qiita scraping failed'));
-        $qiitaMock->shouldReceive('logError')
+        $qiitaMock->shouldReceive('getErrorLog')
             ->once()
-            ->with(Mockery::type(\Exception::class));
+            ->andReturn([]);
 
         $zennMock = Mockery::mock(ZennScraper::class);
         $zennMock->shouldReceive('scrapeTrendingArticles')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Zenn Article', 'url' => 'https://zenn.dev/test'],
-            ]));
+            ]);
         $zennMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), false)
-            ->andReturn(1);
+            ->with(Mockery::type('array'), false)
+            ->andReturn([['id' => 1]]);
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
         $hatenaMock->shouldReceive('scrapePopularItEntries')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Hatena Article', 'url' => 'https://b.hatena.ne.jp/test'],
-            ]));
+            ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), false)
-            ->andReturn(1);
+            ->with(Mockery::type('array'), false)
+            ->andReturn([['id' => 1]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
         $this->app->instance(ZennScraper::class, $zennMock);
@@ -241,25 +241,25 @@ class ScrapeAllCommandTest extends TestCase
         $qiitaMock->shouldReceive('scrapeTrendingArticles')
             ->once()
             ->andThrow(new \Exception('Qiita scraping failed'));
-        $qiitaMock->shouldReceive('logError')
+        $qiitaMock->shouldReceive('getErrorLog')
             ->once()
-            ->with(Mockery::type(\Exception::class));
+            ->andReturn([]);
 
         $zennMock = Mockery::mock(ZennScraper::class);
         $zennMock->shouldReceive('scrapeTrendingArticles')
             ->once()
             ->andThrow(new \Exception('Zenn scraping failed'));
-        $zennMock->shouldReceive('logError')
+        $zennMock->shouldReceive('getErrorLog')
             ->once()
-            ->with(Mockery::type(\Exception::class));
+            ->andReturn([]);
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
         $hatenaMock->shouldReceive('scrapePopularItEntries')
             ->once()
             ->andThrow(new \Exception('Hatena scraping failed'));
-        $hatenaMock->shouldReceive('logError')
+        $hatenaMock->shouldReceive('getErrorLog')
             ->once()
-            ->with(Mockery::type(\Exception::class));
+            ->andReturn([]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
         $this->app->instance(ZennScraper::class, $zennMock);
@@ -275,37 +275,37 @@ class ScrapeAllCommandTest extends TestCase
         $qiitaMock = Mockery::mock(QiitaScraper::class);
         $qiitaMock->shouldReceive('scrapeTrendingArticles')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Article 1', 'url' => 'https://qiita.com/test1'],
                 ['title' => 'Test Article 2', 'url' => 'https://qiita.com/test2'],
-            ]));
+            ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), false)
-            ->andReturn(2);
+            ->with(Mockery::type('array'), false)
+            ->andReturn([['id' => 1], ['id' => 2]]);
 
         $zennMock = Mockery::mock(ZennScraper::class);
         $zennMock->shouldReceive('scrapeTrendingArticles')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Article 3', 'url' => 'https://zenn.dev/test3'],
-            ]));
+            ]);
         $zennMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), false)
-            ->andReturn(1);
+            ->with(Mockery::type('array'), false)
+            ->andReturn([['id' => 1]]);
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
         $hatenaMock->shouldReceive('scrapePopularItEntries')
             ->once()
-            ->andReturn(collect([
+            ->andReturn([
                 ['title' => 'Test Article 4', 'url' => 'https://b.hatena.ne.jp/test4'],
                 ['title' => 'Test Article 5', 'url' => 'https://b.hatena.ne.jp/test5'],
-            ]));
+            ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('Illuminate\Support\Collection'), false)
-            ->andReturn(2);
+            ->with(Mockery::type('array'), false)
+            ->andReturn([['id' => 1], ['id' => 2]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
         $this->app->instance(ZennScraper::class, $zennMock);
@@ -314,8 +314,8 @@ class ScrapeAllCommandTest extends TestCase
         Artisan::call('scrape:all');
         $output = Artisan::output();
 
-        $this->assertStringContainsString('総記事数: 5', $output);
-        $this->assertStringContainsString('保存記事数: 5', $output);
-        $this->assertStringContainsString('スクレイピング完了', $output);
+        $this->assertStringContainsString('総取得記事数: 5', $output);
+        $this->assertStringContainsString('総保存記事数: 5', $output);
+        $this->assertStringContainsString('全プラットフォームのスクレイピングが完了しました', $output);
     }
 }

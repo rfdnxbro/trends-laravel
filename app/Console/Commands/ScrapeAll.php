@@ -28,8 +28,11 @@ class ScrapeAll extends Command
             'はてなブックマーク' => HatenaBookmarkScraper::class,
         ];
 
-        $progressBar = $this->output->createProgressBar(count($platforms));
-        $progressBar->start();
+        // テスト環境ではプログレスバーを無効化
+        if (app()->environment() !== 'testing') {
+            $progressBar = $this->output->createProgressBar(count($platforms));
+            $progressBar->start();
+        }
 
         $totalArticles = 0;
         $totalSaved = 0;
@@ -57,10 +60,9 @@ class ScrapeAll extends Command
                 $totalArticles += count($articles);
 
                 if ($this->option('dry-run')) {
-                    $scraper->normalizeAndSaveData($articles, true);
                     $this->warn('--dry-run オプションが指定されているため、データは保存されません');
                 } else {
-                    $savedArticles = $scraper->normalizeAndSaveData($articles, false);
+                    $savedArticles = $scraper->normalizeAndSaveData($articles);
                     $savedCount = is_array($savedArticles) ? count($savedArticles) : $savedArticles;
                     $this->info("{$platformName}: 保存した記事数: {$savedCount}");
                     $totalSaved += $savedCount;
@@ -87,10 +89,14 @@ class ScrapeAll extends Command
                 }
             }
 
-            $progressBar->advance();
+            if (app()->environment() !== 'testing') {
+                $progressBar->advance();
+            }
         }
 
-        $progressBar->finish();
+        if (app()->environment() !== 'testing') {
+            $progressBar->finish();
+        }
 
         // 結果サマリーの表示
         $this->line("\n\n=== スクレイピング結果サマリー ===");

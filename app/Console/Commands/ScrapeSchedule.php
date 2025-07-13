@@ -87,7 +87,7 @@ class ScrapeSchedule extends Command
                 }
                 $totalArticles += count($articles);
 
-                $savedArticles = $scraper->normalizeAndSaveData($articles, false);
+                $savedArticles = $scraper->normalizeAndSaveData($articles);
                 $savedCount = is_array($savedArticles) ? count($savedArticles) : $savedArticles;
                 $totalSaved += $savedCount;
 

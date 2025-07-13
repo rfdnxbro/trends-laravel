@@ -138,7 +138,7 @@ class ScrapeScheduleCommandTest extends TestCase
             ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $zennMock = Mockery::mock(ZennScraper::class);
@@ -149,7 +149,7 @@ class ScrapeScheduleCommandTest extends TestCase
             ]);
         $zennMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
@@ -160,7 +160,7 @@ class ScrapeScheduleCommandTest extends TestCase
             ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
@@ -191,7 +191,7 @@ class ScrapeScheduleCommandTest extends TestCase
             ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
@@ -220,7 +220,7 @@ class ScrapeScheduleCommandTest extends TestCase
             ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
@@ -248,7 +248,7 @@ class ScrapeScheduleCommandTest extends TestCase
             ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
@@ -274,7 +274,7 @@ class ScrapeScheduleCommandTest extends TestCase
             ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
@@ -353,7 +353,7 @@ class ScrapeScheduleCommandTest extends TestCase
             ]);
         $zennMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
@@ -364,7 +364,7 @@ class ScrapeScheduleCommandTest extends TestCase
             ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);

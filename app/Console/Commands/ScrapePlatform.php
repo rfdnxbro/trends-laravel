@@ -68,7 +68,6 @@ class ScrapePlatform extends Command
             $this->info('取得した記事数: '.count($articles));
 
             if ($this->option('dry-run')) {
-                $scraper->normalizeAndSaveData($articles, true);
                 $this->warn('--dry-run オプションが指定されているため、データは保存されません');
 
                 // 取得データの表示
@@ -91,7 +90,7 @@ class ScrapePlatform extends Command
                 }
             } else {
                 // データ保存
-                $savedArticles = $scraper->normalizeAndSaveData($articles, false);
+                $savedArticles = $scraper->normalizeAndSaveData($articles);
                 $savedCount = is_array($savedArticles) ? count($savedArticles) : $savedArticles;
                 $this->info('保存した記事数: '.$savedCount);
 

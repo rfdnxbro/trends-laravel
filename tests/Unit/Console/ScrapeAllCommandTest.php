@@ -112,7 +112,7 @@ class ScrapeAllCommandTest extends TestCase
             ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $zennMock = Mockery::mock(ZennScraper::class);
@@ -123,7 +123,7 @@ class ScrapeAllCommandTest extends TestCase
             ]);
         $zennMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
@@ -134,7 +134,7 @@ class ScrapeAllCommandTest extends TestCase
             ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
@@ -155,9 +155,7 @@ class ScrapeAllCommandTest extends TestCase
                 ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test'],
             ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
-            ->once()
-            ->with(Mockery::type('array'), true)
-            ->andReturn([]);
+            ->never();
 
         $zennMock = Mockery::mock(ZennScraper::class);
         $zennMock->shouldReceive('scrapeTrendingArticles')
@@ -166,9 +164,7 @@ class ScrapeAllCommandTest extends TestCase
                 ['title' => 'Test Zenn Article', 'url' => 'https://zenn.dev/test'],
             ]);
         $zennMock->shouldReceive('normalizeAndSaveData')
-            ->once()
-            ->with(Mockery::type('array'), true)
-            ->andReturn([]);
+            ->never();
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
         $hatenaMock->shouldReceive('scrapePopularItEntries')
@@ -177,9 +173,7 @@ class ScrapeAllCommandTest extends TestCase
                 ['title' => 'Test Hatena Article', 'url' => 'https://b.hatena.ne.jp/test'],
             ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')
-            ->once()
-            ->with(Mockery::type('array'), true)
-            ->andReturn([]);
+            ->never();
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
         $this->app->instance(ZennScraper::class, $zennMock);
@@ -210,7 +204,7 @@ class ScrapeAllCommandTest extends TestCase
             ]);
         $zennMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
@@ -221,7 +215,7 @@ class ScrapeAllCommandTest extends TestCase
             ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);
@@ -281,7 +275,7 @@ class ScrapeAllCommandTest extends TestCase
             ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1], ['id' => 2]]);
 
         $zennMock = Mockery::mock(ZennScraper::class);
@@ -292,7 +286,7 @@ class ScrapeAllCommandTest extends TestCase
             ]);
         $zennMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1]]);
 
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
@@ -304,7 +298,7 @@ class ScrapeAllCommandTest extends TestCase
             ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')
             ->once()
-            ->with(Mockery::type('array'), false)
+            ->with(Mockery::type('array'))
             ->andReturn([['id' => 1], ['id' => 2]]);
 
         $this->app->instance(QiitaScraper::class, $qiitaMock);

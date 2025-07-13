@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>壊れたHTML構造</title>
+</head>
+<body>
+    <!-- 壊れた構造のエントリー -->
+    <div class="entrylist-contents">
+        <div class="entrylist-contents-title">
+            <!-- aタグがない -->
+            <span>リンクなしタイトル</span>
+        </div>
+        <div class="entrylist-contents-users">
+            <a href="/entry/test">10 users</a>
+        </div>
+    </div>
+    
+    <!-- 一部要素が欠けているエントリー -->
+    <div class="entrylist-contents">
+        <div class="entrylist-contents-title">
+            <a href="https://broken.example.com">タイトルのみ</a>
+        </div>
+        <!-- usersクラスが存在しない -->
+    </div>
+    
+    <!-- 完全に空のエントリー -->
+    <div class="entrylist-contents">
+    </div>
+    
+    <!-- 不正なHTML構造 -->
+    <div class="entrylist-contents">
+        <div class="entrylist-contents-title">
+            <a href="https://malformed.example.com">未閉じタグ
+        </div>
+        <div class="entrylist-contents-users">
+            <a href="/entry/malformed">不正 users</span>
+        </div>
+    </div>
+</body>
+</html>

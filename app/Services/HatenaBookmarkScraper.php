@@ -52,7 +52,7 @@ class HatenaBookmarkScraper extends BaseScraper
                 $title = $this->extractTitle($node);
                 $url = $this->extractUrl($node);
                 $bookmarkCount = $this->extractBookmarkCount($node);
-                $domain = $this->extractDomain($url);
+                $domain = $url ? $this->extractDomain($url) : '';
                 $publishedAt = $this->extractPublishedAt($node);
 
                 if ($title && $url) {
@@ -82,7 +82,9 @@ class HatenaBookmarkScraper extends BaseScraper
         try {
             $titleElement = $node->filter('.entrylist-contents-title a');
             if ($titleElement->count() > 0) {
-                return trim($titleElement->text());
+                $title = trim($titleElement->text());
+
+                return $title !== '' ? $title : null;
             }
         } catch (\Exception $e) {
             Log::debug('タイトル抽出エラー', ['error' => $e->getMessage()]);

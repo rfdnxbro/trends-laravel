@@ -3,11 +3,22 @@
 namespace Tests\Unit\Console;
 
 use App\Console\Commands\ScrapePlatform;
+use App\Services\HatenaBookmarkScraper;
+use App\Services\QiitaScraper;
+use App\Services\ZennScraper;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
+use Mockery;
 use Tests\TestCase;
 
 class ScrapePlatformCommandTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
+    }
+
     public function test_コマンドの基本情報が正しく設定されている()
     {
         $command = new ScrapePlatform;
@@ -101,5 +112,178 @@ class ScrapePlatformCommandTest extends TestCase
 
         $this->assertStringContainsString('$this->argument(\'platform\')', $source);
         $this->assertStringContainsString('$this->option(\'dry-run\')', $source);
+    }
+
+    public function test_有効なプラットフォームqiitaでの正常実行()
+    {
+        $qiitaMock = Mockery::mock(QiitaScraper::class);
+        $qiitaMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn(collect([
+                ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test', 'author' => 'test_author'],
+            ]));
+        $qiitaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('Illuminate\Support\Collection'), false)
+            ->andReturn(1);
+
+        $this->app->instance(QiitaScraper::class, $qiitaMock);
+
+        $exitCode = Artisan::call('scrape:platform', ['platform' => 'qiita']);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function test_有効なプラットフォームzennでの正常実行()
+    {
+        $zennMock = Mockery::mock(ZennScraper::class);
+        $zennMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn(collect([
+                ['title' => 'Test Zenn Article', 'url' => 'https://zenn.dev/test', 'author' => 'test_author'],
+            ]));
+        $zennMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('Illuminate\Support\Collection'), false)
+            ->andReturn(1);
+
+        $this->app->instance(ZennScraper::class, $zennMock);
+
+        $exitCode = Artisan::call('scrape:platform', ['platform' => 'zenn']);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function test_有効なプラットフォームhatenaでの正常実行()
+    {
+        $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
+        $hatenaMock->shouldReceive('scrapePopularItEntries')
+            ->once()
+            ->andReturn(collect([
+                ['title' => 'Test Hatena Article', 'url' => 'https://b.hatena.ne.jp/test'],
+            ]));
+        $hatenaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('Illuminate\Support\Collection'), false)
+            ->andReturn(1);
+
+        $this->app->instance(HatenaBookmarkScraper::class, $hatenaMock);
+
+        $exitCode = Artisan::call('scrape:platform', ['platform' => 'hatena']);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function test_無効なプラットフォーム指定時のエラー処理()
+    {
+        $exitCode = Artisan::call('scrape:platform', ['platform' => 'invalid']);
+        $output = Artisan::output();
+
+        $this->assertEquals(Command::FAILURE, $exitCode);
+        $this->assertStringContainsString('無効なプラットフォームです', $output);
+        $this->assertStringContainsString('利用可能なプラットフォーム', $output);
+    }
+
+    public function test_dry_runモードでのqiita実行()
+    {
+        $qiitaMock = Mockery::mock(QiitaScraper::class);
+        $qiitaMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn(collect([
+                ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test', 'author' => 'test_author'],
+            ]));
+        $qiitaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('Illuminate\Support\Collection'), true)
+            ->andReturn(0);
+
+        $this->app->instance(QiitaScraper::class, $qiitaMock);
+
+        $exitCode = Artisan::call('scrape:platform', ['platform' => 'qiita', '--dry-run' => true]);
+        $output = Artisan::output();
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+        $this->assertStringContainsString('dry-run', $output);
+    }
+
+    public function test_dry_runモードでのzenn実行()
+    {
+        $zennMock = Mockery::mock(ZennScraper::class);
+        $zennMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn(collect([
+                ['title' => 'Test Zenn Article', 'url' => 'https://zenn.dev/test', 'author' => 'test_author'],
+            ]));
+        $zennMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('Illuminate\Support\Collection'), true)
+            ->andReturn(0);
+
+        $this->app->instance(ZennScraper::class, $zennMock);
+
+        $exitCode = Artisan::call('scrape:platform', ['platform' => 'zenn', '--dry-run' => true]);
+        $output = Artisan::output();
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+        $this->assertStringContainsString('dry-run', $output);
+    }
+
+    public function test_dry_runモードでのhatena実行()
+    {
+        $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
+        $hatenaMock->shouldReceive('scrapePopularItEntries')
+            ->once()
+            ->andReturn(collect([
+                ['title' => 'Test Hatena Article', 'url' => 'https://b.hatena.ne.jp/test'],
+            ]));
+        $hatenaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('Illuminate\Support\Collection'), true)
+            ->andReturn(0);
+
+        $this->app->instance(HatenaBookmarkScraper::class, $hatenaMock);
+
+        $exitCode = Artisan::call('scrape:platform', ['platform' => 'hatena', '--dry-run' => true]);
+        $output = Artisan::output();
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+        $this->assertStringContainsString('dry-run', $output);
+    }
+
+    public function test_プラットフォーム名の大文字小文字を無視する()
+    {
+        $qiitaMock = Mockery::mock(QiitaScraper::class);
+        $qiitaMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn(collect([
+                ['title' => 'Test Article', 'url' => 'https://qiita.com/test', 'author' => 'test_author'],
+            ]));
+        $qiitaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('Illuminate\Support\Collection'), false)
+            ->andReturn(1);
+
+        $this->app->instance(QiitaScraper::class, $qiitaMock);
+
+        $exitCode = Artisan::call('scrape:platform', ['platform' => 'QIITA']);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function test_プラットフォームエラー時の処理()
+    {
+        $qiitaMock = Mockery::mock(QiitaScraper::class);
+        $qiitaMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andThrow(new \Exception('Scraping failed'));
+        $qiitaMock->shouldReceive('logError')
+            ->once()
+            ->with(Mockery::type(\Exception::class));
+
+        $this->app->instance(QiitaScraper::class, $qiitaMock);
+
+        $exitCode = Artisan::call('scrape:platform', ['platform' => 'qiita']);
+
+        $this->assertEquals(Command::FAILURE, $exitCode);
     }
 }

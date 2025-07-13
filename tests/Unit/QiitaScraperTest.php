@@ -316,8 +316,8 @@ class QiitaScraperTest extends TestCase
         $method = $reflection->getMethod('extractLikesCount');
         $method->setAccessible(true);
 
-        // 数値以外を含むテキスト
-        $html = '<span aria-label="abc LGTM xyz">abc 123 xyz</span>';
+        // 数値以外を含むテキスト（LGTMを含むaria-label）
+        $html = '<span aria-label="abc 123 LGTM xyz">abc 123 xyz</span>';
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
         $likesCount = $method->invokeArgs($this->scraper, [$crawler]);

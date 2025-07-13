@@ -15,7 +15,7 @@ class CompanyRankingCollection extends ResourceCollection
     public function toArray(Request $request): array
     {
         return [
-            'data' => $this->collection,
+            'data' => CompanyRankingResource::collection($this->collection),
             'meta' => [
                 'total' => $this->collection->count(),
             ],

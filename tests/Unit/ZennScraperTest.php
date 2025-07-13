@@ -205,4 +205,275 @@ class ZennScraperTest extends TestCase
 
         $this->assertEquals(10, $requestsPerMinuteProperty->getValue($this->scraper));
     }
+
+    public function test_extract_author_url_zenn形式の_author_ur_lを抽出する(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorUrl');
+        $method->setAccessible(true);
+
+        $html = '<a href="/user123" class="author">user123</a>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertEquals('https://zenn.dev/user123', $authorUrl);
+    }
+
+    public function test_extract_author_url_相対_ur_lを正しく変換する(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorUrl');
+        $method->setAccessible(true);
+
+        $html = '<div class="ArticleList_userName_abc123"><a href="/@username">@username</a></div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertEquals('https://zenn.dev/@username', $authorUrl);
+    }
+
+    public function test_extract_author_url_絶対_ur_lはそのまま返す(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorUrl');
+        $method->setAccessible(true);
+
+        $html = '<div><a href="https://zenn.dev/external-user">external-user</a></div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertEquals('https://zenn.dev/external-user', $authorUrl);
+    }
+
+    public function test_extract_author_url_著者が見つからない場合はnullを返す(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorUrl');
+        $method->setAccessible(true);
+
+        $html = '<div>著者リンクなし</div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertNull($authorUrl);
+    }
+
+    public function test_extract_author_url_空の要素で処理する(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorUrl');
+        $method->setAccessible(true);
+
+        $html = '<div></div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertNull($authorUrl);
+    }
+
+    public function test_extract_author_url_cs_s_modules対応のクラス名を処理する(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorUrl');
+        $method->setAccessible(true);
+
+        // CSS ModulesのuserNameクラスをテスト
+        $html = '<div class="userName_abc123"><a href="/newuser">newuser</a></div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertEquals('https://zenn.dev/newuser', $authorUrl);
+    }
+
+    public function test_extract_author_url_画像alt属性から著者を取得する(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorUrl');
+        $method->setAccessible(true);
+
+        $html = '<div class="User_profile"><img alt="test-user" src="/avatar.png"></div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertEquals('https://zenn.dev/test-user', $authorUrl);
+    }
+
+    public function test_extract_author_url_異常な_htm_lでも処理する(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorUrl');
+        $method->setAccessible(true);
+
+        $html = '<div><a>リンクはあるがhref属性なし</a></div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertNull($authorUrl);
+    }
+
+    public function test_extract_author_url_複数のセレクタパターンを処理する(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorUrl');
+        $method->setAccessible(true);
+
+        // data-testid属性でのテスト
+        $html = '<div><a href="/testuser" data-testid="author-link">testuser</a></div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertEquals('https://zenn.dev/testuser', $authorUrl);
+    }
+
+    public function test_do_m要素が存在しない場合の処理(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+
+        // 各extractメソッドのnull処理テスト
+        $methods = ['extractTitle', 'extractUrl', 'extractLikesCount', 'extractAuthor', 'extractAuthorUrl', 'extractPublishedAt'];
+
+        $html = '<div>empty</div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        foreach ($methods as $methodName) {
+            $method = $reflection->getMethod($methodName);
+            $method->setAccessible(true);
+
+            $result = $method->invokeArgs($this->scraper, [$crawler]);
+
+            if ($methodName === 'extractLikesCount') {
+                $this->assertEquals(0, $result);
+            } else {
+                $this->assertNull($result);
+            }
+        }
+    }
+
+    public function test_特殊文字含みデータの処理(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractTitle');
+        $method->setAccessible(true);
+
+        // 特殊文字を含むタイトル
+        $html = '<h1>【Zenn】React & Next.js の活用 <企業向け></h1>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $title = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertEquals('【Zenn】React & Next.js の活用', $title);
+    }
+
+    public function test_extract_likes_count_数値以外の文字列処理(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractLikesCount');
+        $method->setAccessible(true);
+
+        // 数値以外を含むテキスト
+        $html = '<div aria-label="def いいね ghi">def 456 ghi</div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $likesCount = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertEquals(456, $likesCount);
+    }
+
+    public function test_extract_url_無効な_ur_l形式の処理(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractUrl');
+        $method->setAccessible(true);
+
+        // /articles/を含まないURL
+        $html = '<h2><a href="/books/other-path">タイトル</a></h2>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $url = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertNull($url);
+    }
+
+    public function test_extract_author_長すぎるテキストの処理(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthor');
+        $method->setAccessible(true);
+
+        // 50文字超のテキスト（実装では50文字未満のみ受け入れ）
+        $longText = str_repeat('a', 60);
+        $html = "<div class=\"userName_test\"><span>{$longText}</span></div>";
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $author = $method->invokeArgs($this->scraper, [$crawler]);
+        $this->assertNull($author);
+    }
+
+    public function test_大量記事データでのパフォーマンス(): void
+    {
+        $largeHtml = '<html><body>';
+        for ($i = 1; $i <= 20; $i++) { // Zennは16記事制限があるので20で制限テスト
+            $largeHtml .= "
+            <article>
+                <h2><a href=\"/articles/test-{$i}\">記事タイトル{$i}</a></h2>
+                <div data-testid=\"like-count\" aria-label=\"{$i} いいね\">{$i}</div>
+                <a href=\"/@user{$i}\">user{$i}</a>
+                <time datetime=\"2024-01-01T10:00:00Z\"></time>
+            </article>";
+        }
+        $largeHtml .= '</body></html>';
+
+        Http::fake([
+            'https://zenn.dev' => Http::response($largeHtml, 200),
+        ]);
+
+        $startTime = microtime(true);
+        $result = $this->scraper->scrapeTrendingArticles();
+        $endTime = microtime(true);
+
+        $this->assertIsArray($result);
+        $this->assertCount(16, $result); // Zennの制限により16記事まで
+        $this->assertLessThan(5, $endTime - $startTime); // 5秒以内で完了
+    }
+
+    public function test_normalize_and_save_data_例外処理(): void
+    {
+        // 無効なデータでも処理が継続される
+        $articles = [
+            [
+                'title' => null, // 無効なデータ
+                'url' => 'https://zenn.dev/articles/invalid',
+                'likes_count' => 'invalid', // 数値以外
+                'author' => '',
+                'author_url' => null,
+                'published_at' => 'invalid-date',
+                'platform' => 'zenn',
+                'scraped_at' => now(),
+            ],
+        ];
+
+        $result = $this->scraper->normalizeAndSaveData($articles);
+
+        // エラーがあっても処理は継続し、空の結果を返す
+        $this->assertIsArray($result);
+    }
+
+    public function test_会社名抽出の境界値テスト(): void
+    {
+        $articles = [
+            [
+                'title' => 'テスト記事',
+                'url' => 'https://zenn.dev/articles/test',
+                'likes_count' => 10,
+                'author' => 'ユーザー名in株式会社テスト', // "in会社名"パターン
+                'author_url' => 'https://zenn.dev/@test',
+                'published_at' => '2024-01-01T00:00:00Z',
+                'platform' => 'zenn',
+                'scraped_at' => now(),
+            ],
+        ];
+
+        $result = $this->scraper->normalizeAndSaveData($articles);
+
+        $this->assertCount(1, $result);
+        // author_nameが正しく抽出されているかテスト（会社名部分が除去される）
+        $this->assertEquals('ユーザー名', $result[0]->author_name);
+    }
 }

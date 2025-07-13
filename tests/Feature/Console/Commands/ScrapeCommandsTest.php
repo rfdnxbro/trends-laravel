@@ -59,7 +59,7 @@ class ScrapeCommandsTest extends TestCase
         // まずコマンドを実行して終了コードを確認
         $result = $this->artisan('scrape:all --dry-run --no-progress');
         $result->assertExitCode(0);
-        
+
         // 出力チェックなしでまず成功するかテスト
         // ->expectsOutput('全プラットフォームのスクレイピングを開始します...')
         // ->expectsOutput('全プラットフォームのスクレイピングが完了しました！')

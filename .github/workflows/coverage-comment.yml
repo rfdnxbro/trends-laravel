@@ -29,7 +29,6 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
           coverage: xdebug
-          ini-values: memory_limit=512M
       
       - name: Node.jsセットアップ
         uses: actions/setup-node@v4

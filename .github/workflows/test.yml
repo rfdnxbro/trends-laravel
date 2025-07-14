@@ -33,7 +33,6 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
           coverage: xdebug
-          ini-values: memory_limit=512M
       
       - name: Node.jsセットアップ
         uses: actions/setup-node@v4
@@ -77,7 +76,7 @@ jobs:
           php -v
           php -i | grep memory_limit
           
-          echo "=== 単純テスト実行 ==="
+          echo "=== デフォルト設定でテスト実行 ==="
           php artisan test --stop-on-failure
       
       - name: コードスタイルチェックを実行

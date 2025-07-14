@@ -60,7 +60,7 @@ jobs:
           php artisan migrate --force
       
       - name: カバレッジ付きテストを実行
-        run: composer test:coverage
+        run: php -d memory_limit=2G artisan test --coverage --coverage-html=coverage-html --coverage-clover=coverage-clover.xml
       
       - name: カバレッジサマリーを生成
         id: coverage

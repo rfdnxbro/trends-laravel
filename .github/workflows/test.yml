@@ -70,14 +70,8 @@ jobs:
           php artisan config:cache
           php artisan migrate --force
       
-      - name: PHPテストを実行（CI最適化版）
-        run: |
-          echo "=== PHP設定確認 ==="
-          php -v
-          php -i | grep memory_limit
-          
-          echo "=== デフォルト設定でテスト実行 ==="
-          php artisan test --stop-on-failure
+      - name: PHPテストを実行
+        run: php artisan test --stop-on-failure
       
       - name: コードスタイルチェックを実行
         run: vendor/bin/pint --test

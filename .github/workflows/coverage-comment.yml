@@ -50,7 +50,7 @@ jobs:
       - name: 環境ファイルを作成
         run: |
           cp .env.ci .env
-          php artisan key:generate
+          php artisan key:generate --force
       
       - name: フロントエンドアセットをビルド
         run: npm run build
@@ -61,10 +61,7 @@ jobs:
           php artisan migrate --force
       
       - name: カバレッジ付きテストを実行
-        run: |
-          echo "Running coverage tests..."
-          php artisan test --filter="CompanyServiceTest" --coverage --coverage-clover=coverage-clover.xml
-          echo "Coverage test completed successfully"
+        run: php artisan test --coverage --coverage-clover=coverage-clover.xml
       
       - name: カバレッジサマリーを生成
         id: coverage

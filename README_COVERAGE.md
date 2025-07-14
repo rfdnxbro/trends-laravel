@@ -15,7 +15,7 @@
 
 ### 自動チェック機能
 - **PR作成時**: 95%未満でCI失敗
-- **PR時**: カバレッジレポート自動生成
+- **PR時**: カバレッジレポート自動生成・PR上でのコメント投稿
 
 ### チェック方法
 ```bash
@@ -86,8 +86,7 @@ open coverage-html/index.html
 ## 関連設定ファイル
 
 - **PHPUnit設定**: `phpunit.xml` - カバレッジ閾値80-95%
-- **CI/CDワークフロー**: `.github/workflows/test.yml` - 95%チェック
-- **カバレッジ公開**: `.github/workflows/coverage-report.yml` - GitHub Pages
+- **統合カバレッジワークフロー**: `.github/workflows/coverage-report.yml` - 95%チェック・PRコメント
 - **チェックスクリプト**: `.github/scripts/check-coverage.sh` - 閾値チェック
 
 ## 目標とマイルストーン

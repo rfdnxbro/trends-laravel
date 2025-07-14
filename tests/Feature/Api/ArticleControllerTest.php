@@ -6,12 +6,14 @@ use App\Models\Article;
 use App\Models\Company;
 use App\Models\Platform;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ArticleControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[Test]
     public function test_記事一覧が取得できること()
     {
         $company = Company::factory()->create();
@@ -53,6 +55,7 @@ class ArticleControllerTest extends TestCase
             ]);
     }
 
+    #[Test]
     public function test_企業idでフィルタリングできること()
     {
         $company1 = Company::factory()->create();
@@ -79,6 +82,7 @@ class ArticleControllerTest extends TestCase
         }
     }
 
+    #[Test]
     public function test_プラットフォームidでフィルタリングできること()
     {
         $company = Company::factory()->create();
@@ -105,6 +109,7 @@ class ArticleControllerTest extends TestCase
         }
     }
 
+    #[Test]
     public function test_記事が日付順でソートされていること()
     {
         $company = Company::factory()->create();
@@ -138,6 +143,7 @@ class ArticleControllerTest extends TestCase
         $this->assertEquals($article1->id, $articles[2]['id']);
     }
 
+    #[Test]
     public function test_ページネーションが正しく動作すること()
     {
         $company = Company::factory()->create();

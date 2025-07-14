@@ -345,4 +345,256 @@ class SearchApiTest extends TestCase
         $this->assertArrayHasKey('error', $errorData);
         $this->assertIsString($errorData['error']);
     }
+
+    #[Test]
+    public function test_企業検索の関連度スコア計算が複数条件で正しく動作する()
+    {
+        // 完全一致企業（最高スコア）
+        $exactMatch = Company::factory()->create([
+            'name' => 'TestCorp',
+            'domain' => 'testcorp.com',
+            'description' => 'Test company description',
+            'is_active' => true,
+        ]);
+
+        // 部分一致企業（中程度スコア）
+        $partialMatch = Company::factory()->create([
+            'name' => 'TestCorp Solutions',
+            'domain' => 'testsolutions.com',
+            'description' => 'Solutions company',
+            'is_active' => true,
+        ]);
+
+        // ドメイン一致企業
+        $domainMatch = Company::factory()->create([
+            'name' => 'Other Company',
+            'domain' => 'test.com',
+            'description' => 'Another company',
+            'is_active' => true,
+        ]);
+
+        // 説明文一致企業
+        $descriptionMatch = Company::factory()->create([
+            'name' => 'Different Company',
+            'domain' => 'different.com',
+            'description' => 'This is a test company for testing purposes',
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/search/companies?q=TestCorp');
+
+        $response->assertStatus(200);
+        $companies = $response->json('data.companies');
+
+        // 完全一致企業が最高スコアを持つことを確認
+        $exactMatchResult = collect($companies)->firstWhere('name', 'TestCorp');
+        $partialMatchResult = collect($companies)->firstWhere('name', 'TestCorp Solutions');
+
+        $this->assertNotNull($exactMatchResult);
+        $this->assertNotNull($partialMatchResult);
+        $this->assertGreaterThan($partialMatchResult['match_score'], $exactMatchResult['match_score']);
+    }
+
+    #[Test]
+    public function test_記事検索の関連度スコア計算が複数条件で正しく動作する()
+    {
+        // 高ブックマーク数記事
+        $highBookmarkArticle = Article::factory()->create([
+            'company_id' => $this->company->id,
+            'platform_id' => $this->platform->id,
+            'title' => 'Laravel advanced techniques',
+            'author_name' => 'expert_author',
+            'bookmark_count' => 100,
+            'published_at' => Carbon::now()->subDays(2),
+        ]);
+
+        // 中ブックマーク数記事
+        $mediumBookmarkArticle = Article::factory()->create([
+            'company_id' => $this->company->id,
+            'platform_id' => $this->platform->id,
+            'title' => 'Laravel basic guide',
+            'author_name' => 'regular_author',
+            'bookmark_count' => 30,
+            'published_at' => Carbon::now()->subDays(5),
+        ]);
+
+        // 低ブックマーク数記事
+        $lowBookmarkArticle = Article::factory()->create([
+            'company_id' => $this->company->id,
+            'platform_id' => $this->platform->id,
+            'title' => 'Laravel introduction',
+            'author_name' => 'beginner_author',
+            'bookmark_count' => 5,
+            'published_at' => Carbon::now()->subDays(10),
+        ]);
+
+        // 古い記事（ペナルティ対象）
+        $oldArticle = Article::factory()->create([
+            'company_id' => $this->company->id,
+            'platform_id' => $this->platform->id,
+            'title' => 'Old Laravel article',
+            'author_name' => 'old_author',
+            'bookmark_count' => 50,
+            'published_at' => Carbon::now()->subDays(150),
+        ]);
+
+        $response = $this->getJson('/api/search/articles?q=Laravel&days=365');
+
+        $response->assertStatus(200);
+        $articles = $response->json('data.articles');
+
+        // 高ブックマーク数記事が最高スコアを持つことを確認
+        $this->assertGreaterThan(0, count($articles));
+
+        // 記事が関連度スコア順にソートされていることを確認
+        $scores = collect($articles)->pluck('match_score');
+        $sortedScores = $scores->sortDesc();
+        $this->assertEquals($sortedScores->toArray(), $scores->toArray());
+    }
+
+    #[Test]
+    public function test_ドメイン名での企業検索でスコア計算が正しく動作する()
+    {
+        $company = Company::factory()->create([
+            'name' => 'Example Corp',
+            'domain' => 'example.com',
+            'description' => 'Example company',
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/search/companies?q=example.com');
+
+        $response->assertStatus(200);
+        $companies = $response->json('data.companies');
+
+        $this->assertCount(1, $companies);
+        $this->assertGreaterThan(0, $companies[0]['match_score']);
+        $this->assertEquals('Example Corp', $companies[0]['name']);
+    }
+
+    #[Test]
+    public function test_説明文での企業検索でスコア計算が正しく動作する()
+    {
+        $company = Company::factory()->create([
+            'name' => 'Tech Solutions',
+            'domain' => 'techsolutions.com',
+            'description' => 'Advanced technology solutions provider',
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/search/companies?q=technology');
+
+        $response->assertStatus(200);
+        $companies = $response->json('data.companies');
+
+        $this->assertCount(1, $companies);
+        $this->assertGreaterThan(0, $companies[0]['match_score']);
+        $this->assertEquals('Tech Solutions', $companies[0]['name']);
+    }
+
+    #[Test]
+    public function test_記事の日付による関連度スコア調整が正しく動作する()
+    {
+        // 最新記事（高スコア）
+        $recentArticle = Article::factory()->create([
+            'company_id' => $this->company->id,
+            'platform_id' => $this->platform->id,
+            'title' => 'React recent tutorial',
+            'author_name' => 'recent_author',
+            'bookmark_count' => 20,
+            'published_at' => Carbon::now()->subDays(3),
+        ]);
+
+        // やや古い記事（中スコア）
+        $somewhatOldArticle = Article::factory()->create([
+            'company_id' => $this->company->id,
+            'platform_id' => $this->platform->id,
+            'title' => 'React somewhat old tutorial',
+            'author_name' => 'somewhat_old_author',
+            'bookmark_count' => 20,
+            'published_at' => Carbon::now()->subDays(20),
+        ]);
+
+        // 古い記事（ペナルティ）
+        $oldArticle = Article::factory()->create([
+            'company_id' => $this->company->id,
+            'platform_id' => $this->platform->id,
+            'title' => 'React old tutorial',
+            'author_name' => 'old_author',
+            'bookmark_count' => 20,
+            'published_at' => Carbon::now()->subDays(120),
+        ]);
+
+        $response = $this->getJson('/api/search/articles?q=React&days=365');
+
+        $response->assertStatus(200);
+        $articles = $response->json('data.articles');
+
+        $this->assertCount(3, $articles);
+
+        // 最新記事が最高スコアを持つことを確認
+        $recentResult = collect($articles)->firstWhere('author_name', 'recent_author');
+        $somewhatOldResult = collect($articles)->firstWhere('author_name', 'somewhat_old_author');
+        $oldResult = collect($articles)->firstWhere('author_name', 'old_author');
+
+        $this->assertNotNull($recentResult);
+        $this->assertNotNull($somewhatOldResult);
+        $this->assertNotNull($oldResult);
+
+        $this->assertGreaterThan($somewhatOldResult['match_score'], $recentResult['match_score']);
+        $this->assertGreaterThan($oldResult['match_score'], $somewhatOldResult['match_score']);
+    }
+
+    #[Test]
+    public function test_ブックマーク数による記事関連度スコア調整が正しく動作する()
+    {
+        // 高ブックマーク記事
+        $highBookmarkArticle = Article::factory()->create([
+            'company_id' => $this->company->id,
+            'platform_id' => $this->platform->id,
+            'title' => 'Vue.js high bookmark article',
+            'author_name' => 'high_author',
+            'bookmark_count' => 200,
+            'published_at' => Carbon::now()->subDays(10),
+        ]);
+
+        // 中ブックマーク記事
+        $mediumBookmarkArticle = Article::factory()->create([
+            'company_id' => $this->company->id,
+            'platform_id' => $this->platform->id,
+            'title' => 'Vue.js medium bookmark article',
+            'author_name' => 'medium_author',
+            'bookmark_count' => 25,
+            'published_at' => Carbon::now()->subDays(10),
+        ]);
+
+        // 低ブックマーク記事
+        $lowBookmarkArticle = Article::factory()->create([
+            'company_id' => $this->company->id,
+            'platform_id' => $this->platform->id,
+            'title' => 'Vue.js low bookmark article',
+            'author_name' => 'low_author',
+            'bookmark_count' => 3,
+            'published_at' => Carbon::now()->subDays(10),
+        ]);
+
+        $response = $this->getJson('/api/search/articles?q=Vue.js');
+
+        $response->assertStatus(200);
+        $articles = $response->json('data.articles');
+
+        $this->assertCount(3, $articles);
+
+        // ブックマーク数によるスコア順序を確認
+        $highResult = collect($articles)->firstWhere('author_name', 'high_author');
+        $mediumResult = collect($articles)->firstWhere('author_name', 'medium_author');
+        $lowResult = collect($articles)->firstWhere('author_name', 'low_author');
+
+        $this->assertNotNull($highResult);
+        $this->assertNotNull($mediumResult);
+        $this->assertNotNull($lowResult);
+
+        $this->assertGreaterThan($mediumResult['match_score'], $highResult['match_score']);
+        $this->assertGreaterThan($lowResult['match_score'], $mediumResult['match_score']);
+    }
 }

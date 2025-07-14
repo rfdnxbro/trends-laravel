@@ -71,11 +71,17 @@ jobs:
           php artisan config:cache
           php artisan migrate --force
       
-      - name: PHPテストを実行（分割実行）
+      - name: PHPテストを実行（段階的実行）
         run: |
-          # メモリ効率化のためテストを分割実行
-          php -d memory_limit=3G artisan test --testsuite=Unit --stop-on-failure
-          php -d memory_limit=3G artisan test --testsuite=Feature --stop-on-failure
+          # 段階的実行で問題を特定
+          echo "=== PHP設定確認 ==="
+          php -i | grep -E "(memory_limit|max_execution_time|xdebug)"
+          
+          echo "=== Unitテスト実行 ==="
+          php -d memory_limit=3G artisan test --testsuite=Unit --stop-on-failure --verbose
+          
+          echo "=== Featureテスト実行 ==="
+          php -d memory_limit=3G artisan test --testsuite=Feature --stop-on-failure --verbose
       
       - name: コードスタイルチェックを実行
         run: vendor/bin/pint --test

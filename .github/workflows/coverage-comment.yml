@@ -67,10 +67,14 @@ jobs:
           php artisan config:cache
           php artisan migrate --force
       
-      - name: カバレッジ付きテストを実行（最適化）
+      - name: カバレッジ付きテストを実行（段階的実行）
         run: |
-          # カバレッジ生成の最適化
-          php -d memory_limit=4G -d max_execution_time=600 artisan test --coverage --coverage-clover=coverage-clover.xml --stop-on-failure
+          # 段階的実行で問題を特定
+          echo "=== PHP設定確認 ==="
+          php -i | grep -E "(memory_limit|max_execution_time|xdebug)"
+          
+          echo "=== カバレッジ付きテスト開始 ==="
+          php -d memory_limit=4G -d max_execution_time=600 artisan test --coverage --coverage-clover=coverage-clover.xml --stop-on-failure --verbose
       
       - name: カバレッジサマリーを生成
         id: coverage

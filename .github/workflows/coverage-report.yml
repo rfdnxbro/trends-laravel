@@ -1,20 +1,21 @@
-name: カバレッジコメント
+name: カバレッジチェック
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
-  coverage-comment:
+  coverage-check:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    permissions:
-      contents: read
-      pull-requests: write
     
     strategy:
       fail-fast: false
@@ -47,8 +48,7 @@ jobs:
             ${{ runner.os }}-composer-
       
       - name: PHP依存関係をインストール
-        run: |
-          composer install --no-interaction --prefer-dist --optimize-autoloader
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
       
       - name: Node.js依存関係をインストール
         run: npm ci
@@ -67,9 +67,9 @@ jobs:
           php artisan migrate --force
       
       - name: カバレッジ付きテストを実行
-        run: php artisan test --coverage --coverage-clover=coverage-clover.xml --stop-on-failure
+        run: php artisan test --coverage-html=coverage-html --coverage-clover=coverage-clover.xml --stop-on-failure
       
-      - name: カバレッジサマリーを生成
+      - name: カバレッジサマリーを生成と95%閾値チェック
         id: coverage
         run: |
           if [ -f coverage-clover.xml ]; then
@@ -82,17 +82,32 @@ jobs:
               echo \$coverage;
             ")
             echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
-            echo "カバレッジ: $COVERAGE%"
+            echo "📈 現在のテストカバレッジ: $COVERAGE%"
+            
+            # 95%閾値チェック
+            if (( $(echo "$COVERAGE < 95.0" | bc -l) )); then
+              echo "❌ テストカバレッジが95%を下回っています: ${COVERAGE}%"
+              echo "📚 カバレッジ改善領域:"
+              echo "   - Console Commands: handleメソッドテスト実装"
+              echo "   - API Controllers: メソッドテスト完全実装"
+              echo "   - Scraping Services: 未テストメソッド実装"
+              echo "   - Resources & Models: 未カバー箇所完全実装"
+              echo "💡 カバレッジ向上のため、該当領域のテスト実装をお願いします。"
+              exit 1
+            fi
+            
+            echo "✅ テストカバレッジチェック合格: ${COVERAGE}%"
           else
             echo "coverage=0" >> $GITHUB_OUTPUT
-            echo "カバレッジファイルが見つかりません"
+            echo "❌ カバレッジファイルが見つかりません"
+            exit 1
           fi
       
-      - name: カバレッジレポートをアップロード
+      - name: カバレッジレポートをアーティファクトにアップロード
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: coverage-reports
+          name: coverage-report
           path: |
             coverage-html/
             coverage-clover.xml
@@ -100,19 +115,30 @@ jobs:
       
       - name: PRにカバレッジをコメント
         uses: actions/github-script@v7
+        if: always()
         with:
           script: |
-            const coverage = '${{ steps.coverage.outputs.coverage }}';
-            const coverageIcon = coverage >= 80 ? '🟢' : coverage >= 60 ? '🟡' : '🔴';
+            const coverage = '${{ steps.coverage.outputs.coverage }}' || '0';
+            const coverageIcon = coverage >= 95 ? '🟢' : coverage >= 80 ? '🟡' : '🔴';
+            const thresholdStatus = coverage >= 95 ? '✅ 95%閾値達成' : '❌ 95%閾値未達成';
+            
             const body = `## ${coverageIcon} テストカバレッジレポート
             
-            **カバレッジ: ${coverage}%**
+            **カバレッジ: ${coverage}% | ${thresholdStatus}**
             
-            ${coverage >= 80 ? '✅ 優秀なカバレッジです！' : 
-              coverage >= 60 ? '⚠️  カバレッジの改善を検討してください' : 
-              '❌ カバレッジが低いです。テストの追加をお勧めします'}
+            ${coverage >= 95 ? '✅ 優秀なカバレッジです！95%閾値を達成しています。' : 
+              coverage >= 80 ? '⚠️  95%閾値未達成です。カバレッジの改善をお願いします。' : 
+              '❌ カバレッジが大幅に不足しています。テストの追加が必要です。'}
             
             📊 詳細なレポートは[Artifactsからダウンロード](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})できます。
+            
+            ${coverage < 95 ? `
+            ### 📚 カバレッジ改善領域
+            - **Console Commands**: handleメソッドテスト実装
+            - **API Controllers**: メソッドテスト完全実装  
+            - **Scraping Services**: 未テストメソッド実装
+            - **Resources & Models**: 未カバー箇所完全実装
+            ` : ''}
             `;
             
             // 既存のコメントを探す

@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   coverage-comment:
     runs-on: ubuntu-latest
@@ -11,6 +15,9 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    
+    strategy:
+      fail-fast: false
     
     steps:
       - name: コードをチェックアウト
@@ -22,7 +29,7 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
           coverage: xdebug
-          ini-values: memory_limit=2G, max_execution_time=0
+          ini-values: memory_limit=4G, max_execution_time=600, opcache.memory_consumption=256, opcache.max_accelerated_files=20000
       
       - name: Node.jsセットアップ
         uses: actions/setup-node@v4
@@ -60,8 +67,10 @@ jobs:
           php artisan config:cache
           php artisan migrate --force
       
-      - name: カバレッジ付きテストを実行
-        run: php artisan test --coverage --coverage-clover=coverage-clover.xml
+      - name: カバレッジ付きテストを実行（最適化）
+        run: |
+          # カバレッジ生成の最適化
+          php -d memory_limit=4G -d max_execution_time=600 artisan test --coverage --coverage-clover=coverage-clover.xml --stop-on-failure
       
       - name: カバレッジサマリーを生成
         id: coverage

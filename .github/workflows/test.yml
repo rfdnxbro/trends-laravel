@@ -6,6 +6,10 @@ on:
   push:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality-check:
     runs-on: ubuntu-latest
@@ -15,6 +19,9 @@ jobs:
     
     # テスト用にSQLite in-memoryデータベースを使用
     # 外部サービスは不要
+    
+    strategy:
+      fail-fast: false
     
     steps:
       - name: コードをチェックアウト
@@ -26,7 +33,7 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
           coverage: xdebug
-          ini-values: memory_limit=2G, max_execution_time=0
+          ini-values: memory_limit=4G, max_execution_time=600, opcache.memory_consumption=256, opcache.max_accelerated_files=20000
       
       - name: Node.jsセットアップ
         uses: actions/setup-node@v4
@@ -64,14 +71,17 @@ jobs:
           php artisan config:cache
           php artisan migrate --force
       
-      - name: PHPテストを実行
-        run: php artisan test
+      - name: PHPテストを実行（分割実行）
+        run: |
+          # メモリ効率化のためテストを分割実行
+          php -d memory_limit=3G artisan test --testsuite=Unit --stop-on-failure
+          php -d memory_limit=3G artisan test --testsuite=Feature --stop-on-failure
       
       - name: コードスタイルチェックを実行
         run: vendor/bin/pint --test
       
       - name: 静的解析を実行
-        run: vendor/bin/phpstan analyse --memory-limit=2G
+        run: vendor/bin/phpstan analyse --memory-limit=3G --no-progress
       
       - name: フロントエンドテストを実行
         run: npm test

@@ -362,7 +362,7 @@ class ZennScraperTest extends TestCase
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
         $title = $method->invokeArgs($this->scraper, [$crawler]);
-        $this->assertEquals('【Zenn】React & Next.js の活用', $title);
+        $this->assertEquals('【Zenn】React & Next.js の活用 <企業向け>', $title);
     }
 
     public function test_extract_likes_count_数値以外の文字列処理(): void

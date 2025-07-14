@@ -5,7 +5,7 @@
 
 ## 現在のカバレッジ状況
 
-[![テストカバレッジ](https://img.shields.io/badge/coverage-95.31%25-brightgreen)](https://rfdnxbro.github.io/trends-laravel/)
+![テストカバレッジ](https://img.shields.io/badge/coverage-95.31%25-brightgreen)
 
 - **ライン**: 95.31% (2194/2302) ✅ **目標達成**
 - **メソッド**: 79.35% (146/184)
@@ -15,8 +15,7 @@
 
 ### 自動チェック機能
 - **PR作成時**: 95%未満でCI失敗
-- **Push時**: カバレッジレポート自動生成
-- **毎日午前2時**: カバレッジレポート更新
+- **PR時**: カバレッジレポート自動生成
 
 ### チェック方法
 ```bash
@@ -39,33 +38,26 @@ php artisan test --coverage-text
 php artisan test --coverage-clover=coverage.xml
 ```
 
-## カバレッジ向上のためのIssue
+## カバレッジ向上の領域
 
-100%に近づけるための改善点は以下のIssueで管理されています：
+100%に近づけるための主要な改善領域：
 
 ### 優先度: High
-- [#141: APIコントローラーのメソッドテスト完全実装](https://github.com/rfdnxbro/trends-laravel/issues/141)
-  - メソッドカバレッジ大幅向上（79.35% → 85%以上）
+- **APIコントローラー**: メソッドテストの完全実装
+  - メソッドカバレッジ大幅向上が期待される
 
 ### 優先度: Medium  
-- [#140: Console Commandsのhandleメソッドテスト実装](https://github.com/rfdnxbro/trends-laravel/issues/140)
+- **Console Commands**: handleメソッドテスト実装
   - ScrapeAll, ScrapePlatform, ScrapeScheduleのhandleメソッド
   
-- [#142: スクレイピングサービスの未テストメソッド実装](https://github.com/rfdnxbro/trends-laravel/issues/142)
+- **スクレイピングサービス**: 未テストメソッド実装
   - 外部API依存部分の品質保証
-  
-- [#144: CI/CDテストカバレッジ95%以上の継続確保](https://github.com/rfdnxbro/trends-laravel/issues/144)
-  - 品質維持のためのCI強化
 
 ### 優先度: Low
-- [#143: ResourceとModelの未カバー箇所完全実装](https://github.com/rfdnxbro/trends-laravel/issues/143)
+- **ResourceとModel**: 未カバー箇所完全実装
   - 最終調整で97%以上を目指す
 
 ## カバレッジレポートの確認
-
-### オンラインレポート
-- **ライブレポート**: [https://rfdnxbro.github.io/trends-laravel/](https://rfdnxbro.github.io/trends-laravel/)
-- **詳細HTMLレポート**: [https://rfdnxbro.github.io/trends-laravel/coverage/](https://rfdnxbro.github.io/trends-laravel/coverage/)
 
 ### ローカルレポート
 ```bash
@@ -101,10 +93,10 @@ open coverage-html/index.html
 ## 目標とマイルストーン
 
 - [x] **95%達成**: 2025-07-14時点で95.31%達成済み ✅
-- [ ] **97%達成**: Issue#141の実装完了
-- [ ] **98%達成**: Issue#140,142の実装完了  
-- [ ] **99%達成**: Issue#143の実装完了
-- [ ] **100%達成**: 全Issue完了・完全カバレッジ
+- [ ] **97%達成**: APIコントローラーテスト完了
+- [ ] **98%達成**: Console Commands・スクレイピングサービステスト完了  
+- [ ] **99%達成**: Resource・Modelテスト完了
+- [ ] **100%達成**: 完全カバレッジ達成
 
 ---
 

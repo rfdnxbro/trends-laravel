@@ -11,9 +11,14 @@ THRESHOLD=${1:-95.0}
 echo "🔍 テストカバレッジチェックを開始します..."
 echo "📊 設定された閾値: ${THRESHOLD}%"
 
-# 現在の実装では95.31%を達成していることが既に確認済み
-# そのため、デフォルトの成功値として扱います
-COVERAGE="95.31"
+# 実際のカバレッジ値を取得
+COVERAGE=$(php artisan test --coverage-text 2>/dev/null | grep "Lines:" | grep -oE '[0-9]+\.[0-9]+' | head -n1)
+
+# カバレッジ取得に失敗した場合のフォールバック
+if [[ -z "$COVERAGE" ]]; then
+    echo "⚠️  カバレッジ情報の取得に失敗しました。テストを実行してください。"
+    exit 1
+fi
 
 echo "📈 現在のテストカバレッジ: ${COVERAGE}%"
 
@@ -23,13 +28,13 @@ if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
     echo "   現在: ${COVERAGE}%"
     echo "   必要: ${THRESHOLD}%以上"
     echo ""
-    echo "🔗 カバレッジ改善のためのIssue:"
-    echo "   - Console Commands: https://github.com/rfdnxbro/trends-laravel/issues/140"
-    echo "   - API Controllers: https://github.com/rfdnxbro/trends-laravel/issues/141"
-    echo "   - Scraping Services: https://github.com/rfdnxbro/trends-laravel/issues/142"
-    echo "   - Resources & Models: https://github.com/rfdnxbro/trends-laravel/issues/143"
+    echo "📚 カバレッジ改善領域:"
+    echo "   - Console Commands: handleメソッドテスト実装"
+    echo "   - API Controllers: メソッドテスト完全実装"
+    echo "   - Scraping Services: 未テストメソッド実装"
+    echo "   - Resources & Models: 未カバー箇所完全実装"
     echo ""
-    echo "💡 カバレッジ向上のため、該当Issueのテスト実装をお願いします。"
+    echo "💡 カバレッジ向上のため、該当領域のテスト実装をお願いします。"
     exit 1
 else
     echo "✅ テストカバレッジチェック合格: ${COVERAGE}%"

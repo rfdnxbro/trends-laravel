@@ -1,20 +1,11 @@
 name: カバレッジレポート公開
 
 on:
-  push:
-    branches: [ main ]
-  schedule:
-    # 毎日午前2時にカバレッジレポートを更新
-    - cron: '0 2 * * *'
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: coverage-pages
-  cancel-in-progress: false
 
 jobs:
   coverage-report:
@@ -56,7 +47,7 @@ jobs:
           php artisan config:cache
           php artisan migrate --force
       
-      - name: カバレッジレポートを生成
+      - name: カバレッジレポートを生成え95%チェック
         run: |
           php artisan test --coverage-html=public/coverage --coverage-clover=public/coverage.xml
           
@@ -64,6 +55,15 @@ jobs:
           COVERAGE=$(php artisan test --coverage-text | grep "Lines:" | grep -oE '[0-9]+\.[0-9]+' | head -n1)
           METHODS=$(php artisan test --coverage-text | grep "Methods:" | grep -oE '[0-9]+\.[0-9]+' | head -n1)
           CLASSES=$(php artisan test --coverage-text | grep "Classes:" | grep -oE '[0-9]+\.[0-9]+' | head -n1)
+          
+          # 95%闾値チェック
+          if (( $(echo "$COVERAGE < 95.0" | bc -l) )); then
+            echo "❌ テストカバレッジが95%を下回っています: ${COVERAGE}%"
+            echo "📈 カバレッジ向上のため、テストを追加してください"
+            exit 1
+          fi
+          
+          echo "✅ テストカバレッジチェック合格: ${COVERAGE}%"
           
           # バッジとサマリー用のJSONファイル作成
           cat > public/coverage-summary.json << EOF
@@ -176,11 +176,13 @@ jobs:
       - name: GitHub Pagesセットアップ
         uses: actions/configure-pages@v4
       
-      - name: GitHub Pagesにアップロード
-        uses: actions/upload-pages-artifact@v3
+      - name: カバレッジレポートをアーティファクトにアップロード
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          path: ./public
-      
-      - name: GitHub Pagesにデプロイ
-        id: deployment
-        uses: actions/deploy-pages@v4
+          name: coverage-report
+          path: |
+            public/coverage/
+            public/coverage.xml
+            public/coverage-summary.json
+          retention-days: 30

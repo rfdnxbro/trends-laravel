@@ -1,0 +1,186 @@
+name: カバレッジレポート公開
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    # 毎日午前2時にカバレッジレポートを更新
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: coverage-pages
+  cancel-in-progress: false
+
+jobs:
+  coverage-report:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: コードをチェックアウト
+        uses: actions/checkout@v4
+      
+      - name: PHPセットアップ
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
+          coverage: xdebug
+      
+      - name: Node.jsセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: PHP依存関係をインストール
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      
+      - name: Node.js依存関係をインストール
+        run: npm ci
+      
+      - name: 環境ファイルを作成
+        run: |
+          cp .env.ci .env
+          php artisan key:generate --force
+      
+      - name: フロントエンドアセットをビルド
+        run: npm run build
+      
+      - name: データベースを設定
+        run: |
+          php artisan config:cache
+          php artisan migrate --force
+      
+      - name: カバレッジレポートを生成
+        run: |
+          php artisan test --coverage-html=public/coverage --coverage-clover=public/coverage.xml
+          
+          # カバレッジサマリーをJSONで生成
+          COVERAGE=$(php artisan test --coverage-text | grep "Lines:" | grep -oE '[0-9]+\.[0-9]+' | head -n1)
+          METHODS=$(php artisan test --coverage-text | grep "Methods:" | grep -oE '[0-9]+\.[0-9]+' | head -n1)
+          CLASSES=$(php artisan test --coverage-text | grep "Classes:" | grep -oE '[0-9]+\.[0-9]+' | head -n1)
+          
+          # バッジとサマリー用のJSONファイル作成
+          cat > public/coverage-summary.json << EOF
+          {
+            "lines": ${COVERAGE:-0},
+            "methods": ${METHODS:-0},
+            "classes": ${CLASSES:-0},
+            "generated": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}"
+          }
+          EOF
+          
+          # シンプルなカバレッジダッシュボードHTML作成
+          cat > public/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="ja">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>テストカバレッジレポート - Trends Laravel</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+                  .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+                  .header { text-align: center; margin-bottom: 30px; }
+                  .badge { display: inline-block; padding: 5px 10px; border-radius: 4px; color: white; font-weight: bold; }
+                  .badge.high { background: #28a745; }
+                  .badge.medium { background: #ffc107; color: #212529; }
+                  .badge.low { background: #dc3545; }
+                  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }
+                  .metric { padding: 20px; background: #f8f9fa; border-radius: 6px; text-align: center; }
+                  .metric-value { font-size: 2em; font-weight: bold; margin-bottom: 5px; }
+                  .metric-label { color: #666; font-size: 0.9em; }
+                  .links { margin-top: 30px; text-align: center; }
+                  .links a { display: inline-block; margin: 0 10px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; }
+                  .links a:hover { background: #0056b3; }
+                  .footer { margin-top: 30px; text-align: center; color: #666; font-size: 0.9em; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>🧪 テストカバレッジレポート</h1>
+                      <p>Trends Laravel プロジェクト</p>
+                  </div>
+                  
+                  <div class="metrics" id="metrics">
+                      <!-- カバレッジメトリクスがここに動的に挿入されます -->
+                  </div>
+                  
+                  <div class="links">
+                      <a href="./coverage/index.html">📊 詳細カバレッジレポート</a>
+                      <a href="./coverage.xml">📄 XMLレポート</a>
+                      <a href="https://github.com/rfdnxbro/trends-laravel">📚 GitHubリポジトリ</a>
+                  </div>
+                  
+                  <div class="footer">
+                      <p id="generated-time">生成日時: 読み込み中...</p>
+                      <p>🤖 Generated with Claude Code</p>
+                  </div>
+              </div>
+              
+              <script>
+                  // カバレッジデータを読み込んで表示
+                  fetch('./coverage-summary.json')
+                      .then(response => response.json())
+                      .then(data => {
+                          const metrics = document.getElementById('metrics');
+                          
+                          function getBadgeClass(value) {
+                              if (value >= 95) return 'high';
+                              if (value >= 80) return 'medium';
+                              return 'low';
+                          }
+                          
+                          metrics.innerHTML = `
+                              <div class="metric">
+                                  <div class="metric-value">
+                                      <span class="badge ${getBadgeClass(data.lines)}">${data.lines}%</span>
+                                  </div>
+                                  <div class="metric-label">ライン カバレッジ</div>
+                              </div>
+                              <div class="metric">
+                                  <div class="metric-value">
+                                      <span class="badge ${getBadgeClass(data.methods)}">${data.methods}%</span>
+                                  </div>
+                                  <div class="metric-label">メソッド カバレッジ</div>
+                              </div>
+                              <div class="metric">
+                                  <div class="metric-value">
+                                      <span class="badge ${getBadgeClass(data.classes)}">${data.classes}%</span>
+                                  </div>
+                                  <div class="metric-label">クラス カバレッジ</div>
+                              </div>
+                          `;
+                          
+                          document.getElementById('generated-time').textContent = 
+                              `生成日時: ${new Date(data.generated).toLocaleString('ja-JP')} (${data.branch}ブランチ)`;
+                      })
+                      .catch(error => {
+                          console.error('カバレッジデータの読み込みに失敗:', error);
+                          document.getElementById('metrics').innerHTML = 
+                              '<p style="text-align: center; color: #dc3545;">カバレッジデータの読み込みに失敗しました</p>';
+                      });
+              </script>
+          </body>
+          </html>
+          EOF
+      
+      - name: GitHub Pagesセットアップ
+        uses: actions/configure-pages@v4
+      
+      - name: GitHub Pagesにアップロード
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+      
+      - name: GitHub Pagesにデプロイ
+        id: deployment
+        uses: actions/deploy-pages@v4

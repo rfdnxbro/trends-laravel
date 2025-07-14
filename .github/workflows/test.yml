@@ -77,7 +77,7 @@ jobs:
         run: vendor/bin/pint --test
       
       - name: 静的解析を実行
-        run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress
+        run: vendor/bin/phpstan analyse --no-progress
       
       - name: フロントエンドテストを実行
         run: npm test

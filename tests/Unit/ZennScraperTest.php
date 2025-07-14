@@ -206,7 +206,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals(10, $requestsPerMinuteProperty->getValue($this->scraper));
     }
 
-    public function test_extract_author_url_zenn形式の_author_ur_lを抽出する(): void
+    public function test_extract_author_url_zenn形式のauthor_urlを抽出する(): void
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -219,7 +219,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals('https://zenn.dev/user123', $authorUrl);
     }
 
-    public function test_extract_author_url_相対_ur_lを正しく変換する(): void
+    public function test_extract_author_url_相対urlを正しく変換する(): void
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -232,7 +232,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals('https://zenn.dev@username', $authorUrl);
     }
 
-    public function test_extract_author_url_絶対_ur_lはそのまま返す(): void
+    public function test_extract_author_url_絶対urlはそのまま返す(): void
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -300,7 +300,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals('https://zenn.devtest-user', $authorUrl);
     }
 
-    public function test_extract_author_url_異常な_htm_lでも処理する(): void
+    public function test_extract_author_url_異常なhtmlでも処理する(): void
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -379,7 +379,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals(456, $likesCount);
     }
 
-    public function test_extract_url_無効な_ur_l形式の処理(): void
+    public function test_extract_url_無効なurl形式の処理(): void
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractUrl');

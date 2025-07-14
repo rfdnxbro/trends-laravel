@@ -31,7 +31,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals(Platform::getRateLimit(Platform::QIITA), $property->getValue($this->scraper));
     }
 
-    public function test_qiita_htm_lの解析が正常に動作する()
+    public function test_qiita_htmlの解析が正常に動作する()
     {
         $mockHtml = $this->getMockQiitaHtml();
 
@@ -72,7 +72,7 @@ class QiitaScraperTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function test_nullの_ur_lで企業アカウント特定を処理する()
+    public function test_nullのurlで企業アカウント特定を処理する()
     {
         $result = $this->scraper->identifyCompanyAccount(null);
 
@@ -124,7 +124,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('テストタイトル', $title);
     }
 
-    public function test_ur_lの抽出が正常に動作する()
+    public function test_urlの抽出が正常に動作する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractUrl');
@@ -164,7 +164,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('/user123', $author);
     }
 
-    public function test_著者_ur_lの抽出が正常に動作する()
+    public function test_著者urlの抽出が正常に動作する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -177,7 +177,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('https://qiita.com/user123', $authorUrl);
     }
 
-    public function test_extract_author_url_正常な_author_ur_lを抽出する()
+    public function test_extract_author_url_正常なauthor_urlを抽出する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -190,7 +190,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('https://qiita.com/users/test-user', $authorUrl);
     }
 
-    public function test_extract_author_url_相対_ur_lを正しく変換する()
+    public function test_extract_author_url_相対urlを正しく変換する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -203,7 +203,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('https://qiita.com/@username', $authorUrl);
     }
 
-    public function test_extract_author_url_絶対_ur_lはそのまま返す()
+    public function test_extract_author_url_絶対urlはそのまま返す()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -259,7 +259,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('https://qiita.com/@newuser', $authorUrl);
     }
 
-    public function test_extract_author_url_異常な_htm_lでも処理する()
+    public function test_extract_author_url_異常なhtmlでも処理する()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -324,7 +324,7 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals(123, $likesCount);
     }
 
-    public function test_extract_url_無効な_ur_l形式の処理()
+    public function test_extract_url_無効なurl形式の処理()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractUrl');

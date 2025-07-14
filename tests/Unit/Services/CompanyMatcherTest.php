@@ -22,7 +22,7 @@ class CompanyMatcherTest extends TestCase
     }
 
     #[Test]
-    public function test_identify_company_ur_lパターンマッチングで企業を特定できる()
+    public function test_identify_company_urlパターンマッチングで企業を特定できる()
     {
         $company = Company::factory()->create([
             'name' => 'テスト株式会社',
@@ -351,7 +351,7 @@ class CompanyMatcherTest extends TestCase
     }
 
     #[Test]
-    public function test_identify_company_zenn組織_ur_lの不正なパターンでnullを返す()
+    public function test_identify_company_zenn組織urlの不正なパターンでnullを返す()
     {
         Company::factory()->create([
             'name' => 'Zenn組織企業',

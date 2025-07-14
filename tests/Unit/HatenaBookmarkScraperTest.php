@@ -39,7 +39,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * はてなブックマークHTMLの解析をテスト
      */
     #[Test]
-    public function test_はてなブックマーク_htm_lの解析が正常に動作する()
+    public function test_はてなブックマーク_htmlの解析が正常に動作する()
     {
         $mockHtml = $this->getMockHatenaHtml();
 
@@ -196,7 +196,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * 空のHTMLレスポンス時の処理をテスト
      */
     #[Test]
-    public function test_空の_htm_lレスポンス時の処理が正常に動作する()
+    public function test_空のhtmlレスポンス時の処理が正常に動作する()
     {
         Http::fake([
             'b.hatena.ne.jp/*' => Http::response('', 200),
@@ -229,7 +229,7 @@ class HatenaBookmarkScraperTest extends TestCase
      * ベースURLの設定をテスト
      */
     #[Test]
-    public function test_ベース_ur_lが正しく設定されている()
+    public function test_ベースurlが正しく設定されている()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $baseUrlProperty = $reflection->getProperty('baseUrl');

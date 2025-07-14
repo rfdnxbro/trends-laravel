@@ -62,7 +62,7 @@
         ],
         "test:coverage": [
             "@php artisan config:clear --ansi",
-            "@php artisan test --coverage --coverage-html=coverage-html --coverage-clover=coverage-clover.xml"
+            "@php artisan test --coverage --coverage-html=coverage-html --coverage-clover=coverage-clover.xml --stop-on-failure"
         ]
     },
     "extra": {

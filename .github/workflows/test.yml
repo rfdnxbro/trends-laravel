@@ -6,6 +6,10 @@ on:
   push:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality-check:
     runs-on: ubuntu-latest
@@ -15,6 +19,9 @@ jobs:
     
     # テスト用にSQLite in-memoryデータベースを使用
     # 外部サービスは不要
+    
+    strategy:
+      fail-fast: false
     
     steps:
       - name: コードをチェックアウト
@@ -53,7 +60,7 @@ jobs:
       - name: 環境ファイルを作成
         run: |
           cp .env.ci .env
-          php artisan key:generate
+          php artisan key:generate --force
       
       - name: フロントエンドアセットをビルド
         run: npm run build
@@ -64,18 +71,13 @@ jobs:
           php artisan migrate --force
       
       - name: PHPテストを実行
-        run: php artisan test
+        run: php artisan test --stop-on-failure
       
       - name: コードスタイルチェックを実行
         run: vendor/bin/pint --test
       
       - name: 静的解析を実行
-        run: vendor/bin/phpstan analyse --memory-limit=1G
+        run: vendor/bin/phpstan analyse --no-progress
       
       - name: フロントエンドテストを実行
         run: npm test
-      
-      - name: スクレイピングサービスをテスト
-        run: |
-          php artisan test --filter=Scraper
-          php artisan test --filter=ScrapeCommand

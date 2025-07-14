@@ -46,7 +46,7 @@ class ScrapeAllCommandTest extends TestCase
         $this->assertEquals('handle', $handleMethod->getName());
     }
 
-    public function test_コマンドの終了コードが成功時に_succes_sになる()
+    public function test_コマンドの終了コードが成功時にsuccessになる()
     {
         $command = new ScrapeAll;
         $this->assertEquals(Command::SUCCESS, Command::SUCCESS);

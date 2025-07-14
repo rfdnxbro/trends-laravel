@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   coverage-comment:
     runs-on: ubuntu-latest
@@ -11,6 +15,9 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    
+    strategy:
+      fail-fast: false
     
     steps:
       - name: コードをチェックアウト
@@ -49,7 +56,7 @@ jobs:
       - name: 環境ファイルを作成
         run: |
           cp .env.ci .env
-          php artisan key:generate
+          php artisan key:generate --force
       
       - name: フロントエンドアセットをビルド
         run: npm run build
@@ -60,7 +67,7 @@ jobs:
           php artisan migrate --force
       
       - name: カバレッジ付きテストを実行
-        run: composer test:coverage
+        run: php artisan test --coverage --coverage-clover=coverage-clover.xml --stop-on-failure
       
       - name: カバレッジサマリーを生成
         id: coverage

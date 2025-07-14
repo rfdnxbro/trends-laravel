@@ -26,6 +26,7 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
           coverage: xdebug
+          ini-values: memory_limit=2G, max_execution_time=0
       
       - name: Node.jsセットアップ
         uses: actions/setup-node@v4
@@ -64,18 +65,13 @@ jobs:
           php artisan migrate --force
       
       - name: PHPテストを実行
-        run: php -d memory_limit=2G artisan test
+        run: php artisan test --stop-on-failure
       
       - name: コードスタイルチェックを実行
         run: vendor/bin/pint --test
       
       - name: 静的解析を実行
-        run: php -d memory_limit=2G vendor/bin/phpstan analyse --memory-limit=2G
+        run: vendor/bin/phpstan analyse --memory-limit=2G
       
       - name: フロントエンドテストを実行
         run: npm test
-      
-      - name: スクレイピングサービスをテスト
-        run: |
-          php -d memory_limit=2G artisan test --filter=Scraper
-          php -d memory_limit=2G artisan test --filter=ScrapeCommand

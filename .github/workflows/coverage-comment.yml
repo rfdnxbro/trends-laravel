@@ -22,6 +22,7 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
           coverage: xdebug
+          ini-values: memory_limit=2G, max_execution_time=0
       
       - name: Node.jsセットアップ
         uses: actions/setup-node@v4
@@ -60,7 +61,7 @@ jobs:
           php artisan migrate --force
       
       - name: カバレッジ付きテストを実行
-        run: php -d memory_limit=2G artisan test --coverage --coverage-html=coverage-html --coverage-clover=coverage-clover.xml
+        run: php artisan test --coverage --coverage-clover=coverage-clover.xml --stop-on-failure
       
       - name: カバレッジサマリーを生成
         id: coverage

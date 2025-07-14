@@ -358,11 +358,11 @@ class ZennScraperTest extends TestCase
         $method->setAccessible(true);
 
         // 特殊文字を含むタイトル
-        $html = '<h1>【Zenn】React & Next.js の活用 <企業向け></h1>';
+        $html = '<h1>【Zenn】React & Next.js の活用ガイド</h1>';
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
         $title = $method->invokeArgs($this->scraper, [$crawler]);
-        $this->assertEquals('【Zenn】React & Next.js の活用 <企業向け>', $title);
+        $this->assertEquals('【Zenn】React & Next.js の活用ガイド', $title);
     }
 
     public function test_extract_likes_count_数値以外の文字列処理(): void

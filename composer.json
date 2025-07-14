@@ -62,7 +62,7 @@
         ],
         "test:coverage": [
             "@php artisan config:clear --ansi",
-            "@php -d memory_limit=256M artisan test --coverage --coverage-html=coverage-html --coverage-clover=coverage-clover.xml --stop-on-failure"
+            "@php artisan test --coverage --coverage-html=coverage-html --coverage-clover=coverage-clover.xml --stop-on-failure"
         ]
     },
     "extra": {

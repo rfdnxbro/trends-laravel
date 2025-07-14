@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1752461164">
-  <project timestamp="1752461164" name="Clover Coverage">
+<coverage generated="1752474544">
+  <project timestamp="1752474544" name="Clover Coverage">
     <package name="App\Console\Commands">
       <file name="/Users/ryu/trends-laravel/app/Console/Commands/GenerateCompanyRankingsCommand.php">
         <class name="App\Console\Commands\GenerateCompanyRankingsCommand" namespace="App\Console\Commands">
@@ -1506,7 +1506,7 @@
         <line num="96" type="stmt" count="9"/>
         <line num="98" type="stmt" count="9"/>
         <line num="99" type="stmt" count="3"/>
-        <line num="100" type="stmt" count="4"/>
+        <line num="100" type="stmt" count="3"/>
         <line num="101" type="stmt" count="0"/>
         <line num="102" type="stmt" count="9"/>
         <line num="103" type="stmt" count="9"/>
@@ -2643,8 +2643,8 @@
         <line num="255" type="stmt" count="4"/>
         <line num="260" type="stmt" count="5"/>
         <line num="261" type="stmt" count="5"/>
-        <line num="262" type="stmt" count="2"/>
-        <line num="264" type="stmt" count="2"/>
+        <line num="262" type="stmt" count="1"/>
+        <line num="264" type="stmt" count="1"/>
         <line num="268" type="stmt" count="4"/>
         <line num="269" type="stmt" count="4"/>
         <line num="270" type="stmt" count="3"/>

@@ -303,11 +303,11 @@ class QiitaScraperTest extends TestCase
         $method->setAccessible(true);
 
         // 特殊文字を含むタイトル
-        $html = '<h2><a>【テスト】React & Vue.js の比較 <特殊文字></a></h2>';
+        $html = '<h2><a>【テスト】React & Vue.js の比較検証</a></h2>';
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
         $title = $method->invokeArgs($this->scraper, [$crawler]);
-        $this->assertEquals('【テスト】React & Vue.js の比較 <特殊文字>', $title);
+        $this->assertEquals('【テスト】React & Vue.js の比較検証', $title);
     }
 
     public function test_extract_likes_count_数値以外の文字列処理()

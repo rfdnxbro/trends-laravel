@@ -139,7 +139,7 @@ class CompanyInfluenceScoreTest extends TestCase
         CompanyInfluenceScore::factory()->create(['calculated_at' => $now->copy()->subDays(1)]);
         $latest = CompanyInfluenceScore::factory()->create(['calculated_at' => $now->copy()]);
 
-        $latestScore = CompanyInfluenceScore::orderByCalculatedAt('desc')->first();
+        $latestScore = CompanyInfluenceScore::latest()->first();
 
         $this->assertEquals($latest->id, $latestScore->id);
     }

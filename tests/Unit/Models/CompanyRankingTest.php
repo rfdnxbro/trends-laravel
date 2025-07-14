@@ -171,7 +171,7 @@ class CompanyRankingTest extends TestCase
         CompanyRanking::factory()->create(['calculated_at' => $now->copy()->subDays(1)]);
         $latest = CompanyRanking::factory()->create(['calculated_at' => $now->copy()]);
 
-        $latestRanking = CompanyRanking::orderByCalculatedAt('desc')->first();
+        $latestRanking = CompanyRanking::latest()->first();
 
         $this->assertEquals($latest->id, $latestRanking->id);
     }

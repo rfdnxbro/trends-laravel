@@ -91,6 +91,32 @@ class CompanyArticleResourceTest extends TestCase
         $this->assertTrue(true); // プラットフォーム情報テスト完了
     }
 
+    public function test_プラットフォーム詳細情報が正しく含まれる()
+    {
+        $company = Company::factory()->create();
+        $platform = Platform::factory()->create([
+            'name' => 'テストプラットフォーム',
+            'base_url' => 'https://test-platform.com',
+        ]);
+        $article = Article::factory()->create([
+            'company_id' => $company->id,
+            'platform_id' => $platform->id,
+        ]);
+
+        $article->load('platform');
+
+        $request = new Request;
+        $resource = new CompanyArticleResource($article);
+        $result = $resource->toArray($request);
+
+        // platform_detailsフィールドの検証
+        $this->assertArrayHasKey('platform_details', $result);
+        $this->assertIsArray($result['platform_details']);
+        $this->assertEquals($platform->id, $result['platform_details']['id']);
+        $this->assertEquals('テストプラットフォーム', $result['platform_details']['name']);
+        $this->assertEquals('https://test-platform.com', $result['platform_details']['base_url']);
+    }
+
     public function test_基本的なリソース変換が動作する()
     {
         $company = Company::factory()->create();

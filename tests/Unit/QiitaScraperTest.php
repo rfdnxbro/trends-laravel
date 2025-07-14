@@ -307,7 +307,7 @@ class QiitaScraperTest extends TestCase
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
         $title = $method->invokeArgs($this->scraper, [$crawler]);
-        $this->assertEquals('【テスト】React & Vue.js の比較 <特殊文字>', $title);
+        $this->assertEquals('【テスト】React & Vue.js の比較', $title);
     }
 
     public function test_extract_likes_count_数値以外の文字列処理()

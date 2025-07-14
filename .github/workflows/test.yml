@@ -33,7 +33,7 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
           coverage: xdebug
-          ini-values: memory_limit=4G, max_execution_time=600, opcache.memory_consumption=256, opcache.max_accelerated_files=20000
+          ini-values: memory_limit=512M
       
       - name: Node.jsセットアップ
         uses: actions/setup-node@v4

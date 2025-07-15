@@ -13,6 +13,10 @@
 /.zed
 /auth.json
 /node_modules
+/coverage-html-output
+/coverage-xml-output
+coverage-*.xml
+junit.xml
 /public/build
 /public/hot
 /public/storage

@@ -383,4 +383,132 @@ class ScrapeScheduleCommandTest extends TestCase
             ->atLeast()
             ->once();
     }
+
+    public function test_handle実行時の基本フロー()
+    {
+        Log::spy();
+
+        $qiitaMock = Mockery::mock(QiitaScraper::class);
+        $qiitaMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn([
+                ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test'],
+            ]);
+        $qiitaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('array'))
+            ->andReturn([['id' => 1]]);
+
+        $zennMock = Mockery::mock(ZennScraper::class);
+        $zennMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn([
+                ['title' => 'Test Zenn Article', 'url' => 'https://zenn.dev/test'],
+            ]);
+        $zennMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('array'))
+            ->andReturn([['id' => 1]]);
+
+        $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
+        $hatenaMock->shouldReceive('scrapePopularItEntries')
+            ->once()
+            ->andReturn([
+                ['title' => 'Test Hatena Article', 'url' => 'https://b.hatena.ne.jp/test'],
+            ]);
+        $hatenaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('array'))
+            ->andReturn([['id' => 1]]);
+
+        $this->app->instance(QiitaScraper::class, $qiitaMock);
+        $this->app->instance(ZennScraper::class, $zennMock);
+        $this->app->instance(HatenaBookmarkScraper::class, $hatenaMock);
+
+        $command = $this->app->make(ScrapeSchedule::class);
+        $command->setLaravel($this->app);
+
+        // コマンドにInput/Outputを設定
+        $input = new \Symfony\Component\Console\Input\ArrayInput([]);
+        $output = new \Symfony\Component\Console\Output\BufferedOutput;
+
+        $exitCode = $command->run($input, $output);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        Log::shouldHaveReceived('info')
+            ->with('スクレイピング実行開始')
+            ->once();
+    }
+
+    public function test_handle特定プラットフォーム指定実行()
+    {
+        Log::spy();
+
+        $qiitaMock = Mockery::mock(QiitaScraper::class);
+        $qiitaMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn([
+                ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test'],
+            ]);
+        $qiitaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('array'))
+            ->andReturn([['id' => 1]]);
+
+        $this->app->instance(QiitaScraper::class, $qiitaMock);
+
+        $command = $this->app->make(ScrapeSchedule::class);
+        $command->setLaravel($this->app);
+
+        // コマンドにオプションを設定
+        $input = new \Symfony\Component\Console\Input\ArrayInput([
+            '--platform' => 'qiita',
+        ]);
+        $output = new \Symfony\Component\Console\Output\BufferedOutput;
+
+        $exitCode = $command->run($input, $output);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        Log::shouldHaveReceived('info')
+            ->with('スクレイピング実行開始')
+            ->once();
+    }
+
+    public function test_handle_silentオプション使用時の動作()
+    {
+        Log::spy();
+
+        $qiitaMock = Mockery::mock(QiitaScraper::class);
+        $qiitaMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn([
+                ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test'],
+            ]);
+        $qiitaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('array'))
+            ->andReturn([['id' => 1]]);
+
+        $this->app->instance(QiitaScraper::class, $qiitaMock);
+
+        $command = $this->app->make(ScrapeSchedule::class);
+        $command->setLaravel($this->app);
+
+        // コマンドにオプションを設定
+        $input = new \Symfony\Component\Console\Input\ArrayInput([
+            '--platform' => 'qiita',
+            '--silent' => true,
+        ]);
+        $output = new \Symfony\Component\Console\Output\BufferedOutput;
+
+        $exitCode = $command->run($input, $output);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        Log::shouldHaveReceived('info')
+            ->with('スクレイピング実行開始')
+            ->once();
+    }
 }

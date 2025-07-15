@@ -312,4 +312,55 @@ class ScrapeAllCommandTest extends TestCase
         $this->assertStringContainsString('総保存記事数: 5', $output);
         $this->assertStringContainsString('全プラットフォームのスクレイピングが完了しました', $output);
     }
+
+    public function test_handle実行時の基本フロー()
+    {
+        $qiitaMock = Mockery::mock(QiitaScraper::class);
+        $qiitaMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn([
+                ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test'],
+            ]);
+        $qiitaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('array'))
+            ->andReturn([['id' => 1]]);
+
+        $zennMock = Mockery::mock(ZennScraper::class);
+        $zennMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn([
+                ['title' => 'Test Zenn Article', 'url' => 'https://zenn.dev/test'],
+            ]);
+        $zennMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('array'))
+            ->andReturn([['id' => 1]]);
+
+        $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
+        $hatenaMock->shouldReceive('scrapePopularItEntries')
+            ->once()
+            ->andReturn([
+                ['title' => 'Test Hatena Article', 'url' => 'https://b.hatena.ne.jp/test'],
+            ]);
+        $hatenaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('array'))
+            ->andReturn([['id' => 1]]);
+
+        $this->app->instance(QiitaScraper::class, $qiitaMock);
+        $this->app->instance(ZennScraper::class, $zennMock);
+        $this->app->instance(HatenaBookmarkScraper::class, $hatenaMock);
+
+        $command = $this->app->make(ScrapeAll::class);
+        $command->setLaravel($this->app);
+
+        // コマンドにInput/Outputを設定
+        $input = new \Symfony\Component\Console\Input\ArrayInput([]);
+        $output = new \Symfony\Component\Console\Output\BufferedOutput;
+
+        $exitCode = $command->run($input, $output);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
 }

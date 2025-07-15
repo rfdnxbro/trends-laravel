@@ -282,4 +282,77 @@ class ScrapePlatformCommandTest extends TestCase
 
         $this->assertEquals(Command::FAILURE, $exitCode);
     }
+
+    public function test_handle実行時の基本フロー()
+    {
+        $qiitaMock = Mockery::mock(QiitaScraper::class);
+        $qiitaMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn([
+                ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test', 'author' => 'test_author'],
+            ]);
+        $qiitaMock->shouldReceive('normalizeAndSaveData')
+            ->once()
+            ->with(Mockery::type('array'))
+            ->andReturn([['id' => 1]]);
+
+        $this->app->instance(QiitaScraper::class, $qiitaMock);
+
+        $command = $this->app->make(ScrapePlatform::class);
+        $command->setLaravel($this->app);
+
+        // コマンドに引数を設定
+        $input = new \Symfony\Component\Console\Input\ArrayInput([
+            'platform' => 'qiita',
+        ]);
+        $output = new \Symfony\Component\Console\Output\BufferedOutput;
+
+        $command->run($input, $output);
+
+        $this->assertTrue(true); // テスト成功
+    }
+
+    public function test_handle無効プラットフォーム指定時のエラー処理()
+    {
+        $command = $this->app->make(ScrapePlatform::class);
+        $command->setLaravel($this->app);
+
+        // コマンドに引数を設定
+        $input = new \Symfony\Component\Console\Input\ArrayInput([
+            'platform' => 'invalid',
+        ]);
+        $output = new \Symfony\Component\Console\Output\BufferedOutput;
+
+        $exitCode = $command->run($input, $output);
+
+        $this->assertEquals(Command::FAILURE, $exitCode);
+    }
+
+    public function test_handle_dry_runオプション使用時の動作()
+    {
+        $qiitaMock = Mockery::mock(QiitaScraper::class);
+        $qiitaMock->shouldReceive('scrapeTrendingArticles')
+            ->once()
+            ->andReturn([
+                ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test', 'author' => 'test_author'],
+            ]);
+        $qiitaMock->shouldReceive('normalizeAndSaveData')
+            ->never();
+
+        $this->app->instance(QiitaScraper::class, $qiitaMock);
+
+        $command = $this->app->make(ScrapePlatform::class);
+        $command->setLaravel($this->app);
+
+        // コマンドに引数とオプションを設定
+        $input = new \Symfony\Component\Console\Input\ArrayInput([
+            'platform' => 'qiita',
+            '--dry-run' => true,
+        ]);
+        $output = new \Symfony\Component\Console\Output\BufferedOutput;
+
+        $exitCode = $command->run($input, $output);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
 }

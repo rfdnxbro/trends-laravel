@@ -1,0 +1,467 @@
+<?xml version="1.0"?>
+<phpunit xmlns="https://schema.phpunit.de/coverage/1.0">
+  <file name="Platform.php" path="/Constants">
+    <totals>
+      <lines total="63" comments="14" code="49" executable="4" executed="3" percent="75.00"/>
+      <methods count="4" tested="3" percent="75.00"/>
+      <functions count="0" tested="0" percent="0"/>
+      <classes count="1" tested="0" percent="0.00"/>
+      <traits count="0" tested="0" percent="0"/>
+    </totals>
+    <class name="App\Constants\Platform" start="5" executable="4" executed="3" crap="4.25">
+      <namespace name="App\Constants"/>
+      <method name="getValidPlatforms" signature="getValidPlatforms(): array" start="34" end="37" crap="1" executable="1" executed="1" coverage="100"/>
+      <method name="isValid" signature="isValid(string $platform): bool" start="42" end="45" crap="2" executable="1" executed="0" coverage="0"/>
+      <method name="getUrl" signature="getUrl(string $platform): ?string" start="50" end="53" crap="1" executable="1" executed="1" coverage="100"/>
+      <method name="getRateLimit" signature="getRateLimit(string $platform): ?int" start="58" end="61" crap="1" executable="1" executed="1" coverage="100"/>
+    </class>
+    <coverage>
+      <line nr="36">
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x57FA;&#x672C;&#x7684;&#x306A;&#x8A18;&#x4E8B;&#x60C5;&#x5831;&#x304C;&#x6B63;&#x3057;&#x304F;&#x5909;&#x63DB;&#x3055;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x4F1A;&#x793E;&#x60C5;&#x5831;&#x304C;&#x30ED;&#x30FC;&#x30C9;&#x3055;&#x308C;&#x3066;&#x3044;&#x308B;&#x5834;&#x5408;&#x306B;&#x8A73;&#x7D30;&#x60C5;&#x5831;&#x304C;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x30D7;&#x30E9;&#x30C3;&#x30C8;&#x30D5;&#x30A9;&#x30FC;&#x30E0;&#x60C5;&#x5831;&#x304C;&#x30ED;&#x30FC;&#x30C9;&#x3055;&#x308C;&#x3066;&#x3044;&#x308B;&#x5834;&#x5408;&#x306B;&#x30EA;&#x30BD;&#x30FC;&#x30B9;&#x304C;&#x6B63;&#x5E38;&#x306B;&#x52D5;&#x4F5C;&#x3059;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x57FA;&#x672C;&#x7684;&#x306A;&#x30EA;&#x30BD;&#x30FC;&#x30B9;&#x5909;&#x63DB;&#x304C;&#x52D5;&#x4F5C;&#x3059;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_match_score&#x304C;&#x8A2D;&#x5B9A;&#x3055;&#x308C;&#x3066;&#x3044;&#x308B;&#x5834;&#x5408;&#x306B;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x30EA;&#x30BD;&#x30FC;&#x30B9;&#x306E;&#x5168;&#x30D5;&#x30A3;&#x30FC;&#x30EB;&#x30C9;&#x304C;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x65E5;&#x4ED8;&#x30D5;&#x30A3;&#x30FC;&#x30EB;&#x30C9;&#x304C;&#x6B63;&#x3057;&#x304F;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+      </line>
+      <line nr="52">
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x57FA;&#x672C;&#x7684;&#x306A;&#x8A18;&#x4E8B;&#x60C5;&#x5831;&#x304C;&#x6B63;&#x3057;&#x304F;&#x5909;&#x63DB;&#x3055;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x4F1A;&#x793E;&#x60C5;&#x5831;&#x304C;&#x30ED;&#x30FC;&#x30C9;&#x3055;&#x308C;&#x3066;&#x3044;&#x308B;&#x5834;&#x5408;&#x306B;&#x8A73;&#x7D30;&#x60C5;&#x5831;&#x304C;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x30D7;&#x30E9;&#x30C3;&#x30C8;&#x30D5;&#x30A9;&#x30FC;&#x30E0;&#x60C5;&#x5831;&#x304C;&#x30ED;&#x30FC;&#x30C9;&#x3055;&#x308C;&#x3066;&#x3044;&#x308B;&#x5834;&#x5408;&#x306B;&#x30EA;&#x30BD;&#x30FC;&#x30B9;&#x304C;&#x6B63;&#x5E38;&#x306B;&#x52D5;&#x4F5C;&#x3059;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x57FA;&#x672C;&#x7684;&#x306A;&#x30EA;&#x30BD;&#x30FC;&#x30B9;&#x5909;&#x63DB;&#x304C;&#x52D5;&#x4F5C;&#x3059;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_match_score&#x304C;&#x8A2D;&#x5B9A;&#x3055;&#x308C;&#x3066;&#x3044;&#x308B;&#x5834;&#x5408;&#x306B;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x30EA;&#x30BD;&#x30FC;&#x30B9;&#x306E;&#x5168;&#x30D5;&#x30A3;&#x30FC;&#x30EB;&#x30C9;&#x304C;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x65E5;&#x4ED8;&#x30D5;&#x30A3;&#x30FC;&#x30EB;&#x30C9;&#x304C;&#x6B63;&#x3057;&#x304F;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+      </line>
+      <line nr="60">
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x57FA;&#x672C;&#x7684;&#x306A;&#x8A18;&#x4E8B;&#x60C5;&#x5831;&#x304C;&#x6B63;&#x3057;&#x304F;&#x5909;&#x63DB;&#x3055;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x4F1A;&#x793E;&#x60C5;&#x5831;&#x304C;&#x30ED;&#x30FC;&#x30C9;&#x3055;&#x308C;&#x3066;&#x3044;&#x308B;&#x5834;&#x5408;&#x306B;&#x8A73;&#x7D30;&#x60C5;&#x5831;&#x304C;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x30D7;&#x30E9;&#x30C3;&#x30C8;&#x30D5;&#x30A9;&#x30FC;&#x30E0;&#x60C5;&#x5831;&#x304C;&#x30ED;&#x30FC;&#x30C9;&#x3055;&#x308C;&#x3066;&#x3044;&#x308B;&#x5834;&#x5408;&#x306B;&#x30EA;&#x30BD;&#x30FC;&#x30B9;&#x304C;&#x6B63;&#x5E38;&#x306B;&#x52D5;&#x4F5C;&#x3059;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x57FA;&#x672C;&#x7684;&#x306A;&#x30EA;&#x30BD;&#x30FC;&#x30B9;&#x5909;&#x63DB;&#x304C;&#x52D5;&#x4F5C;&#x3059;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_match_score&#x304C;&#x8A2D;&#x5B9A;&#x3055;&#x308C;&#x3066;&#x3044;&#x308B;&#x5834;&#x5408;&#x306B;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x30EA;&#x30BD;&#x30FC;&#x30B9;&#x306E;&#x5168;&#x30D5;&#x30A3;&#x30FC;&#x30EB;&#x30C9;&#x304C;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+        <covered by="Tests\Unit\Resources\CompanyArticleResourceTest::test_&#x65E5;&#x4ED8;&#x30D5;&#x30A3;&#x30FC;&#x30EB;&#x30C9;&#x304C;&#x6B63;&#x3057;&#x304F;&#x542B;&#x307E;&#x308C;&#x308B;"/>
+      </line>
+    </coverage>
+    <source>
+      <line no="1">
+        <token name="T_OPEN_TAG">&lt;?php</token>
+      </line>
+      <line no="2"/>
+      <line no="3">
+        <token name="T_NAMESPACE">namespace</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_NAME_QUALIFIED">App\Constants</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="4"/>
+      <line no="5">
+        <token name="T_CLASS">class</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">Platform</token>
+      </line>
+      <line no="6">
+        <token name="T_OPEN_CURLY">{</token>
+      </line>
+      <line no="7">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_PUBLIC">public</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONST">const</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">QIITA</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_EQUAL">=</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONSTANT_ENCAPSED_STRING">'Qiita'</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="8"/>
+      <line no="9">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_PUBLIC">public</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONST">const</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">ZENN</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_EQUAL">=</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONSTANT_ENCAPSED_STRING">'Zenn'</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="10"/>
+      <line no="11">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_PUBLIC">public</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONST">const</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">HATENA_BOOKMARK</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_EQUAL">=</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONSTANT_ENCAPSED_STRING">'&#x306F;&#x3066;&#x306A;&#x30D6;&#x30C3;&#x30AF;&#x30DE;&#x30FC;&#x30AF;'</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="12"/>
+      <line no="13">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_PUBLIC">public</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONST">const</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">ALL</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_EQUAL">=</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_OPEN_SQUARE">[</token>
+      </line>
+      <line no="14">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">QIITA</token>
+        <token name="T_COMMA">,</token>
+      </line>
+      <line no="15">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">ZENN</token>
+        <token name="T_COMMA">,</token>
+      </line>
+      <line no="16">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">HATENA_BOOKMARK</token>
+        <token name="T_COMMA">,</token>
+      </line>
+      <line no="17">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_CLOSE_SQUARE">]</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="18"/>
+      <line no="19">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_PUBLIC">public</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONST">const</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">URLS</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_EQUAL">=</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_OPEN_SQUARE">[</token>
+      </line>
+      <line no="20">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">QIITA</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_DOUBLE_ARROW">=&gt;</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONSTANT_ENCAPSED_STRING">'https://qiita.com'</token>
+        <token name="T_COMMA">,</token>
+      </line>
+      <line no="21">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">ZENN</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_DOUBLE_ARROW">=&gt;</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONSTANT_ENCAPSED_STRING">'https://zenn.dev'</token>
+        <token name="T_COMMA">,</token>
+      </line>
+      <line no="22">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">HATENA_BOOKMARK</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_DOUBLE_ARROW">=&gt;</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONSTANT_ENCAPSED_STRING">'https://b.hatena.ne.jp'</token>
+        <token name="T_COMMA">,</token>
+      </line>
+      <line no="23">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_CLOSE_SQUARE">]</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="24"/>
+      <line no="25">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_PUBLIC">public</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_CONST">const</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">RATE_LIMITS</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_EQUAL">=</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_OPEN_SQUARE">[</token>
+      </line>
+      <line no="26">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">QIITA</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_DOUBLE_ARROW">=&gt;</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_LNUMBER">60</token>
+        <token name="T_COMMA">,</token>
+        <token name="T_WHITESPACE">           </token>
+        <token name="T_COMMENT">// Qiita API &#x306E;&#x5236;&#x9650;&#x306B;&#x5408;&#x308F;&#x305B;&#x308B;</token>
+      </line>
+      <line no="27">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">ZENN</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_DOUBLE_ARROW">=&gt;</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_LNUMBER">30</token>
+        <token name="T_COMMA">,</token>
+        <token name="T_WHITESPACE">            </token>
+        <token name="T_COMMENT">// Zenn &#x306E;&#x5236;&#x9650;&#x306B;&#x5408;&#x308F;&#x305B;&#x308B;</token>
+      </line>
+      <line no="28">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">HATENA_BOOKMARK</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_DOUBLE_ARROW">=&gt;</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_LNUMBER">20</token>
+        <token name="T_COMMA">,</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_COMMENT">// &#x306F;&#x3066;&#x306A;&#x30D6;&#x30C3;&#x30AF;&#x30DE;&#x30FC;&#x30AF;&#x306E;&#x5236;&#x9650;</token>
+      </line>
+      <line no="29">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_CLOSE_SQUARE">]</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="30"/>
+      <line no="31">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_DOC_COMMENT">/**</token>
+      </line>
+      <line no="32">
+        <token name="T_DOC_COMMENT">     * &#x6709;&#x52B9;&#x306A;&#x30D7;&#x30E9;&#x30C3;&#x30C8;&#x30D5;&#x30A9;&#x30FC;&#x30E0;&#x540D;&#x306E;&#x914D;&#x5217;&#x3092;&#x53D6;&#x5F97;</token>
+      </line>
+      <line no="33">
+        <token name="T_DOC_COMMENT">     */</token>
+      </line>
+      <line no="34">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_PUBLIC">public</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STATIC">static</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_FUNCTION">function</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">getValidPlatforms</token>
+        <token name="T_OPEN_BRACKET">(</token>
+        <token name="T_CLOSE_BRACKET">)</token>
+        <token name="T_COLON">:</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_ARRAY">array</token>
+      </line>
+      <line no="35">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_OPEN_CURLY">{</token>
+      </line>
+      <line no="36">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_RETURN">return</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">ALL</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="37">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_CLOSE_CURLY">}</token>
+      </line>
+      <line no="38"/>
+      <line no="39">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_DOC_COMMENT">/**</token>
+      </line>
+      <line no="40">
+        <token name="T_DOC_COMMENT">     * &#x30D7;&#x30E9;&#x30C3;&#x30C8;&#x30D5;&#x30A9;&#x30FC;&#x30E0;&#x540D;&#x304C;&#x6709;&#x52B9;&#x304B;&#x30C1;&#x30A7;&#x30C3;&#x30AF;</token>
+      </line>
+      <line no="41">
+        <token name="T_DOC_COMMENT">     */</token>
+      </line>
+      <line no="42">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_PUBLIC">public</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STATIC">static</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_FUNCTION">function</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">isValid</token>
+        <token name="T_OPEN_BRACKET">(</token>
+        <token name="T_STRING">string</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_VARIABLE">$platform</token>
+        <token name="T_CLOSE_BRACKET">)</token>
+        <token name="T_COLON">:</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">bool</token>
+      </line>
+      <line no="43">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_OPEN_CURLY">{</token>
+      </line>
+      <line no="44">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_RETURN">return</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">in_array</token>
+        <token name="T_OPEN_BRACKET">(</token>
+        <token name="T_VARIABLE">$platform</token>
+        <token name="T_COMMA">,</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">ALL</token>
+        <token name="T_COMMA">,</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">true</token>
+        <token name="T_CLOSE_BRACKET">)</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="45">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_CLOSE_CURLY">}</token>
+      </line>
+      <line no="46"/>
+      <line no="47">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_DOC_COMMENT">/**</token>
+      </line>
+      <line no="48">
+        <token name="T_DOC_COMMENT">     * &#x30D7;&#x30E9;&#x30C3;&#x30C8;&#x30D5;&#x30A9;&#x30FC;&#x30E0;&#x306E;URL&#x3092;&#x53D6;&#x5F97;</token>
+      </line>
+      <line no="49">
+        <token name="T_DOC_COMMENT">     */</token>
+      </line>
+      <line no="50">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_PUBLIC">public</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STATIC">static</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_FUNCTION">function</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">getUrl</token>
+        <token name="T_OPEN_BRACKET">(</token>
+        <token name="T_STRING">string</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_VARIABLE">$platform</token>
+        <token name="T_CLOSE_BRACKET">)</token>
+        <token name="T_COLON">:</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_QUESTION_MARK">?</token>
+        <token name="T_STRING">string</token>
+      </line>
+      <line no="51">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_OPEN_CURLY">{</token>
+      </line>
+      <line no="52">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_RETURN">return</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">URLS</token>
+        <token name="T_OPEN_SQUARE">[</token>
+        <token name="T_VARIABLE">$platform</token>
+        <token name="T_CLOSE_SQUARE">]</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_COALESCE">??</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">null</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="53">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_CLOSE_CURLY">}</token>
+      </line>
+      <line no="54"/>
+      <line no="55">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_DOC_COMMENT">/**</token>
+      </line>
+      <line no="56">
+        <token name="T_DOC_COMMENT">     * &#x30D7;&#x30E9;&#x30C3;&#x30C8;&#x30D5;&#x30A9;&#x30FC;&#x30E0;&#x306E;&#x30EC;&#x30FC;&#x30C8;&#x5236;&#x9650;&#x3092;&#x53D6;&#x5F97;</token>
+      </line>
+      <line no="57">
+        <token name="T_DOC_COMMENT">     */</token>
+      </line>
+      <line no="58">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_PUBLIC">public</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STATIC">static</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_FUNCTION">function</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">getRateLimit</token>
+        <token name="T_OPEN_BRACKET">(</token>
+        <token name="T_STRING">string</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_VARIABLE">$platform</token>
+        <token name="T_CLOSE_BRACKET">)</token>
+        <token name="T_COLON">:</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_QUESTION_MARK">?</token>
+        <token name="T_STRING">int</token>
+      </line>
+      <line no="59">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_OPEN_CURLY">{</token>
+      </line>
+      <line no="60">
+        <token name="T_WHITESPACE">        </token>
+        <token name="T_RETURN">return</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">self</token>
+        <token name="T_DOUBLE_COLON">::</token>
+        <token name="T_STRING">RATE_LIMITS</token>
+        <token name="T_OPEN_SQUARE">[</token>
+        <token name="T_VARIABLE">$platform</token>
+        <token name="T_CLOSE_SQUARE">]</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_COALESCE">??</token>
+        <token name="T_WHITESPACE"> </token>
+        <token name="T_STRING">null</token>
+        <token name="T_SEMICOLON">;</token>
+      </line>
+      <line no="61">
+        <token name="T_WHITESPACE">    </token>
+        <token name="T_CLOSE_CURLY">}</token>
+      </line>
+      <line no="62">
+        <token name="T_CLOSE_CURLY">}</token>
+      </line>
+      <line no="63"/>
+    </source>
+  </file>
+</phpunit>

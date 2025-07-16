@@ -597,4 +597,76 @@ class SearchApiTest extends TestCase
         $this->assertGreaterThan($mediumResult['match_score'], $highResult['match_score']);
         $this->assertGreaterThan($lowResult['match_score'], $mediumResult['match_score']);
     }
+
+    #[Test]
+    public function test_記事検索で無効なパラメータの場合バリデーションエラーが返される()
+    {
+        // 無効なdays値でバリデーションエラー
+        $response = $this->getJson('/api/search/articles?q=Laravel&days=0');
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'error' => '検索クエリが無効です',
+            ])
+            ->assertJsonStructure([
+                'error',
+                'details',
+            ]);
+
+        // 負のmin_bookmarks値でバリデーションエラー
+        $response = $this->getJson('/api/search/articles?q=Laravel&min_bookmarks=-1');
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'error' => '検索クエリが無効です',
+            ])
+            ->assertJsonStructure([
+                'error',
+                'details',
+            ]);
+    }
+
+    #[Test]
+    public function test_企業にランキングがある場合スコアボーナスが加算される()
+    {
+        // ランキングありの企業
+        $companyWithRanking = Company::factory()->create([
+            'name' => 'Company With Ranking',
+            'domain' => 'with-ranking.com',
+            'description' => 'テスト企業',
+            'is_active' => true,
+        ]);
+
+        // ランキングデータを作成
+        $ranking = \App\Models\CompanyRanking::factory()->create([
+            'company_id' => $companyWithRanking->id,
+            'ranking_period' => 'weekly',
+            'rank_position' => 1,
+            'total_score' => 100,
+            'calculated_at' => Carbon::now(),
+        ]);
+
+        // ランキングなしの企業
+        $companyWithoutRanking = Company::factory()->create([
+            'name' => 'Company Without Ranking',
+            'domain' => 'without-ranking.com',
+            'description' => 'テスト企業',
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/search/companies?q=Company');
+
+        $response->assertStatus(200);
+        $companies = $response->json('data.companies');
+
+        // ランキングありの企業が高スコアを持つことを確認
+        $withRankingResult = collect($companies)->firstWhere('name', 'Company With Ranking');
+        $withoutRankingResult = collect($companies)->firstWhere('name', 'Company Without Ranking');
+
+        $this->assertNotNull($withRankingResult);
+        $this->assertNotNull($withoutRankingResult);
+
+        // ランキングありの企業の方が高いスコアを持つことを確認
+        $this->assertGreaterThan($withoutRankingResult['match_score'], $withRankingResult['match_score']);
+    }
 }

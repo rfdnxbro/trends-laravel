@@ -202,7 +202,7 @@ class ArticleControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_存在しない記事_i_d指定時は404が返される()
+    public function test_存在しない記事id指定時は404が返される()
     {
         $response = $this->getJson('/api/articles/99999');
 

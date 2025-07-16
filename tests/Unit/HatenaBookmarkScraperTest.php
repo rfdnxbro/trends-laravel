@@ -776,6 +776,160 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertEquals('no-cache', $headers['Pragma']);
     }
 
+    /**
+     * parseResponseメソッド内の例外処理をテスト
+     */
+    #[Test]
+    public function test_parse_response_例外処理のカバレッジ()
+    {
+        // 特殊なHTMLを作成して、extractTitleやextractUrlメソッドが例外を投げるようにする
+        $mockHtml = '
+        <html>
+        <body>
+            <div class="entrylist-contents">
+                <h3 class="entrylist-contents-title">
+                    <a>タイトルのみでhref属性がない</a>
+                </h3>
+                <span class="entrylist-contents-users">
+                    <a>100 users</a>
+                </span>
+            </div>
+        </body>
+        </html>';
+
+        Http::fake([
+            'b.hatena.ne.jp/*' => Http::response($mockHtml, 200),
+        ]);
+
+        // テスト実行 - 例外が発生してもクラッシュしないことを確認
+        $result = $this->scraper->scrapePopularItEntries();
+
+        // 結果は配列で、1つのエントリーが含まれるはず（URLがnullなので保存されない）
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /**
+     * extractTitleメソッドの例外処理をテスト
+     */
+    #[Test]
+    public function test_extract_title_例外処理のカバレッジ()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractTitle');
+        $method->setAccessible(true);
+
+        // Crawlerのメソッドが例外を投げるケースをシミュレート
+        $mockNode = $this->createMock(\Symfony\Component\DomCrawler\Crawler::class);
+        $mockNode->method('filter')
+            ->willThrowException(new \Exception('DOM操作エラー'));
+
+        $result = $method->invokeArgs($this->scraper, [$mockNode]);
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * extractUrlメソッドの例外処理をテスト
+     */
+    #[Test]
+    public function test_extract_url_例外処理のカバレッジ()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractUrl');
+        $method->setAccessible(true);
+
+        // Crawlerのメソッドが例外を投げるケースをシミュレート
+        $mockNode = $this->createMock(\Symfony\Component\DomCrawler\Crawler::class);
+        $mockNode->method('filter')
+            ->willThrowException(new \Exception('DOM操作エラー'));
+
+        $result = $method->invokeArgs($this->scraper, [$mockNode]);
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * extractBookmarkCountメソッドの例外処理をテスト
+     */
+    #[Test]
+    public function test_extract_bookmark_count_例外処理のカバレッジ()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractBookmarkCount');
+        $method->setAccessible(true);
+
+        // Crawlerのメソッドが例外を投げるケースをシミュレート
+        $mockNode = $this->createMock(\Symfony\Component\DomCrawler\Crawler::class);
+        $mockNode->method('filter')
+            ->willThrowException(new \Exception('DOM操作エラー'));
+
+        $result = $method->invokeArgs($this->scraper, [$mockNode]);
+
+        $this->assertEquals(0, $result);
+    }
+
+    /**
+     * extractPublishedAtメソッドの例外処理をテスト
+     */
+    #[Test]
+    public function test_extract_published_at_例外処理のカバレッジ()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractPublishedAt');
+        $method->setAccessible(true);
+
+        // Crawlerのメソッドが例外を投げるケースをシミュレート
+        $mockNode = $this->createMock(\Symfony\Component\DomCrawler\Crawler::class);
+        $mockNode->method('filter')
+            ->willThrowException(new \Exception('DOM操作エラー'));
+
+        $result = $method->invokeArgs($this->scraper, [$mockNode]);
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * parseResponseメソッド内のcatch節をカバーするテスト
+     */
+    #[Test]
+    public function test_parse_response_内部例外処理のカバレッジ()
+    {
+        // 特殊な状況を作成するため、HatenaBookmarkScraperを拡張
+        $scraper = new class extends HatenaBookmarkScraper
+        {
+            protected function extractTitle(\Symfony\Component\DomCrawler\Crawler $node): ?string
+            {
+                // 最初の呼び出しで例外を投げる
+                throw new \Exception('Extract title exception');
+            }
+        };
+
+        $reflection = new \ReflectionClass($scraper);
+        $method = $reflection->getMethod('parseResponse');
+        $method->setAccessible(true);
+
+        // レスポンスモックを作成
+        $mockResponse = $this->createMock(\Illuminate\Http\Client\Response::class);
+        $mockResponse->method('body')->willReturn('
+            <div class="entrylist-contents">
+                <h3 class="entrylist-contents-title">
+                    <a href="https://example.com">Test</a>
+                </h3>
+                <span class="entrylist-contents-users">
+                    <a>100 users</a>
+                </span>
+            </div>
+        ');
+
+        // parseResponseを呼び出し - 例外がキャッチされて空配列が返される
+        $result = $method->invokeArgs($scraper, [$mockResponse]);
+
+        // 例外が発生してもエラーにならず空配列を返すことを確認
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
     private function getMockHatenaHtml(): string
     {
         return '

@@ -31,12 +31,9 @@ node_modules
 # Test Coverage
 /coverage-html
 coverage-clover.xml
-coverage-test.xml
 coverage.txt
 coverage.xml
-/coverage_report
 
 # Playwright E2E Test Results
 /playwright-report/
 /test-results/
-/coverage/

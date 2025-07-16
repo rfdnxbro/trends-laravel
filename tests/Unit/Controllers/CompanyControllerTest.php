@@ -142,6 +142,29 @@ class CompanyControllerTest extends TestCase
         $this->assertTrue(method_exists($this->controller, 'rankings'));
     }
 
+    public function test_indexメソッドが存在する()
+    {
+        $this->assertTrue(method_exists($this->controller, 'index'));
+    }
+
+    public function test_indexメソッドでバリデーションが正しく動作する()
+    {
+        $request = new Request(['page' => 'invalid']);
+
+        \Validator::shouldReceive('make')
+            ->andReturn(\Mockery::mock(Validator::class, function ($mock) {
+                $mock->shouldReceive('fails')->andReturn(true);
+                $mock->shouldReceive('errors')->andReturn(['page' => ['ページ番号は整数である必要があります']]);
+            }));
+
+        $response = $this->controller->index($request);
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('error', $responseData);
+        $this->assertEquals('リクエストパラメータが無効です', $responseData['error']);
+    }
+
     public function test_サービスメソッドが正しく呼び出される()
     {
         $this->rankingService->shouldReceive('getCompanyRankings')

@@ -19,6 +19,113 @@ class CompanyControllerFeatureTest extends TestCase
         parent::setUp();
     }
 
+    public function test_企業一覧取得_apiで基本的なパラメータなしの場合に正常なレスポンスが返される()
+    {
+        Company::factory()->count(3)->create();
+
+        $response = $this->getJson('/api/companies');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'domain',
+                        'description',
+                        'logo_url',
+                        'website_url',
+                        'is_active',
+                        'created_at',
+                        'updated_at',
+                    ],
+                ],
+                'meta' => [
+                    'current_page',
+                    'per_page',
+                    'total',
+                    'last_page',
+                    'filters',
+                ],
+            ]);
+    }
+
+    public function test_企業一覧取得_apiで検索パラメータが正しく動作する()
+    {
+        Company::factory()->create(['name' => 'Test Company A']);
+        Company::factory()->create(['name' => 'Sample Company B']);
+
+        $response = $this->getJson('/api/companies?search=Test');
+
+        $response->assertStatus(200);
+        $data = $response->json();
+        $this->assertEquals(1, $data['meta']['total']);
+        $this->assertStringContainsString('Test', $data['data'][0]['name']);
+    }
+
+    public function test_企業一覧取得_apiでドメイン検索が正しく動作する()
+    {
+        Company::factory()->create(['domain' => 'example.com']);
+        Company::factory()->create(['domain' => 'test.jp']);
+
+        $response = $this->getJson('/api/companies?domain=example');
+
+        $response->assertStatus(200);
+        $data = $response->json();
+        $this->assertEquals(1, $data['meta']['total']);
+        $this->assertStringContainsString('example.com', $data['data'][0]['domain']);
+    }
+
+    public function test_企業一覧取得_apiでアクティブ状態フィルタが正しく動作する()
+    {
+        Company::factory()->create(['is_active' => true]);
+        Company::factory()->create(['is_active' => false]);
+
+        $response = $this->getJson('/api/companies?is_active=1');
+
+        $response->assertStatus(200);
+        $data = $response->json();
+        $this->assertEquals(1, $data['meta']['total']);
+        $this->assertTrue($data['data'][0]['is_active']);
+    }
+
+    public function test_企業一覧取得_apiでソート機能が正しく動作する()
+    {
+        Company::factory()->create(['name' => 'Z Company', 'created_at' => now()->subDay()]);
+        Company::factory()->create(['name' => 'A Company', 'created_at' => now()]);
+
+        $response = $this->getJson('/api/companies?sort_by=name&sort_order=asc');
+
+        $response->assertStatus(200);
+        $data = $response->json();
+        $this->assertEquals('A Company', $data['data'][0]['name']);
+        $this->assertEquals('Z Company', $data['data'][1]['name']);
+    }
+
+    public function test_企業一覧取得_apiでページネーションが正しく動作する()
+    {
+        Company::factory()->count(25)->create();
+
+        $response = $this->getJson('/api/companies?page=2&per_page=10');
+
+        $response->assertStatus(200);
+        $data = $response->json();
+        $this->assertEquals(2, $data['meta']['current_page']);
+        $this->assertEquals(10, $data['meta']['per_page']);
+        $this->assertEquals(25, $data['meta']['total']);
+        $this->assertEquals(10, count($data['data']));
+    }
+
+    public function test_企業一覧取得_apiで無効なパラメータの場合にバリデーションエラーが返される()
+    {
+        $response = $this->getJson('/api/companies?page=invalid&per_page=-1');
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'error' => 'リクエストパラメータが無効です',
+            ]);
+    }
+
     public function test_企業詳細取得_apiで有効な企業idの場合に正常なレスポンスが返される()
     {
         $company = Company::factory()->create();

@@ -305,4 +305,133 @@ class CompanyRankingControllerTest extends TestCase
         $this->assertContains('1m', $responseData['data']);
         $this->assertContains('1y', $responseData['data']);
     }
+
+    public function test_空のランキングデータで正常にレスポンスが返される()
+    {
+        $request = new Request(['page' => 1, 'per_page' => 10]);
+
+        $this->rankingService->shouldReceive('getRankingForPeriod')
+            ->with('1m', 100)
+            ->andReturn([]);
+
+        Cache::shouldReceive('remember')
+            ->once()
+            ->andReturnUsing(function ($key, $time, $callback) {
+                return $callback();
+            });
+
+        $response = $this->controller->index($request, '1m');
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('data', $responseData);
+        $this->assertArrayHasKey('meta', $responseData);
+        $this->assertEmpty($responseData['data']);
+        $this->assertEquals(0, $responseData['meta']['total']);
+    }
+
+    public function test_無効な企業idで企業ランキング取得時にエラーが返される()
+    {
+        $request = new Request(['include_history' => false]);
+
+        // バリデーションをモック
+        \Validator::shouldReceive('make')
+            ->andReturn(\Mockery::mock(\Illuminate\Validation\Validator::class, function ($mock) {
+                $mock->shouldReceive('fails')->andReturn(true);
+                $mock->shouldReceive('errors')->andReturn(new \Illuminate\Support\MessageBag(['company_id' => ['The selected company id is invalid.']]));
+            }));
+
+        $response = $this->controller->company($request, 999999);
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('error', $responseData);
+        $this->assertEquals('Invalid company ID', $responseData['error']);
+    }
+
+    public function test_履歴を含む企業ランキングを取得する()
+    {
+        $request = new Request(['include_history' => true, 'history_days' => 30]);
+        $mockRankings = [
+            '1m' => (object) [
+                'rank_position' => 1,
+                'total_score' => 100.0,
+                'article_count' => 10,
+                'total_bookmarks' => 500,
+                'period_start' => '2024-01-01',
+                'period_end' => '2024-12-31',
+                'calculated_at' => '2024-12-31 23:59:59',
+            ],
+        ];
+
+        $mockHistory = [
+            [
+                'rank_position' => 1,
+                'total_score' => 100.0,
+                'calculated_at' => '2024-12-31',
+            ],
+            [
+                'rank_position' => 2,
+                'total_score' => 90.0,
+                'calculated_at' => '2024-12-30',
+            ],
+        ];
+
+        $this->rankingService->shouldReceive('getCompanyRankings')
+            ->with(1)
+            ->andReturn($mockRankings);
+
+        $this->historyService->shouldReceive('getCompanyRankingHistory')
+            ->andReturn($mockHistory);
+
+        Cache::shouldReceive('remember')
+            ->once()
+            ->andReturnUsing(function ($key, $time, $callback) {
+                return $callback();
+            });
+
+        // バリデーションをスキップするためのモック
+        \Validator::shouldReceive('make')
+            ->andReturn(\Mockery::mock(\Illuminate\Validation\Validator::class, function ($mock) {
+                $mock->shouldReceive('fails')->andReturn(false);
+            }));
+
+        $response = $this->controller->company($request, 1);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('data', $responseData);
+        $this->assertArrayHasKey('history', $responseData['data']);
+        $this->assertNotEmpty($responseData['data']['history']);
+    }
+
+    public function test_無効な期間でランキング上昇企業取得時にエラーが返される()
+    {
+        $request = new Request(['limit' => 10]);
+        $response = $this->controller->risers($request, 'invalid');
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('error', $responseData);
+    }
+
+    public function test_無効な期間でランキング下降企業取得時にエラーが返される()
+    {
+        $request = new Request(['limit' => 10]);
+        $response = $this->controller->fallers($request, 'invalid');
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('error', $responseData);
+    }
+
+    public function test_無効な期間でランキング変動統計取得時にエラーが返される()
+    {
+        $request = new Request;
+        $response = $this->controller->changeStatistics($request, 'invalid');
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('error', $responseData);
+    }
 }

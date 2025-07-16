@@ -27,16 +27,24 @@ bash .github/scripts/check-coverage.sh 97.0
 ```
 
 ### カバレッジレポート生成
+
+**重要**: カバレッジレポートは以下のディレクトリ・ファイルに統一して出力してください。
+- **HTMLレポート**: `coverage-html` ディレクトリ
+- **XMLレポート**: `coverage-clover.xml`
+- **テキストレポート**: `coverage.txt`
+
 ```bash
-# HTMLレポート生成
+# HTMLレポート生成（統一ディレクトリ: coverage-html）
 php artisan test --coverage-html=coverage-html
 
-# テキストレポート生成
+# テキストレポート生成（統一ファイル: coverage.txt）
 php artisan test --coverage-text
 
-# XML（CI/CD用）レポート生成
-php artisan test --coverage-clover=coverage.xml
+# XML（CI/CD用）レポート生成（統一ファイル: coverage-clover.xml）
+php artisan test --coverage-clover=coverage-clover.xml
 ```
+
+**注意**: `coverage/` や `coverage_report/` などの異なるディレクトリは使用しないでください。
 
 ## カバレッジ向上の領域
 

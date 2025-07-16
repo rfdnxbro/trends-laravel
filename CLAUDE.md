@@ -129,6 +129,10 @@ git commit -m "feat: 実装内容の説明 (#[issue番号])"
 ### テスト実行
 **詳細な実行手順**: [開発フロー.md](docs/wiki/開発フロー.md)を参照
 
+#### メモリ制限設定
+- **PHPUnit**: `phpunit.xml`で512Mに設定済み
+- **PHPStan**: `--memory-limit=1G`オプション使用
+
 ### CI/CD 並列実行
 - **Unit/Feature Tests**: 通常のCIワークフロー（約2分）
 - **E2E Tests**: 専用CIワークフロー（Playwright コンテナ、4並列、約1分）

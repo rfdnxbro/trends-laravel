@@ -61,7 +61,18 @@ Laravel Trendsプロジェクトでは、企業の技術コミュニティ影響
 
 **詳細ドキュメント**: `/storage/api-docs/api-docs.json` (OpenAPI仕様)
 
-### 3. 検索API 🔍
+### 3. 記事API 📰
+
+記事の詳細情報と一覧取得機能を提供します。
+
+| エンドポイント | 説明 | 実装状況 |
+|---|---|---|
+| `GET /api/articles` | 記事一覧（企業・プラットフォーム別フィルタ、ページネーション） | ✅ |
+| `GET /api/articles/{id}` | 記事詳細情報（タイトル・URL・著者・ブックマーク数・企業情報） | ✅ |
+
+**詳細ドキュメント**: `/storage/api-docs/api-docs.json` (OpenAPI仕様)
+
+### 4. 検索API 🔍
 
 企業・記事の横断検索機能を提供します。
 

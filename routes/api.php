@@ -66,6 +66,9 @@ Route::middleware(['throttle:60,1'])->group(function () {
     Route::prefix('articles')->group(function () {
         // 記事一覧
         Route::get('', [App\Http\Controllers\Api\ArticleController::class, 'index']);
+
+        // 記事詳細
+        Route::get('{id}', [App\Http\Controllers\Api\ArticleController::class, 'show']);
     });
 
     // 検索 API

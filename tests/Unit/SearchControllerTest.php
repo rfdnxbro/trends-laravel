@@ -184,7 +184,7 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_searchCompanies_正常なリクエストで企業検索が実行される()
+    public function test_search_companies_正常なリクエストで企業検索が実行される()
     {
         // テスト用企業データ作成
         $company = Company::factory()->create([
@@ -217,7 +217,7 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_searchCompanies_無効なクエリでバリデーションエラーが返される()
+    public function test_search_companies_無効なクエリでバリデーションエラーが返される()
     {
         // 空のクエリパラメータ
         $request = Request::create('/api/search/companies', 'GET', [
@@ -233,7 +233,7 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_searchArticles_正常なリクエストで記事検索が実行される()
+    public function test_search_articles_正常なリクエストで記事検索が実行される()
     {
         // テスト用データ作成
         $company = Company::factory()->create();
@@ -268,7 +268,7 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_searchArticles_無効なパラメータでバリデーションエラーが返される()
+    public function test_search_articles_無効なパラメータでバリデーションエラーが返される()
     {
         $request = Request::create('/api/search/articles', 'GET', [
             'q' => 'test',
@@ -353,7 +353,7 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_calculateRelevanceScore_nullドメインと説明文の処理()
+    public function test_calculate_relevance_score_nullドメインと説明文の処理()
     {
         $company = Company::factory()->create([
             'name' => 'Test Company',
@@ -373,7 +373,7 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_calculateArticleRelevanceScore_null著者名の処理()
+    public function test_calculate_article_relevance_score_null著者名の処理()
     {
         $article = Article::factory()->create([
             'title' => 'Test Article',
@@ -394,7 +394,7 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_calculateRelevanceScore_ランキングありの企業でボーナススコアが加算される()
+    public function test_calculate_relevance_score_ランキングありの企業でボーナススコアが加算される()
     {
         $company = Company::factory()->create([
             'name' => 'Company with Ranking',
@@ -425,7 +425,7 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_calculateArticleRelevanceScore_中ブックマーク数でスコアが加算される()
+    public function test_calculate_article_relevance_score_中ブックマーク数でスコアが加算される()
     {
         $article = Article::factory()->create([
             'title' => 'Medium Bookmark Article',
@@ -443,7 +443,7 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_calculateArticleRelevanceScore_やや最近の記事でスコアが加算される()
+    public function test_calculate_article_relevance_score_やや最近の記事でスコアが加算される()
     {
         $article = Article::factory()->create([
             'title' => 'Somewhat Recent Article',
@@ -461,7 +461,7 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_calculateArticleRelevanceScore_低ブックマーク数でもスコアが加算される()
+    public function test_calculate_article_relevance_score_低ブックマーク数でもスコアが加算される()
     {
         $article = Article::factory()->create([
             'title' => 'Low Bookmark Article',

@@ -20,12 +20,21 @@ class ArticleController extends Controller
             $query->where('platform_id', $request->platform_id);
         }
 
-        if ($request->has('limit')) {
-            $query->limit($request->limit);
-        }
+        $perPage = $request->input('limit', 20);
 
-        $articles = $query->orderBy('published_at', 'desc')->paginate(20);
+        $articles = $query->orderBy('published_at', 'desc')->paginate($perPage);
 
         return response()->json($articles);
+    }
+
+    public function show($id)
+    {
+        $article = Article::with(['company', 'platform'])->find($id);
+
+        if (! $article) {
+            return response()->json(['message' => 'Article not found'], 404);
+        }
+
+        return response()->json($article);
     }
 }

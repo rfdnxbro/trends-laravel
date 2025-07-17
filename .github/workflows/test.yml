@@ -107,13 +107,8 @@ jobs:
           export DB_CONNECTION=sqlite
           export DB_DATABASE=":memory:"
           
-          # キャッシュをクリアして再構築
+          # 設定のクリア
           php artisan config:clear
-          php artisan cache:clear
-          
-          # 環境変数を再度確認
-          php -r "echo 'DB_DATABASE: ' . env('DB_DATABASE', 'not set') . PHP_EOL;"
-          php -r "echo 'Config DB: ' . config('database.connections.sqlite.database') . PHP_EOL;"
           
           # マイグレーションを実行
           php artisan migrate --force

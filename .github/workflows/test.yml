@@ -268,7 +268,7 @@ jobs:
           chmod +x vendor/bin/*
       
       - name: フロントエンドテストを実行
-        run: npx vitest run
+        run: npm run test
 
   # カバレッジチェック（PR時のみ）
   coverage:

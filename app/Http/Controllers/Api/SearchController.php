@@ -334,7 +334,11 @@ class SearchController extends Controller
     }
 
     /**
-     * バリデーション処理の共通化
+     * 検索リクエストのバリデーション処理を共通化
+     *
+     * @param  Request  $request  HTTPリクエスト
+     * @param  array  $fields  バリデーション対象フィールド配列
+     * @return array|JsonResponse バリデーション済みデータまたはエラーレスポンス
      */
     private function validateSearchRequest(Request $request, array $fields): array|JsonResponse
     {
@@ -370,6 +374,10 @@ class SearchController extends Controller
 
     /**
      * 企業検索のキャッシュ処理
+     *
+     * @param  string  $query  検索クエリ
+     * @param  int  $limit  取得件数
+     * @return array 検索結果配列（companies, search_time, total_results）
      */
     private function searchCompaniesWithCache(string $query, int $limit): array
     {
@@ -382,6 +390,12 @@ class SearchController extends Controller
 
     /**
      * 記事検索のキャッシュ処理
+     *
+     * @param  string  $query  検索クエリ
+     * @param  int  $limit  取得件数
+     * @param  int  $days  検索対象期間（日数）
+     * @param  int  $minBookmarks  最小ブックマーク数
+     * @return array 検索結果配列（articles, search_time, total_results）
      */
     private function searchArticlesWithCache(string $query, int $limit, int $days, int $minBookmarks): array
     {
@@ -394,6 +408,13 @@ class SearchController extends Controller
 
     /**
      * 統合検索のキャッシュ処理
+     *
+     * @param  string  $query  検索クエリ
+     * @param  string  $type  検索タイプ（companies|articles|all）
+     * @param  int  $limit  取得件数
+     * @param  int  $days  記事検索の対象期間（日数）
+     * @param  int  $minBookmarks  記事検索の最小ブックマーク数
+     * @return array 検索結果配列（data, search_time, total_results）
      */
     private function searchAllWithCache(string $query, string $type, int $limit, int $days, int $minBookmarks): array
     {
@@ -406,6 +427,10 @@ class SearchController extends Controller
 
     /**
      * 企業検索の実行
+     *
+     * @param  string  $query  検索クエリ
+     * @param  int  $limit  取得件数
+     * @return array 検索結果配列（companies, search_time, total_results）
      */
     private function executeCompanySearch(string $query, int $limit): array
     {
@@ -414,6 +439,7 @@ class SearchController extends Controller
         $companies = $this->buildCompanyQuery($query, $limit)
             ->get()
             ->map(function ($company) use ($query) {
+                /** @var \App\Models\Company $company */
                 $company->match_score = $this->calculateRelevanceScore($company, $query);
 
                 return $company;
@@ -432,6 +458,12 @@ class SearchController extends Controller
 
     /**
      * 記事検索の実行
+     *
+     * @param  string  $query  検索クエリ
+     * @param  int  $limit  取得件数
+     * @param  int  $days  検索対象期間（日数）
+     * @param  int  $minBookmarks  最小ブックマーク数
+     * @return array 検索結果配列（articles, search_time, total_results）
      */
     private function executeArticleSearch(string $query, int $limit, int $days, int $minBookmarks): array
     {
@@ -440,6 +472,7 @@ class SearchController extends Controller
         $articles = $this->buildArticleQuery($query, $limit, $days, $minBookmarks)
             ->get()
             ->map(function ($article) use ($query) {
+                /** @var \App\Models\Article $article */
                 $article->match_score = $this->calculateArticleRelevanceScore($article, $query);
 
                 return $article;
@@ -458,6 +491,13 @@ class SearchController extends Controller
 
     /**
      * 統合検索の実行
+     *
+     * @param  string  $query  検索クエリ
+     * @param  string  $type  検索タイプ（companies|articles|all）
+     * @param  int  $limit  取得件数
+     * @param  int  $days  記事検索の対象期間（日数）
+     * @param  int  $minBookmarks  記事検索の最小ブックマーク数
+     * @return array 検索結果配列（data, search_time, total_results）
      */
     private function executeUnifiedSearch(string $query, string $type, int $limit, int $days, int $minBookmarks): array
     {
@@ -468,6 +508,7 @@ class SearchController extends Controller
             $companies = $this->buildCompanyQuery($query, $limit)
                 ->get()
                 ->map(function ($company) use ($query) {
+                    /** @var \App\Models\Company $company */
                     $company->match_score = $this->calculateRelevanceScore($company, $query);
 
                     return $company;
@@ -482,6 +523,7 @@ class SearchController extends Controller
             $articles = $this->buildArticleQuery($query, $limit, $days, $minBookmarks)
                 ->get()
                 ->map(function ($article) use ($query) {
+                    /** @var \App\Models\Article $article */
                     $article->match_score = $this->calculateArticleRelevanceScore($article, $query);
 
                     return $article;
@@ -504,6 +546,10 @@ class SearchController extends Controller
 
     /**
      * 企業検索クエリの構築
+     *
+     * @param  string  $query  検索クエリ
+     * @param  int  $limit  取得件数
+     * @return \Illuminate\Database\Eloquent\Builder 企業検索用クエリビルダー
      */
     private function buildCompanyQuery(string $query, int $limit)
     {
@@ -521,6 +567,12 @@ class SearchController extends Controller
 
     /**
      * 記事検索クエリの構築
+     *
+     * @param  string  $query  検索クエリ
+     * @param  int  $limit  取得件数
+     * @param  int  $days  検索対象期間（日数）
+     * @param  int  $minBookmarks  最小ブックマーク数
+     * @return \Illuminate\Database\Eloquent\Builder 記事検索用クエリビルダー
      */
     private function buildArticleQuery(string $query, int $limit, int $days, int $minBookmarks)
     {

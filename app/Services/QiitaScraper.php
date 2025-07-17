@@ -41,26 +41,55 @@ class QiitaScraper extends BaseScraper
         return $articles;
     }
 
+    /**
+     * レスポンスからQiita記事データを解析
+     *
+     * @param  Response  $response  HTTPレスポンス
+     * @return array 記事データ配列
+     */
     protected function parseResponse(Response $response): array
     {
         $html = $response->body();
         $crawler = new Crawler($html);
-        $articles = [];
 
-        // デバッグ: HTMLの一部をログに出力
+        $this->logHtmlPreview($html);
+
+        $elements = $this->findArticleElements($crawler);
+        if (! $elements) {
+            return [];
+        }
+
+        return $this->extractArticlesFromElements($elements);
+    }
+
+    /**
+     * HTMLプレビューをログ出力
+     *
+     * @param  string  $html  HTML文字列
+     */
+    private function logHtmlPreview(string $html): void
+    {
         Log::debug('Qiita HTML preview', [
             'html_length' => strlen($html),
             'html_preview' => substr($html, 0, 1000),
         ]);
+    }
 
-        // 複数のセレクタパターンを試す
+    /**
+     * 記事要素を検索して取得
+     *
+     * @param  Crawler  $crawler  DOMクローラー
+     * @return Crawler|null 見つかった記事要素
+     */
+    private function findArticleElements(Crawler $crawler): ?Crawler
+    {
         $selectors = [
-            'article',  // 汎用的なarticleタグ
-            '.style-1uma8mh',  // 新しいスタイルクラス
-            '.style-1w7apwp',  // 別のスタイルクラス
-            '[class*="ArticleCard"]',  // ArticleCardを含むクラス
-            '[data-testid*="article"]',  // data-testid属性
-            'div[class*="style-"]',  // スタイルクラスを持つdiv
+            'article',
+            '.style-1uma8mh',
+            '.style-1w7apwp',
+            '[class*="ArticleCard"]',
+            '[data-testid*="article"]',
+            'div[class*="style-"]',
         ];
 
         foreach ($selectors as $selector) {
@@ -69,85 +98,122 @@ class QiitaScraper extends BaseScraper
             Log::debug("Found {$elements->count()} elements with selector: {$selector}");
 
             if ($elements->count() > 0) {
-                $elements->each(function (Crawler $node) use (&$articles) {
-                    try {
-                        $title = $this->extractTitle($node);
-                        $url = $this->extractUrl($node);
-                        $likesCount = $this->extractLikesCount($node);
-                        $author = $this->extractAuthor($node);
-                        $authorUrl = $this->extractAuthorUrl($node);
-                        $publishedAt = $this->extractPublishedAt($node);
-
-                        if ($title && $url) {
-                            $articles[] = [
-                                'title' => $title,
-                                'url' => $url,
-                                'likes_count' => $likesCount,
-                                'author' => $author,
-                                'author_url' => $authorUrl,
-                                'published_at' => $publishedAt,
-                                'scraped_at' => now(),
-                                'platform' => 'qiita',
-                            ];
-                        }
-                    } catch (\Exception $e) {
-                        Log::warning('Qiita記事の解析中にエラー', [
-                            'error' => $e->getMessage(),
-                            'html' => $node->html(),
-                        ]);
-                    }
-                });
-                break; // 最初に見つかったセレクタを使用
+                return $elements;
             }
-        }
-
-        return $articles;
-    }
-
-    protected function extractTitle(Crawler $node): ?string
-    {
-        try {
-            // 複数のセレクタパターンを試す
-            $selectors = [
-                'h2 a',
-                'h1 a',
-                'a[href*="/items/"]',
-                '.style-2vm86z',
-                '[class*="title"]',
-            ];
-
-            foreach ($selectors as $selector) {
-                $titleElement = $node->filter($selector);
-                if ($titleElement->count() > 0) {
-                    $title = trim($titleElement->text());
-                    if (! empty($title)) {
-                        return $title;
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            Log::debug('タイトル抽出エラー', ['error' => $e->getMessage()]);
         }
 
         return null;
     }
 
-    protected function extractUrl(Crawler $node): ?string
+    /**
+     * 要素から記事データを抽出
+     *
+     * @param  Crawler  $elements  記事要素
+     * @return array 記事データ配列
+     */
+    private function extractArticlesFromElements(Crawler $elements): array
+    {
+        $articles = [];
+
+        $elements->each(function (Crawler $node) use (&$articles) {
+            $articleData = $this->extractSingleArticleData($node);
+            if ($articleData) {
+                $articles[] = $articleData;
+            }
+        });
+
+        return $articles;
+    }
+
+    /**
+     * 単一記事ノードからデータを抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return array|null 記事データまたはnull
+     */
+    private function extractSingleArticleData(Crawler $node): ?array
     {
         try {
-            // 複数のセレクタパターンを試す
-            $selectors = [
-                'h2 a',
-                'h1 a',
-                'a[href*="/items/"]',
-                'a',
-            ];
+            $title = $this->extractTitle($node);
+            $url = $this->extractUrl($node);
 
+            if (! $title || ! $url) {
+                return null;
+            }
+
+            return [
+                'title' => $title,
+                'url' => $url,
+                'likes_count' => $this->extractLikesCount($node),
+                'author' => $this->extractAuthor($node),
+                'author_url' => $this->extractAuthorUrl($node),
+                'published_at' => $this->extractPublishedAt($node),
+                'scraped_at' => now(),
+                'platform' => 'qiita',
+            ];
+        } catch (\Exception $e) {
+            Log::warning('Qiita記事の解析中にエラー', [
+                'error' => $e->getMessage(),
+                'html' => $node->html(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * ノードからタイトルを抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return string|null タイトルまたはnull
+     */
+    protected function extractTitle(Crawler $node): ?string
+    {
+        $selectors = [
+            'h2 a',
+            'h1 a',
+            'a[href*="/items/"]',
+            '.style-2vm86z',
+            '[class*="title"]',
+        ];
+
+        return $this->extractTextBySelectors($node, $selectors, 'タイトル');
+    }
+
+    /**
+     * ノードから記事URLを抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return string|null 記事URLまたはnull
+     */
+    protected function extractUrl(Crawler $node): ?string
+    {
+        $selectors = [
+            'h2 a',
+            'h1 a',
+            'a[href*="/items/"]',
+            'a',
+        ];
+
+        return $this->extractLinkBySelectors($node, $selectors, '/items/');
+    }
+
+    /**
+     * セレクタ配列を使用してリンクを抽出
+     *
+     * @param  Crawler  $node  検索対象ノード
+     * @param  array  $selectors  セレクタ配列
+     * @param  string  $pathPattern  パスパターン
+     * @return string|null 見つかったリンクまたはnull
+     */
+    private function extractLinkBySelectors(Crawler $node, array $selectors, string $pathPattern): ?string
+    {
+        try {
             foreach ($selectors as $selector) {
                 $linkElement = $node->filter($selector);
                 if ($linkElement->count() > 0) {
                     $href = $linkElement->attr('href');
-                    if ($href && strpos($href, '/items/') !== false) {
+                    if ($href && strpos($href, $pathPattern) !== false) {
                         return strpos($href, 'http') === 0 ? $href : $this->baseUrl.$href;
                     }
                 }
@@ -159,24 +225,68 @@ class QiitaScraper extends BaseScraper
         return null;
     }
 
-    protected function extractLikesCount(Crawler $node): int
+    /**
+     * セレクタ配列を使用してテキストを抽出
+     *
+     * @param  Crawler  $node  検索対象ノード
+     * @param  array  $selectors  セレクタ配列
+     * @param  string  $logType  ログ用の種別名
+     * @return string|null 見つかったテキストまたはnull
+     */
+    private function extractTextBySelectors(Crawler $node, array $selectors, string $logType): ?string
     {
         try {
-            // 複数のセレクタパターンを試す
-            $selectors = [
-                '[data-testid="like-count"]',
-                '[aria-label*="LGTM"]',
-                '[aria-label*="いいね"]',
-                '.style-*[aria-label*="LGTM"]',
-                'span[aria-label]',
-            ];
-
             foreach ($selectors as $selector) {
-                $likesElement = $node->filter($selector);
-                if ($likesElement->count() > 0) {
-                    $likesText = $likesElement->attr('aria-label') ?: $likesElement->text();
-                    if ($likesText) {
-                        $number = (int) preg_replace('/[^0-9]/', '', $likesText);
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $text = trim($element->text());
+                    if (! empty($text)) {
+                        return $text;
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::debug("{$logType}抽出エラー", ['error' => $e->getMessage()]);
+        }
+
+        return null;
+    }
+
+    /**
+     * ノードからLGTM数を抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return int LGTM数
+     */
+    protected function extractLikesCount(Crawler $node): int
+    {
+        $selectors = [
+            '[data-testid="like-count"]',
+            '[aria-label*="LGTM"]',
+            '[aria-label*="いいね"]',
+            '.style-*[aria-label*="LGTM"]',
+            'span[aria-label]',
+        ];
+
+        return $this->extractNumberBySelectors($node, $selectors);
+    }
+
+    /**
+     * セレクタ配列を使用して数値を抽出
+     *
+     * @param  Crawler  $node  検索対象ノード
+     * @param  array  $selectors  セレクタ配列
+     * @return int 見つかった数値（デフォルト0）
+     */
+    private function extractNumberBySelectors(Crawler $node, array $selectors): int
+    {
+        try {
+            foreach ($selectors as $selector) {
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $text = $element->attr('aria-label') ?: $element->text();
+                    if ($text) {
+                        $number = (int) preg_replace('/[^0-9]/', '', $text);
                         if ($number > 0) {
                             return $number;
                         }
@@ -184,7 +294,7 @@ class QiitaScraper extends BaseScraper
                 }
             }
         } catch (\Exception $e) {
-            Log::debug('いいね数抽出エラー', ['error' => $e->getMessage()]);
+            Log::debug('数値抽出エラー', ['error' => $e->getMessage()]);
         }
 
         return 0;

@@ -281,66 +281,85 @@ class ZennScraper extends BaseScraper
     protected function extractAuthor(Crawler $node): ?string
     {
         try {
-            // リンクベースの著者抽出を優先（Zennのテストで期待されている形式）
-            $authorLink = $this->extractByStrategies($node, 'author', 'link', [
-                'base_url' => '',  // 相対パスのまま返す
-                'exclude_patterns' => ['/articles/'],
-            ]);
+            // 各種抽出方法を試行
+            $extractionMethods = [
+                // リンクベースの著者抽出を優先（Zennのテストで期待されている形式）
+                ['type' => 'link', 'options' => ['base_url' => '', 'exclude_patterns' => ['/articles/']]],
+                // テキストベースの著者抽出
+                ['type' => 'text', 'options' => ['max_length' => 50, 'min_length' => 1]],
+                // 属性ベースの著者抽出（画像のalt属性など）
+                ['type' => 'attribute', 'options' => ['attribute_name' => 'alt']],
+            ];
 
-            if ($authorLink) {
-                return $authorLink;
-            }
-
-            // テキストベースの著者抽出
-            $author = $this->extractByStrategies($node, 'author', 'text', [
-                'max_length' => 50,
-                'min_length' => 1,
-            ]);
-
-            if ($author) {
-                return $author;
-            }
-
-            // 属性ベースの著者抽出（画像のalt属性など）
-            $authorAttr = $this->extractByStrategies($node, 'author', 'attribute', [
-                'attribute_name' => 'alt',
-            ]);
-
-            if ($authorAttr) {
-                return $authorAttr;
+            foreach ($extractionMethods as $method) {
+                $result = $this->extractByStrategies($node, 'author', $method['type'], $method['options']);
+                if ($result) {
+                    return $result;
+                }
             }
 
             // フォールバック: 既存の特殊セレクタも試行
-            $fallbackSelectors = [
-                '.View_author',
-                '[class*="userName"]',  // CSS Modules対応
-                '[class*="ArticleList_userName"]',
-            ];
-
-            foreach ($fallbackSelectors as $selector) {
-                $authorElement = $node->filter($selector);
-                if ($authorElement->count() > 0) {
-                    // hrefがある場合（リンク要素）
-                    $href = $authorElement->attr('href');
-                    if ($href && strpos($href, '/articles/') === false) {
-                        return trim($href);
-                    }
-
-                    // alt属性がある場合（画像要素）
-                    $alt = $authorElement->attr('alt');
-                    if ($alt && ! empty(trim($alt))) {
-                        return trim($alt);
-                    }
-
-                    // テキストコンテンツがある場合
-                    $text = trim($authorElement->text());
-                    if (! empty($text) && strlen($text) < 50) {
-                        return $text;
-                    }
-                }
-            }
+            return $this->extractAuthorFromFallbackSelectors($node);
         } catch (\Exception $e) {
             Log::debug('著者名抽出エラー', ['error' => $e->getMessage()]);
+            return null;
+        }
+    }
+
+    /**
+     * フォールバックセレクタから著者情報を抽出
+     *
+     * @param Crawler $node
+     * @return string|null
+     */
+    private function extractAuthorFromFallbackSelectors(Crawler $node): ?string
+    {
+        $fallbackSelectors = [
+            '.View_author',
+            '[class*="userName"]',  // CSS Modules対応
+            '[class*="ArticleList_userName"]',
+        ];
+
+        foreach ($fallbackSelectors as $selector) {
+            $result = $this->extractAuthorFromElement($node, $selector);
+            if ($result) {
+                return $result;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 要素から著者情報を抽出
+     *
+     * @param Crawler $node
+     * @param string $selector
+     * @return string|null
+     */
+    private function extractAuthorFromElement(Crawler $node, string $selector): ?string
+    {
+        $authorElement = $node->filter($selector);
+        if ($authorElement->count() === 0) {
+            return null;
+        }
+
+        // hrefがある場合（リンク要素）
+        $href = $authorElement->attr('href');
+        if ($href && strpos($href, '/articles/') === false) {
+            return trim($href);
+        }
+
+        // alt属性がある場合（画像要素）
+        $alt = $authorElement->attr('alt');
+        if ($alt && ! empty(trim($alt))) {
+            return trim($alt);
+        }
+
+        // テキストコンテンツがある場合
+        $text = trim($authorElement->text());
+        if (! empty($text) && strlen($text) < 50) {
+            return $text;
         }
 
         return null;

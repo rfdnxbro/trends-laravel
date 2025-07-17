@@ -229,33 +229,83 @@ abstract class BaseScraper implements ScrapingService
 
         foreach ($selectors as $categoryName => $categorySelectors) {
             Log::debug("Testing selector category: {$categoryName} for {$selectorType}");
-
-            foreach ($categorySelectors as $selector) {
-                try {
-                    $elements = $node->filter($selector);
-                    if ($elements->count() > 0) {
-                        Log::debug("Found {$elements->count()} elements with selector: {$selector}");
-
-                        $result = $this->extractFromElement($elements, $extractionType, $options);
-                        if ($result !== null) {
-                            Log::debug("Successfully extracted {$selectorType} using selector: {$selector}", [
-                                'result' => is_string($result) ? substr($result, 0, 100) : $result,
-                            ]);
-
-                            return $result;
-                        }
-                    }
-                } catch (\Exception $e) {
-                    Log::debug("Error with selector {$selector}: {$e->getMessage()}");
-
-                    continue;
-                }
+            
+            $result = $this->trySelectorsInCategory($node, $categorySelectors, $extractionType, $options, $selectorType);
+            if ($result !== null) {
+                return $result;
             }
         }
 
         Log::debug("No {$selectorType} found with any configured selectors");
-
         return null;
+    }
+
+    /**
+     * カテゴリ内のセレクタを試行
+     *
+     * @param \Symfony\Component\DomCrawler\Crawler $node
+     * @param array $selectors
+     * @param string $extractionType
+     * @param array $options
+     * @param string $selectorType
+     * @return mixed
+     */
+    private function trySelectorsInCategory(
+        \Symfony\Component\DomCrawler\Crawler $node,
+        array $selectors,
+        string $extractionType,
+        array $options,
+        string $selectorType
+    ) {
+        foreach ($selectors as $selector) {
+            $result = $this->trySelector($node, $selector, $extractionType, $options, $selectorType);
+            if ($result !== null) {
+                return $result;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * 単一セレクタを試行
+     *
+     * @param \Symfony\Component\DomCrawler\Crawler $node
+     * @param string $selector
+     * @param string $extractionType
+     * @param array $options
+     * @param string $selectorType
+     * @return mixed
+     */
+    private function trySelector(
+        \Symfony\Component\DomCrawler\Crawler $node,
+        string $selector,
+        string $extractionType,
+        array $options,
+        string $selectorType
+    ) {
+        try {
+            $elements = $node->filter($selector);
+            if ($elements->count() === 0) {
+                return null;
+            }
+
+            Log::debug("Found {$elements->count()} elements with selector: {$selector}");
+
+            $result = $this->extractFromElement($elements, $extractionType, $options);
+            if ($result === null) {
+                return null;
+            }
+
+            Log::debug("Successfully extracted {$selectorType} using selector: {$selector}", [
+                'result' => is_string($result) ? substr($result, 0, 100) : $result,
+            ]);
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::debug("Error with selector {$selector}: {$e->getMessage()}");
+            return null;
+        }
     }
 
     /**
@@ -357,36 +407,60 @@ abstract class BaseScraper implements ScrapingService
                 return null;
             }
 
-            // パスパターンチェック
-            if (isset($options['path_pattern'])) {
-                if (strpos($href, $options['path_pattern']) === false) {
-                    return null;
-                }
+            if (!$this->isValidHref($href, $options)) {
+                return null;
             }
 
-            // 除外パターンチェック
-            if (isset($options['exclude_patterns'])) {
-                foreach ($options['exclude_patterns'] as $excludePattern) {
-                    if (strpos($href, $excludePattern) !== false) {
-                        return null;
-                    }
-                }
-            }
-
-            // 絶対URLの場合はそのまま返す
-            if (strpos($href, 'http') === 0) {
-                return $href;
-            }
-
-            // 相対URLの場合はベースURLと結合
-            $baseUrl = $options['base_url'] ?? '';
-
-            return $baseUrl ? $baseUrl.$href : $href;
+            return $this->normalizeHref($href, $options);
         } catch (\Exception $e) {
             Log::debug('Link extraction error', ['error' => $e->getMessage()]);
-
             return null;
         }
+    }
+
+    /**
+     * hrefが有効かチェック
+     *
+     * @param string $href
+     * @param array $options
+     * @return bool
+     */
+    private function isValidHref(string $href, array $options): bool
+    {
+        // パスパターンチェック
+        if (isset($options['path_pattern']) && strpos($href, $options['path_pattern']) === false) {
+            return false;
+        }
+
+        // 除外パターンチェック
+        if (isset($options['exclude_patterns'])) {
+            foreach ($options['exclude_patterns'] as $excludePattern) {
+                if (strpos($href, $excludePattern) !== false) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * hrefを正規化
+     *
+     * @param string $href
+     * @param array $options
+     * @return string
+     */
+    private function normalizeHref(string $href, array $options): string
+    {
+        // 絶対URLの場合はそのまま返す
+        if (strpos($href, 'http') === 0) {
+            return $href;
+        }
+
+        // 相対URLの場合はベースURLと結合
+        $baseUrl = $options['base_url'] ?? '';
+        return $baseUrl ? $baseUrl.$href : $href;
     }
 
     /**

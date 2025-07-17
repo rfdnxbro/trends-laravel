@@ -285,12 +285,7 @@ jobs:
             # 95%閾値チェック
             if (( $(echo "$COVERAGE < 95.0" | bc -l) )); then
               echo "❌ テストカバレッジが95%を下回っています: ${COVERAGE}%"
-              echo "📚 カバレッジ改善領域:"
-              echo "   - Console Commands: handleメソッドテスト実装"
-              echo "   - API Controllers: メソッドテスト完全実装"
-              echo "   - Scraping Services: 未テストメソッド実装"
-              echo "   - Resources & Models: 未カバー箇所完全実装"
-              echo "💡 カバレッジ向上のため、該当領域のテスト実装をお願いします。"
+              echo "💡 カバレッジ向上のため、テスト実装をお願いします。"
               exit 1
             fi
             
@@ -331,11 +326,8 @@ jobs:
             📊 詳細なレポートは[Artifactsからダウンロード](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})できます。
             
             ${coverage < 95 ? `
-            ### 📚 カバレッジ改善領域
-            - **Console Commands**: handleメソッドテスト実装
-            - **API Controllers**: メソッドテスト完全実装  
-            - **Scraping Services**: 未テストメソッド実装
-            - **Resources & Models**: 未カバー箇所完全実装
+            ### 💡 テスト改善のヒント
+            詳細なカバレッジレポートをダウンロードして、未カバー箇所を確認してください。
             ` : ''}
             `;
             

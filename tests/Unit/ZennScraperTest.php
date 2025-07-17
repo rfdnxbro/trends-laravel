@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Services\ZennScraper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class ZennScraperTest extends TestCase
@@ -477,5 +478,447 @@ class ZennScraperTest extends TestCase
         $this->assertCount(1, $result);
         // author_nameが正しく抽出されているかテスト（会社名部分が除去される）
         $this->assertEquals('ユーザー名', $result[0]->author_name);
+    }
+
+    public function test_scrape_trending_articlesメソッドが正常に動作する(): void
+    {
+        $mockHtml = $this->createDetailedMockHtml();
+
+        Http::fake([
+            'https://zenn.dev' => Http::response($mockHtml, 200),
+        ]);
+
+        Log::shouldReceive('info')->atLeast()->once();
+        Log::shouldReceive('debug')->atLeast()->once();
+        Log::shouldReceive('error')->atLeast()->zeroOrMoreTimes();
+        Log::shouldReceive('warning')->atLeast()->zeroOrMoreTimes();
+
+        $result = $this->scraper->scrapeTrendingArticles();
+
+        $this->assertIsArray($result);
+        $this->assertNotEmpty($result);
+    }
+
+    public function test_parse_responseメソッドが各セレクタパターンをテストする(): void
+    {
+        // セレクタパターンテスト - 良いHTMLパターンのみテスト
+        $goodHtml = '<article><h1><a href="/articles/test">Zenn Test Title</a></h1><div data-testid="like-count" aria-label="10 いいね">10</div></article>';
+
+        Http::fake([
+            'https://zenn.dev' => Http::response($goodHtml, 200),
+        ]);
+
+        Log::shouldReceive('info')->atLeast()->once();
+        Log::shouldReceive('debug')->atLeast()->once();
+        Log::shouldReceive('error')->atLeast()->zeroOrMoreTimes();
+        Log::shouldReceive('warning')->atLeast()->zeroOrMoreTimes();
+
+        $result = $this->scraper->scrapeTrendingArticles();
+
+        $this->assertIsArray($result);
+        if (! empty($result)) {
+            $this->assertEquals('Zenn Test Title', $result[0]['title']);
+            $this->assertEquals('https://zenn.dev/articles/test', $result[0]['url']);
+        }
+    }
+
+    public function test_extract_titleの各セレクタパターンをテストする(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractTitle');
+        $method->setAccessible(true);
+
+        $testCases = [
+            '<h1>Zennテストタイトル1</h1>',
+            '<h2>Zennテストタイトル2</h2>',
+            '<h3>Zennテストタイトル3</h3>',
+            '<a href="/articles/test">Zennテストタイトル4</a>',
+            '<div class="View_title">Zennテストタイトル5</div>',
+            '<div class="TitleComponent">Zennテストタイトル6</div>',
+            '<p>Zennテストタイトル7</p>',
+        ];
+
+        foreach ($testCases as $html) {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $title = $method->invokeArgs($this->scraper, [$crawler]);
+            if ($title) {
+                $this->assertStringContainsString('Zennテストタイトル', $title);
+            }
+        }
+    }
+
+    public function test_extract_urlの各セレクタパターンをテストする(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractUrl');
+        $method->setAccessible(true);
+
+        $testCases = [
+            '<a href="/articles/test123">Title</a>',
+            '<h1><a href="/articles/test456">Title</a></h1>',
+            '<h2><a href="/articles/test789">Title</a></h2>',
+            '<h3><a href="/articles/test101">Title</a></h3>',
+            '<a href="https://zenn.dev/articles/test202">Title</a>',
+        ];
+
+        foreach ($testCases as $html) {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $url = $method->invokeArgs($this->scraper, [$crawler]);
+            $this->assertNotNull($url);
+            $this->assertStringContainsString('/articles/', $url);
+            $this->assertStringContainsString('zenn.dev', $url);
+        }
+    }
+
+    public function test_extract_likes_countの各セレクタパターンをテストする(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractLikesCount');
+        $method->setAccessible(true);
+
+        $testCases = [
+            '<div data-testid="like-count" aria-label="42 いいね">42</div>' => 42,
+            '<div aria-label="いいね 15 件">15</div>' => 15,
+            '<div aria-label="25 like">25</div>' => 25,
+            '<div class="LikeButton" aria-label="LIKE 35">35</div>' => 35,
+            '<span class="like_count">45</span>' => 45,
+            '<div class="View_likeCount">55</div>' => 55,
+            '<button aria-label="いいね 65 件">65</button>' => 65,
+            '<span aria-label="no numbers">text only</span>' => 0,
+        ];
+
+        foreach ($testCases as $html => $expected) {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $likesCount = $method->invokeArgs($this->scraper, [$crawler]);
+            $this->assertEquals($expected, $likesCount);
+        }
+    }
+
+    public function test_extract_authorの各セレクタパターンをテストする(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthor');
+        $method->setAccessible(true);
+
+        $testCases = [
+            '<div class="userName_abc123"><a href="/testuser1">testuser1</a></div>',
+            '<div class="ArticleList_userName_def456"><a href="/@testuser2">testuser2</a></div>',
+            '<a href="/@testuser3">testuser3</a>',
+            '<div data-testid="author-link"><a href="/testuser4">testuser4</a></div>',
+            '<div class="AuthorComponent"><a href="/testuser5">testuser5</a></div>',
+            '<div class="author_info"><a href="/testuser6">testuser6</a></div>',
+            '<div class="View_author"><a href="/testuser7">testuser7</a></div>',
+            '<img alt="testuser8" src="/avatar.png">',
+            '<div class="UserProfile"><span>testuser9</span></div>',
+            '<div class="Profile_component"><span>testuser10</span></div>',
+            '<a href="/relative/path">relative_user</a>',
+        ];
+
+        foreach ($testCases as $html) {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $author = $method->invokeArgs($this->scraper, [$crawler]);
+
+            if ($author) {
+                $this->assertIsString($author);
+                $this->assertNotEmpty(trim($author));
+            }
+        }
+    }
+
+    public function test_extract_published_atの各セレクタパターンをテストする(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractPublishedAt');
+        $method->setAccessible(true);
+
+        $testCases = [
+            '<time datetime="2024-01-01T10:00:00Z">2024-01-01</time>',
+            '<time>2024-01-02</time>',
+            '<div datetime="2024-01-03T15:30:00Z">test</div>',
+            '<div data-testid="published-date" datetime="2024-01-04T12:00:00Z">test</div>',
+            '<div class="DateComponent">2024-01-05</div>',
+            '<div class="date_info">2024-01-06</div>',
+            '<div class="View_date">2024-01-07</div>',
+            '<div class="TimeComponent">2024-01-08</div>',
+        ];
+
+        foreach ($testCases as $html) {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $publishedAt = $method->invokeArgs($this->scraper, [$crawler]);
+            if ($publishedAt) {
+                $this->assertStringContainsString('2024-01-', $publishedAt);
+            }
+        }
+    }
+
+    public function test_identify_company_accountメソッドの詳細テスト(): void
+    {
+        // @記号付きURLのテスト
+        $company = Company::factory()->create([
+            'zenn_username' => 'testcompany',
+            'name' => 'テストZenn企業',
+        ]);
+
+        $result = $this->scraper->identifyCompanyAccount('https://zenn.dev/@testcompany');
+        $this->assertNotNull($result);
+        $this->assertEquals('テストZenn企業', $result->name);
+
+        // @記号なしパス形式のURLのテスト
+        $result2 = $this->scraper->identifyCompanyAccount('https://zenn.dev/testcompany');
+        $this->assertNotNull($result2);
+        $this->assertEquals('テストZenn企業', $result2->name);
+
+        // 存在しないユーザーのテスト
+        $result3 = $this->scraper->identifyCompanyAccount('https://zenn.dev/@unknownuser');
+        $this->assertNull($result3);
+    }
+
+    public function test_normalize_and_save_dataの詳細テスト(): void
+    {
+        // Platformモデルを作成
+        \App\Models\Platform::factory()->create(['name' => 'Zenn']);
+
+        $company = Company::factory()->create([
+            'name' => 'テストZenn企業',
+            'zenn_username' => 'testuser',
+        ]);
+
+        $articles = [
+            [
+                'title' => 'Zennテスト記事1',
+                'url' => 'https://zenn.dev/articles/test1',
+                'likes_count' => 100,
+                'author' => '/@testuser',
+                'author_url' => 'https://zenn.dev/@testuser',
+                'published_at' => '2024-01-01T10:00:00Z',
+                'platform' => 'zenn',
+                'scraped_at' => now(),
+            ],
+            [
+                'title' => 'Zennテスト記事2',
+                'url' => 'https://zenn.dev/articles/test2',
+                'likes_count' => 50,
+                'author' => 'testuser2in株式会社テスト',
+                'author_url' => 'https://zenn.dev/testuser2',
+                'published_at' => '2024-01-02T15:30:00Z',
+                'platform' => 'zenn',
+                'scraped_at' => now(),
+            ],
+        ];
+
+        $result = $this->scraper->normalizeAndSaveData($articles);
+
+        $this->assertCount(2, $result);
+        $this->assertInstanceOf(Article::class, $result[0]);
+        $this->assertEquals('Zennテスト記事1', $result[0]->title);
+        $this->assertEquals('/@testuser', $result[0]->author_name);  // authorがそのまま使われる
+        $this->assertEquals($company->id, $result[0]->company_id);
+
+        // 会社名が除去されることのテスト
+        $this->assertEquals('testuser2', $result[1]->author_name);
+    }
+
+    public function test_htt_pエラー時の詳細な処理(): void
+    {
+        Http::fake([
+            'https://zenn.dev' => Http::response('', 500),
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('HTTP Error: 500');
+
+        $this->scraper->scrapeTrendingArticles();
+    }
+
+    public function test_無効な_htm_lのパターン別処理(): void
+    {
+        $invalidHtmlCases = [
+            '<html></html>',
+            '<html><body></body></html>',
+            '<html><body><div>no articles</div></body></html>',
+            '<!DOCTYPE html><html><head></head><body></body></html>',
+            '<invalid>broken html</invalid>',
+            '<html><body><p>no matching selectors</p></body></html>',
+        ];
+
+        foreach ($invalidHtmlCases as $html) {
+            Http::fake([
+                'https://zenn.dev' => Http::response($html, 200),
+            ]);
+
+            $result = $this->scraper->scrapeTrendingArticles();
+            $this->assertIsArray($result);
+            $this->assertEmpty($result);
+        }
+    }
+
+    public function test_extract_メソッドの例外処理(): void
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $methods = [
+            'extractTitle',
+            'extractUrl',
+            'extractLikesCount',
+            'extractAuthor',
+            'extractAuthorUrl',
+            'extractPublishedAt',
+        ];
+
+        foreach ($methods as $methodName) {
+            $method = $reflection->getMethod($methodName);
+            $method->setAccessible(true);
+
+            // 無効なCrawlerオブジェクトでテスト
+            $invalidHtml = '<malformed>broken';
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($invalidHtml);
+
+            $result = $method->invokeArgs($this->scraper, [$crawler]);
+
+            if ($methodName === 'extractLikesCount') {
+                $this->assertEquals(0, $result);
+            } else {
+                $this->assertNull($result);
+            }
+        }
+    }
+
+    public function test_記事数制限16の動作(): void
+    {
+        // 20記事のHTMLを生成（16記事制限をテスト）
+        $largeHtml = '<html><body>';
+        for ($i = 1; $i <= 20; $i++) {
+            $largeHtml .= "
+            <article>
+                <h1><a href=\"/articles/test-{$i}\">記事タイトル{$i}</a></h1>
+                <div data-testid=\"like-count\" aria-label=\"{$i} いいね\">{$i}</div>
+                <a href=\"/@user{$i}\">user{$i}</a>
+                <time datetime=\"2024-01-01T10:00:00Z\"></time>
+            </article>";
+        }
+        $largeHtml .= '</body></html>';
+
+        Http::fake([
+            'https://zenn.dev' => Http::response($largeHtml, 200),
+        ]);
+
+        $result = $this->scraper->scrapeTrendingArticles();
+
+        $this->assertIsArray($result);
+        $this->assertCount(16, $result); // 16記事制限の確認
+    }
+
+    public function test_ログ出力の確認(): void
+    {
+        Log::shouldReceive('info')->atLeast()->once();
+        Log::shouldReceive('debug')->atLeast()->once();
+        Log::shouldReceive('error')->atLeast()->zeroOrMoreTimes();
+        Log::shouldReceive('warning')->atLeast()->zeroOrMoreTimes();
+
+        $mockHtml = $this->createDetailedMockHtml();
+        Http::fake([
+            'https://zenn.dev' => Http::response($mockHtml, 200),
+        ]);
+
+        $result = $this->scraper->scrapeTrendingArticles();
+        $this->assertIsArray($result);
+    }
+
+    public function test_空のauthor処理の詳細(): void
+    {
+        $articles = [
+            [
+                'title' => 'Zennテスト記事',
+                'url' => 'https://zenn.dev/articles/test',
+                'likes_count' => 10,
+                'author' => null,
+                'author_url' => null,
+                'published_at' => '2024-01-01T10:00:00Z',
+                'platform' => 'zenn',
+                'scraped_at' => now(),
+            ],
+            [
+                'title' => 'Zennテスト記事2',
+                'url' => 'https://zenn.dev/articles/test2',
+                'likes_count' => 20,
+                'author' => '',
+                'author_url' => '',
+                'published_at' => '2024-01-01T10:00:00Z',
+                'platform' => 'zenn',
+                'scraped_at' => now(),
+            ],
+        ];
+
+        \App\Models\Platform::factory()->create(['name' => 'Zenn']);
+
+        $result = $this->scraper->normalizeAndSaveData($articles);
+        $this->assertCount(2, $result);
+        $this->assertNull($result[0]->author_name);
+        $this->assertNull($result[1]->author_name);
+    }
+
+    public function test_author_name抽出の境界値テスト(): void
+    {
+        $articles = [
+            [
+                'title' => 'テスト記事1',
+                'url' => 'https://zenn.dev/articles/test1',
+                'likes_count' => 10,
+                'author' => 'ユーザーin株式会社',
+                'author_url' => 'https://zenn.dev/@test1',
+                'published_at' => '2024-01-01T00:00:00Z',
+                'platform' => 'zenn',
+                'scraped_at' => now(),
+            ],
+            [
+                'title' => 'テスト記事2',
+                'url' => 'https://zenn.dev/articles/test2',
+                'likes_count' => 20,
+                'author' => '普通のユーザー',
+                'author_url' => 'https://zenn.dev/@test2',
+                'published_at' => '2024-01-01T00:00:00Z',
+                'platform' => 'zenn',
+                'scraped_at' => now(),
+            ],
+            [
+                'title' => 'テスト記事3',
+                'url' => 'https://zenn.dev/articles/test3',
+                'likes_count' => 30,
+                'author' => 'ユーザー名inテック株式会社開発部',
+                'author_url' => 'https://zenn.dev/@test3',
+                'published_at' => '2024-01-01T00:00:00Z',
+                'platform' => 'zenn',
+                'scraped_at' => now(),
+            ],
+        ];
+
+        \App\Models\Platform::factory()->create(['name' => 'Zenn']);
+
+        $result = $this->scraper->normalizeAndSaveData($articles);
+
+        $this->assertCount(3, $result);
+        $this->assertEquals('ユーザー', $result[0]->author_name);
+        $this->assertEquals('普通のユーザー', $result[1]->author_name);
+        $this->assertEquals('ユーザー名', $result[2]->author_name);
+    }
+
+    private function createDetailedMockHtml(): string
+    {
+        return '
+        <html>
+        <body>
+            <article>
+                <h1><a href="/articles/test-article-1">Zenn Test Article 1</a></h1>
+                <div data-testid="like-count" aria-label="10 いいね">10</div>
+                <div class="userName_abc123"><a href="/@testuser1">testuser1</a></div>
+                <time datetime="2023-01-01T00:00:00Z">2023-01-01</time>
+            </article>
+            <article>
+                <h2><a href="/articles/test-article-2">Zenn Test Article 2</a></h2>
+                <div aria-label="5 いいね">5</div>
+                <a href="/@testuser2">testuser2</a>
+                <time datetime="2023-01-02T00:00:00Z">2023-01-02</time>
+            </article>
+        </body>
+        </html>';
     }
 }

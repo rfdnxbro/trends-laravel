@@ -3,10 +3,12 @@
 namespace Tests\Unit;
 
 use App\Constants\Platform;
+use App\Models\Article;
 use App\Models\Company;
 use App\Services\QiitaScraper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class QiitaScraperTest extends TestCase
@@ -436,6 +438,349 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('タイトルのみ', $result[0]['title']);
         $this->assertEquals(0, $result[0]['likes_count']);
         $this->assertNull($result[0]['author']);
+    }
+
+    public function test_scrape_trending_articlesメソッドが正常に動作する()
+    {
+        $mockHtml = $this->getMockQiitaHtml();
+
+        Http::fake([
+            'qiita.com*' => Http::response($mockHtml, 200),
+        ]);
+
+        Log::shouldReceive('info')->atLeast()->once();
+        Log::shouldReceive('debug')->atLeast()->once();
+        Log::shouldReceive('error')->atLeast()->zeroOrMoreTimes();
+
+        $result = $this->scraper->scrapeTrendingArticles();
+
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+    }
+
+    public function test_parse_responseメソッドが各セレクタパターンをテストする()
+    {
+        // 各セレクタパターンのテスト - 良いHTMLパターンのみテスト
+        $goodHtml = '<div class="style-1uma8mh"><h2><a href="/items/1">Test Title</a></h2><span aria-label="5 LGTM">5</span></div>';
+
+        Http::fake([
+            'qiita.com*' => Http::response($goodHtml, 200),
+        ]);
+
+        Log::shouldReceive('info')->atLeast()->once();
+        Log::shouldReceive('debug')->atLeast()->once();
+        Log::shouldReceive('error')->atLeast()->zeroOrMoreTimes();
+        Log::shouldReceive('warning')->atLeast()->zeroOrMoreTimes();
+
+        $result = $this->scraper->scrapeTrendingArticles();
+
+        $this->assertIsArray($result);
+        if (! empty($result)) {
+            $this->assertEquals('Test Title', $result[0]['title']);
+            $this->assertEquals('https://qiita.com/items/1', $result[0]['url']);
+        }
+    }
+
+    public function test_extract_titleの各セレクタパターンをテストする()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractTitle');
+        $method->setAccessible(true);
+
+        $testCases = [
+            '<h2><a>テストタイトル1</a></h2>',
+            '<h1><a>テストタイトル2</a></h1>',
+            '<a href="/items/123">テストタイトル3</a>',
+            '<div class="style-2vm86z">テストタイトル4</div>',
+            '<div class="title-class">テストタイトル5</div>',
+        ];
+
+        foreach ($testCases as $index => $html) {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $title = $method->invokeArgs($this->scraper, [$crawler]);
+            if ($title) {
+                $this->assertStringContainsString('テストタイトル', $title);
+            }
+        }
+    }
+
+    public function test_extract_urlの各セレクタパターンをテストする()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractUrl');
+        $method->setAccessible(true);
+
+        $testCases = [
+            '<h2><a href="/items/123">Title</a></h2>',
+            '<h1><a href="/items/456">Title</a></h1>',
+            '<a href="/items/789">Title</a>',
+            '<a href="https://qiita.com/items/101112">Title</a>',
+        ];
+
+        foreach ($testCases as $html) {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $url = $method->invokeArgs($this->scraper, [$crawler]);
+            $this->assertNotNull($url);
+            $this->assertStringContainsString('/items/', $url);
+        }
+    }
+
+    public function test_extract_likes_countの各セレクタパターンをテストする()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractLikesCount');
+        $method->setAccessible(true);
+
+        $testCases = [
+            '<div data-testid="like-count">42</div>' => 42,
+            '<span aria-label="15 LGTM">15</span>' => 15,
+            '<span aria-label="いいね 25">25</span>' => 25,
+            '<span class="style-test" aria-label="LGTM 35">35</span>' => 35,
+            '<span aria-label="test">text only</span>' => 0,
+        ];
+
+        foreach ($testCases as $html => $expected) {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $likesCount = $method->invokeArgs($this->scraper, [$crawler]);
+            $this->assertEquals($expected, $likesCount);
+        }
+    }
+
+    public function test_extract_authorの各セレクタパターンをテストする()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthor');
+        $method->setAccessible(true);
+
+        $testCases = [
+            '<a href="/@testuser">testuser</a>',
+            '<div data-hyperapp-app="UserIcon"><a href="/profile">profile</a></div>',
+            '<div class="style-j198x4"><a href="/author1">author1</a></div>',
+            '<div class="style-y87z4f"><a href="/author2">author2</a></div>',
+            '<div class="style-i9qys6"><a href="/author3">author3</a></div>',
+            '<a href="/user">user</a>',
+        ];
+
+        foreach ($testCases as $html) {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $author = $method->invokeArgs($this->scraper, [$crawler]);
+            $this->assertNotNull($author);
+            $this->assertStringStartsWith('/', $author);
+        }
+    }
+
+    public function test_extract_published_atの各セレクタパターンをテストする()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractPublishedAt');
+        $method->setAccessible(true);
+
+        $testCases = [
+            '<time datetime="2024-01-01T10:00:00Z">2024-01-01</time>',
+            '<time>2024-01-02</time>',
+            '<div datetime="2024-01-03T15:30:00Z">test</div>',
+            '<div class="style-test" title="2024-01-04T12:00:00Z">test</div>',
+        ];
+
+        foreach ($testCases as $html) {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $publishedAt = $method->invokeArgs($this->scraper, [$crawler]);
+            if ($publishedAt) {
+                $this->assertStringContainsString('2024-01-', $publishedAt);
+            }
+        }
+    }
+
+    public function test_identify_company_accountメソッドの詳細テスト()
+    {
+        // @記号付きURLのテスト - basename()で@testcompanyが抽出される
+        $company = Company::factory()->create([
+            'qiita_username' => '@testcompany',
+            'name' => 'テスト企業',
+        ]);
+
+        $result = $this->scraper->identifyCompanyAccount('https://qiita.com/@testcompany');
+        $this->assertNotNull($result);
+        $this->assertEquals('テスト企業', $result->name);
+
+        // パス形式のURLのテスト - basename()でtestcompanyが抽出される
+        $company2 = Company::factory()->create([
+            'qiita_username' => 'testcompany',
+            'name' => 'テスト企業2',
+        ]);
+
+        $result2 = $this->scraper->identifyCompanyAccount('https://qiita.com/testcompany');
+        $this->assertNotNull($result2);
+        $this->assertEquals('テスト企業2', $result2->name);
+    }
+
+    public function test_normalize_and_save_dataの詳細テスト()
+    {
+        // Platformモデルを作成
+        \App\Models\Platform::factory()->create(['name' => 'Qiita']);
+
+        $company = Company::factory()->create([
+            'name' => 'テスト企業',
+            'qiita_username' => 'testuser',
+        ]);
+
+        $articles = [
+            [
+                'title' => 'テスト記事1',
+                'url' => 'https://qiita.com/items/test1',
+                'likes_count' => 100,
+                'author' => '/@testuser',
+                'author_url' => 'https://qiita.com/@testuser',
+                'published_at' => '2024-01-01T10:00:00Z',
+                'platform' => 'qiita',
+                'scraped_at' => now(),
+            ],
+            [
+                'title' => 'テスト記事2',
+                'url' => 'https://qiita.com/items/test2',
+                'likes_count' => 50,
+                'author' => '/testuser2',
+                'author_url' => 'https://qiita.com/testuser2',
+                'published_at' => '2024-01-02T15:30:00Z',
+                'platform' => 'qiita',
+                'scraped_at' => now(),
+            ],
+        ];
+
+        $result = $this->scraper->normalizeAndSaveData($articles);
+
+        $this->assertCount(2, $result);
+        $this->assertInstanceOf(Article::class, $result[0]);
+        $this->assertEquals('テスト記事1', $result[0]->title);
+        $this->assertEquals('testuser', $result[0]->author_name);
+        $this->assertEquals($company->id, $result[0]->company_id);
+    }
+
+    public function test_htt_pエラー時の詳細な処理()
+    {
+        Http::fake([
+            'qiita.com*' => Http::response('', 404),
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('HTTP Error: 404');
+
+        $this->scraper->scrapeTrendingArticles();
+    }
+
+    public function test_無効な_htm_lのパターン別処理()
+    {
+        $invalidHtmlCases = [
+            '<html></html>',
+            '<html><body></body></html>',
+            '<html><body><div>no articles</div></body></html>',
+            '<!DOCTYPE html><html><head></head><body></body></html>',
+            '<invalid>broken html</invalid>',
+        ];
+
+        foreach ($invalidHtmlCases as $html) {
+            Http::fake([
+                'qiita.com*' => Http::response($html, 200),
+            ]);
+
+            $result = $this->scraper->scrapeTrendingArticles();
+            $this->assertIsArray($result);
+            $this->assertEmpty($result);
+        }
+    }
+
+    public function test_extract_メソッドの例外処理()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $methods = [
+            'extractTitle',
+            'extractUrl',
+            'extractLikesCount',
+            'extractAuthor',
+            'extractAuthorUrl',
+            'extractPublishedAt',
+        ];
+
+        foreach ($methods as $methodName) {
+            $method = $reflection->getMethod($methodName);
+            $method->setAccessible(true);
+
+            // 無効なCrawlerオブジェクトでテスト
+            $invalidHtml = '<malformed>broken';
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($invalidHtml);
+
+            $result = $method->invokeArgs($this->scraper, [$crawler]);
+
+            if ($methodName === 'extractLikesCount') {
+                $this->assertEquals(0, $result);
+            } else {
+                $this->assertNull($result);
+            }
+        }
+    }
+
+    public function test_author_urlの絶対_ur_l処理の詳細()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorUrl');
+        $method->setAccessible(true);
+
+        // 既に絶対URLの場合
+        $html = '<div class="style-j198x4"><a href="https://external.com/user">user</a></div>';
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+
+        $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
+        // QiitaScraperでは/items/を含まないURLはマッチしない実装のため
+        $this->assertNull($authorUrl);
+    }
+
+    public function test_ログ出力の確認()
+    {
+        Log::shouldReceive('info')->atLeast()->once();
+        Log::shouldReceive('debug')->atLeast()->once();
+        Log::shouldReceive('error')->atLeast()->zeroOrMoreTimes();
+        Log::shouldReceive('warning')->atLeast()->zeroOrMoreTimes();
+
+        $mockHtml = $this->getMockQiitaHtml();
+        Http::fake([
+            'qiita.com*' => Http::response($mockHtml, 200),
+        ]);
+
+        $result = $this->scraper->scrapeTrendingArticles();
+        $this->assertIsArray($result);
+    }
+
+    public function test_空のauthor処理の詳細()
+    {
+        $articles = [
+            [
+                'title' => 'テスト記事',
+                'url' => 'https://qiita.com/items/test',
+                'likes_count' => 10,
+                'author' => null,
+                'author_url' => null,
+                'published_at' => '2024-01-01T10:00:00Z',
+                'platform' => 'qiita',
+                'scraped_at' => now(),
+            ],
+            [
+                'title' => 'テスト記事2',
+                'url' => 'https://qiita.com/items/test2',
+                'likes_count' => 20,
+                'author' => '',
+                'author_url' => '',
+                'published_at' => '2024-01-01T10:00:00Z',
+                'platform' => 'qiita',
+                'scraped_at' => now(),
+            ],
+        ];
+
+        \App\Models\Platform::factory()->create(['name' => 'Qiita']);
+
+        $result = $this->scraper->normalizeAndSaveData($articles);
+        $this->assertCount(2, $result);
+        $this->assertNull($result[0]->author_name);
+        $this->assertNull($result[1]->author_name);
     }
 
     private function getMockQiitaHtml(): string

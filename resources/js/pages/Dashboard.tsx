@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { RankingStatsResponse, TopCompaniesResponse, QueryKeys } from '../types';
+import { RankingStatsResponse, TopCompaniesResponse, TopCompany, QueryKeys } from '../types';
 
 // ヘルパーコンポーネント: 統計メトリックカード
 const MetricCard: React.FC<{ label: string; value: string | number; isLoading: boolean }> = ({ 
@@ -23,7 +23,7 @@ const MetricCard: React.FC<{ label: string; value: string | number; isLoading: b
 );
 
 // ヘルパーコンポーネント: ランキングテーブル行
-const RankingRow: React.FC<{ company: any }> = ({ company }) => (
+const RankingRow: React.FC<{ company: TopCompany }> = ({ company }) => (
     <tr key={company.id || company.company.name} className="hover:bg-gray-50">
         <td className="font-medium">#{company.rank_position}</td>
         <td className="font-medium text-blue-900">{company.company.name}</td>
@@ -44,7 +44,7 @@ const RankingRow: React.FC<{ company: any }> = ({ company }) => (
 );
 
 // ヘルパーコンポーネント: ランキングテーブル
-const RankingTable: React.FC<{ companies: any[]; isLoading: boolean }> = ({ 
+const RankingTable: React.FC<{ companies: TopCompany[]; isLoading: boolean }> = ({ 
     companies, 
     isLoading 
 }) => {

@@ -73,7 +73,9 @@ jobs:
             vendor/
             node_modules/
             public/build/
+            bootstrap/cache/
             .env
+            storage/framework/cache/
           retention-days: 1
 
   # PHPテスト

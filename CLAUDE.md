@@ -61,6 +61,7 @@ php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memor
 ### テスト・CI/CD
 - **メモリ制限**: PHPUnit 512M、PHPStan 1G
 - **CI並列実行**: 品質チェック + E2E テスト（約2分）
+- **カバレッジレポート**: phpunit.xmlで`coverage-html`ディレクトリに出力（.gitignoreで除外済み）
 - **詳細**: [開発フロー.md](docs/wiki/開発フロー.md)を参照
 
 ### ⚡ 実行効率化の指示

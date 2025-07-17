@@ -41,27 +41,56 @@ class ZennScraper extends BaseScraper
         return $articles;
     }
 
+    /**
+     * レスポンスからZenn記事データを解析
+     *
+     * @param  Response  $response  HTTPレスポンス
+     * @return array 記事データ配列
+     */
     protected function parseResponse(Response $response): array
     {
         $html = $response->body();
         $crawler = new Crawler($html);
-        $articles = [];
 
-        // デバッグ: HTMLの一部をログに出力
+        $this->logHtmlPreview($html);
+
+        $elements = $this->findArticleElements($crawler);
+        if (! $elements) {
+            return [];
+        }
+
+        return $this->extractArticlesFromElements($elements);
+    }
+
+    /**
+     * HTMLプレビューをログ出力
+     *
+     * @param  string  $html  HTML文字列
+     */
+    private function logHtmlPreview(string $html): void
+    {
         Log::debug('Zenn HTML preview', [
             'html_length' => strlen($html),
             'html_preview' => substr($html, 0, 1000),
         ]);
+    }
 
-        // ZennのTechセクション内の記事を取得（16記事を上限とする、CSS Modules対応）
+    /**
+     * 記事要素を検索して取得
+     *
+     * @param  Crawler  $crawler  DOMクローラー
+     * @return Crawler|null 見つかった記事要素
+     */
+    private function findArticleElements(Crawler $crawler): ?Crawler
+    {
         $selectors = [
-            '[class*="ArticleList_item"]',  // CSS ModulesのArticleListアイテム
-            '[class*="ArticleListItem"]',  // ArticleListItemを含むクラス
-            'article',  // 汎用的なarticleタグ
-            '[data-testid="article-list-item"]',  // テストID付きリストアイテム
-            'a[href*="/articles/"]',  // 記事リンク
-            '.View_container',  // Zennのコンテナクラス
-            'div[class*="View"]',  // Viewを含むクラス
+            '[class*="ArticleList_item"]',
+            '[class*="ArticleListItem"]',
+            'article',
+            '[data-testid="article-list-item"]',
+            'a[href*="/articles/"]',
+            '.View_container',
+            'div[class*="View"]',
         ];
 
         foreach ($selectors as $selector) {
@@ -70,104 +99,138 @@ class ZennScraper extends BaseScraper
             Log::debug("Found {$elements->count()} elements with selector: {$selector}");
 
             if ($elements->count() > 0) {
-                $articleCount = 0;
-                $elements->each(function (Crawler $node) use (&$articles, &$articleCount) {
-                    if ($articleCount >= 16) {
-                        return false; // 16記事で停止
-                    }
-                    try {
-                        Log::debug('Zenn 記事ノードHTML', [
-                            'html' => substr($node->html(), 0, 500),
-                        ]);
-
-                        $title = $this->extractTitle($node);
-                        $url = $this->extractUrl($node);
-                        $likesCount = $this->extractLikesCount($node);
-                        $author = $this->extractAuthor($node);
-                        $authorUrl = $this->extractAuthorUrl($node);
-                        $publishedAt = $this->extractPublishedAt($node);
-
-                        Log::debug('Zenn 抽出結果', [
-                            'title' => $title,
-                            'url' => $url,
-                            'likes_count' => $likesCount,
-                            'author' => $author,
-                        ]);
-
-                        if ($title && $url) {
-                            $articles[] = [
-                                'title' => $title,
-                                'url' => $url,
-                                'likes_count' => $likesCount,
-                                'author' => $author,
-                                'author_url' => $authorUrl,
-                                'published_at' => $publishedAt,
-                                'scraped_at' => now(),
-                                'platform' => 'zenn',
-                            ];
-                            $articleCount++; // 記事追加時にカウンターをインクリメント
-                        }
-                    } catch (\Exception $e) {
-                        Log::warning('Zenn記事の解析中にエラー', [
-                            'error' => $e->getMessage(),
-                            'html' => $node->html(),
-                        ]);
-                    }
-                });
-                break; // 最初に見つかったセレクタを使用
+                return $elements;
             }
-        }
-
-        return $articles;
-    }
-
-    protected function extractTitle(Crawler $node): ?string
-    {
-        try {
-            // Zenn特有のタイトルセレクタパターンを試す
-            $selectors = [
-                'h1',  // 記事のメインタイトル
-                'h2',  // 記事のサブタイトル
-                'h3',  // 記事のヘッダー
-                'a[href*="/articles/"]',  // 記事リンクのテキスト
-                '.View_title',  // Zennのタイトルクラス
-                '[class*="Title"]',  // Titleを含むクラス
-                'p',  // 段落内のタイトル
-            ];
-
-            foreach ($selectors as $selector) {
-                $titleElement = $node->filter($selector);
-                if ($titleElement->count() > 0) {
-                    $title = trim($titleElement->text());
-                    Log::debug('Zenn タイトル抽出デバッグ', [
-                        'selector' => $selector,
-                        'title' => $title,
-                        'html' => $titleElement->html(),
-                    ]);
-                    if (! empty($title)) {
-                        return $title;
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            Log::debug('タイトル抽出エラー', ['error' => $e->getMessage()]);
         }
 
         return null;
     }
 
-    protected function extractUrl(Crawler $node): ?string
+    /**
+     * 要素から記事データを抽出
+     *
+     * @param  Crawler  $elements  記事要素
+     * @return array 記事データ配列
+     */
+    private function extractArticlesFromElements(Crawler $elements): array
+    {
+        $articles = [];
+        $articleCount = 0;
+
+        $elements->each(function (Crawler $node) use (&$articles, &$articleCount) {
+            if ($articleCount >= 16) {
+                return false;
+            }
+
+            $articleData = $this->extractSingleArticleData($node);
+            if ($articleData) {
+                $articles[] = $articleData;
+                $articleCount++;
+            }
+        });
+
+        return $articles;
+    }
+
+    /**
+     * 単一記事ノードからデータを抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return array|null 記事データまたはnull
+     */
+    private function extractSingleArticleData(Crawler $node): ?array
     {
         try {
-            // ZennのURL抽出セレクタパターンを試す
-            $selectors = [
-                'a[href*="/articles/"]',  // 記事リンク（最優先）
-                'h1 a',  // h1内のリンク
-                'h2 a',  // h2内のリンク
-                'h3 a',  // h3内のリンク
-                'a',  // 一般的なリンク
+            Log::debug('Zenn 記事ノードHTML', [
+                'html' => substr($node->html(), 0, 500),
+            ]);
+
+            $title = $this->extractTitle($node);
+            $url = $this->extractUrl($node);
+
+            if (! $title || ! $url) {
+                return null;
+            }
+
+            $articleData = [
+                'title' => $title,
+                'url' => $url,
+                'likes_count' => $this->extractLikesCount($node),
+                'author' => $this->extractAuthor($node),
+                'author_url' => $this->extractAuthorUrl($node),
+                'published_at' => $this->extractPublishedAt($node),
+                'scraped_at' => now(),
+                'platform' => 'zenn',
             ];
 
+            Log::debug('Zenn 抽出結果', [
+                'title' => $title,
+                'url' => $url,
+                'likes_count' => $articleData['likes_count'],
+                'author' => $articleData['author'],
+            ]);
+
+            return $articleData;
+        } catch (\Exception $e) {
+            Log::warning('Zenn記事の解析中にエラー', [
+                'error' => $e->getMessage(),
+                'html' => $node->html(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * ノードからタイトルを抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return string|null タイトルまたはnull
+     */
+    protected function extractTitle(Crawler $node): ?string
+    {
+        $selectors = [
+            'h1',
+            'h2',
+            'h3',
+            'a[href*="/articles/"]',
+            '.View_title',
+            '[class*="Title"]',
+            'p',
+        ];
+
+        return $this->extractTextBySelectors($node, $selectors, 'タイトル');
+    }
+
+    /**
+     * ノードから記事URLを抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return string|null 記事URLまたはnull
+     */
+    protected function extractUrl(Crawler $node): ?string
+    {
+        $selectors = [
+            'a[href*="/articles/"]',
+            'h1 a',
+            'h2 a',
+            'h3 a',
+            'a',
+        ];
+
+        return $this->extractLinkBySelectors($node, $selectors);
+    }
+
+    /**
+     * セレクタ配列を使用してリンクを抽出
+     *
+     * @param  Crawler  $node  検索対象ノード
+     * @param  array  $selectors  セレクタ配列
+     * @return string|null 見つかったリンクまたはnull
+     */
+    private function extractLinkBySelectors(Crawler $node, array $selectors): ?string
+    {
+        try {
             foreach ($selectors as $selector) {
                 $linkElement = $node->filter($selector);
                 if ($linkElement->count() > 0) {
@@ -184,27 +247,76 @@ class ZennScraper extends BaseScraper
         return null;
     }
 
-    protected function extractLikesCount(Crawler $node): int
+    /**
+     * セレクタ配列を使用してテキストを抽出
+     *
+     * @param  Crawler  $node  検索対象ノード
+     * @param  array  $selectors  セレクタ配列
+     * @param  string  $logType  ログ用の種別名
+     * @return string|null 見つかったテキストまたはnull
+     */
+    private function extractTextBySelectors(Crawler $node, array $selectors, string $logType): ?string
     {
         try {
-            // Zennのいいね数抽出セレクタパターンを試す
-            $selectors = [
-                '[data-testid="like-count"]',
-                '[aria-label*="いいね"]',
-                '[aria-label*="like"]',
-                '[class*="Like"]',
-                '[class*="like"]',
-                'span[aria-label]',
-                '.View_likeCount',
-                'button[aria-label*="いいね"]',
-            ];
-
             foreach ($selectors as $selector) {
-                $likesElement = $node->filter($selector);
-                if ($likesElement->count() > 0) {
-                    $likesText = $likesElement->attr('aria-label') ?: $likesElement->text();
-                    if ($likesText) {
-                        $number = (int) preg_replace('/[^0-9]/', '', $likesText);
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $text = trim($element->text());
+                    Log::debug("Zenn {$logType}抽出デバッグ", [
+                        'selector' => $selector,
+                        'text' => $text,
+                        'html' => $element->html(),
+                    ]);
+                    if (! empty($text)) {
+                        return $text;
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::debug("{$logType}抽出エラー", ['error' => $e->getMessage()]);
+        }
+
+        return null;
+    }
+
+    /**
+     * ノードからいいね数を抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return int いいね数
+     */
+    protected function extractLikesCount(Crawler $node): int
+    {
+        $selectors = [
+            '[data-testid="like-count"]',
+            '[aria-label*="いいね"]',
+            '[aria-label*="like"]',
+            '[class*="Like"]',
+            '[class*="like"]',
+            'span[aria-label]',
+            '.View_likeCount',
+            'button[aria-label*="いいね"]',
+        ];
+
+        return $this->extractNumberBySelectors($node, $selectors);
+    }
+
+    /**
+     * セレクタ配列を使用して数値を抽出
+     *
+     * @param  Crawler  $node  検索対象ノード
+     * @param  array  $selectors  セレクタ配列
+     * @return int 見つかった数値（デフォルト0）
+     */
+    private function extractNumberBySelectors(Crawler $node, array $selectors): int
+    {
+        try {
+            foreach ($selectors as $selector) {
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $text = $element->attr('aria-label') ?: $element->text();
+                    if ($text) {
+                        $number = (int) preg_replace('/[^0-9]/', '', $text);
                         if ($number > 0) {
                             return $number;
                         }
@@ -212,7 +324,7 @@ class ZennScraper extends BaseScraper
                 }
             }
         } catch (\Exception $e) {
-            Log::debug('いいね数抽出エラー', ['error' => $e->getMessage()]);
+            Log::debug('数値抽出エラー', ['error' => $e->getMessage()]);
         }
 
         return 0;

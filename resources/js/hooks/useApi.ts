@@ -1,6 +1,6 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import api from '../services/api';
-import { ApiResponse, PaginatedResponse } from '../types';
+import { ApiResponse, PaginatedResponse, Company, CompanyRanking } from '../types';
 
 export const useApi = <T>(
     key: string[],
@@ -18,21 +18,21 @@ export const useApi = <T>(
 };
 
 export const useCompanies = (page: number = 1, limit: number = 10) => {
-    return useApi<PaginatedResponse<any>>(
+    return useApi<PaginatedResponse<Company>>(
         ['companies', page.toString(), limit.toString()],
         `/companies?page=${page}&limit=${limit}`
     );
 };
 
 export const useCompany = (id: number) => {
-    return useApi<ApiResponse<any>>(
+    return useApi<ApiResponse<Company>>(
         ['company', id.toString()],
         `/companies/${id}`
     );
 };
 
 export const useRankings = (period: string = 'monthly') => {
-    return useApi<PaginatedResponse<any>>(
+    return useApi<PaginatedResponse<CompanyRanking>>(
         ['rankings', period],
         `/rankings?period=${period}`
     );

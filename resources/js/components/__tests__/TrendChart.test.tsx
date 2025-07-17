@@ -164,7 +164,6 @@ describe('TrendChart', () => {
     });
 
     it('期間が選択されていない場合もチャートが表示される', () => {
-        const mockOnPeriodChange = vi.fn();
         
         render(<TrendChart data={mockData} period="7d" />);
         

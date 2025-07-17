@@ -37,3 +37,6 @@ coverage.xml
 # Playwright E2E Test Results
 /playwright-report/
 /test-results/
+
+# PHPMetrics Report
+/phpmetrics-report/

@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import ArticleList from '../ArticleList';
-import { Article, Company, Platform, PaginationData, MockFetch } from '../../types';
+import { PaginationData, MockFetch } from '../../types';
 
 const mockArticles: PaginationData = {
     data: [

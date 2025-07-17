@@ -215,7 +215,7 @@ describe('ユーティリティ関数', () => {
         it('thisコンテキストが失われても動作する', () => {
             const obj = {
                 value: 'test',
-                method: function(this: any, arg: string) {
+                method: function(this: { value?: string }, arg: string) {
                     return `${this?.value || 'undefined'}: ${arg}`;
                 }
             };

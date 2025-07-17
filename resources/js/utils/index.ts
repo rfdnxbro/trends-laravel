@@ -15,7 +15,7 @@ export const truncateText = (text: string, maxLength: number): string => {
     return text.substring(0, maxLength) + '...';
 };
 
-export const debounce = <T extends (...args: any[]) => void>(
+export const debounce = <T extends (...args: unknown[]) => void>(
     func: T,
     delay: number
 ): (...args: Parameters<T>) => void => {

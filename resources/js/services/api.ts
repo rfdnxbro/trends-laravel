@@ -59,7 +59,7 @@ export const apiService = {
     searchCompanies: (query: string) => api.get(`/api/companies/search?q=${query}`),
     
     // 検索
-    search: (query: string, filters?: Record<string, any>) => 
+    search: (query: string, filters?: Record<string, unknown>) => 
         api.post('/api/search', { query, filters }),
 };
 

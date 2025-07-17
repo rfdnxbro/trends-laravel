@@ -101,6 +101,10 @@ jobs:
         with:
           name: build-artifacts
       
+      - name: 実行権限を修正
+        run: |
+          chmod +x vendor/bin/*
+      
       - name: 環境とデータベースを設定
         run: |
           # 環境変数を確実に設定
@@ -140,6 +144,10 @@ jobs:
         with:
           name: build-artifacts
       
+      - name: 実行権限を修正
+        run: |
+          chmod +x vendor/bin/*
+      
       - name: コードスタイルチェックを実行
         run: vendor/bin/pint --test
 
@@ -164,6 +172,10 @@ jobs:
         with:
           name: build-artifacts
       
+      - name: 実行権限を修正
+        run: |
+          chmod +x vendor/bin/*
+      
       - name: 静的解析を実行
         run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
@@ -187,6 +199,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+      
+      - name: 実行権限を修正
+        run: |
+          chmod +x vendor/bin/*
       
       - name: PHP循環的複雑度チェックを実行
         run: |
@@ -220,6 +236,10 @@ jobs:
         with:
           name: build-artifacts
       
+      - name: 実行権限を修正
+        run: |
+          chmod +x vendor/bin/*
+      
       - name: TypeScript循環的複雑度チェックを実行
         run: npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0
 
@@ -242,6 +262,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+      
+      - name: 実行権限を修正
+        run: |
+          chmod +x vendor/bin/*
       
       - name: フロントエンドテストを実行
         run: npm test
@@ -271,6 +295,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+      
+      - name: 実行権限を修正
+        run: |
+          chmod +x vendor/bin/*
       
       - name: 環境とデータベースを設定
         run: |

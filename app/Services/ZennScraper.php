@@ -83,20 +83,36 @@ class ZennScraper extends BaseScraper
      */
     private function findArticleElements(Crawler $crawler): ?Crawler
     {
-        $selectors = [
+        // 新しい設定ベースのセレクタ戦略を使用
+        $selectors = $this->getSelectorsFromConfig('article_container');
+
+        foreach ($selectors as $categoryName => $categorySelectors) {
+            Log::debug("Testing article container category: {$categoryName}");
+
+            foreach ($categorySelectors as $selector) {
+                Log::debug("Testing selector: {$selector}");
+                $elements = $crawler->filter($selector);
+                Log::debug("Found {$elements->count()} elements with selector: {$selector}");
+
+                if ($elements->count() > 0) {
+                    return $elements;
+                }
+            }
+        }
+
+        // フォールバック: 既存の特殊セレクタも試行
+        $fallbackSelectors = [
             '[class*="ArticleList_item"]',
             '[class*="ArticleListItem"]',
-            'article',
-            '[data-testid="article-list-item"]',
             'a[href*="/articles/"]',
             '.View_container',
             'div[class*="View"]',
         ];
 
-        foreach ($selectors as $selector) {
-            Log::debug("Testing selector: {$selector}");
+        foreach ($fallbackSelectors as $selector) {
+            Log::debug("Testing fallback selector: {$selector}");
             $elements = $crawler->filter($selector);
-            Log::debug("Found {$elements->count()} elements with selector: {$selector}");
+            Log::debug("Found {$elements->count()} elements with fallback selector: {$selector}");
 
             if ($elements->count() > 0) {
                 return $elements;
@@ -189,17 +205,24 @@ class ZennScraper extends BaseScraper
      */
     protected function extractTitle(Crawler $node): ?string
     {
-        $selectors = [
-            'h1',
-            'h2',
-            'h3',
-            'a[href*="/articles/"]',
+        // 新しい設定ベースのセレクタ戦略を使用
+        $title = $this->extractByStrategies($node, 'title', 'text', [
+            'max_length' => 500,
+            'min_length' => 5,
+        ]);
+
+        if ($title) {
+            return $title;
+        }
+
+        // フォールバック: 既存のセレクタも試行
+        $fallbackSelectors = [
             '.View_title',
             '[class*="Title"]',
             'p',
         ];
 
-        return $this->extractTextBySelectors($node, $selectors, 'タイトル');
+        return $this->extractTextBySelectors($node, $fallbackSelectors, 'タイトル');
     }
 
     /**
@@ -210,73 +233,23 @@ class ZennScraper extends BaseScraper
      */
     protected function extractUrl(Crawler $node): ?string
     {
-        $selectors = [
-            'a[href*="/articles/"]',
-            'h1 a',
-            'h2 a',
-            'h3 a',
+        // 新しい設定ベースのセレクタ戦略を使用
+        $url = $this->extractByStrategies($node, 'url', 'link', [
+            'base_url' => $this->baseUrl,
+            'path_pattern' => '/articles/',
+            'exclude_patterns' => ['#', 'mailto:', 'tel:'],
+        ]);
+
+        if ($url) {
+            return $url;
+        }
+
+        // フォールバック: 既存のセレクタも試行
+        $fallbackSelectors = [
             'a',
         ];
 
-        return $this->extractLinkBySelectors($node, $selectors);
-    }
-
-    /**
-     * セレクタ配列を使用してリンクを抽出
-     *
-     * @param  Crawler  $node  検索対象ノード
-     * @param  array  $selectors  セレクタ配列
-     * @return string|null 見つかったリンクまたはnull
-     */
-    private function extractLinkBySelectors(Crawler $node, array $selectors): ?string
-    {
-        try {
-            foreach ($selectors as $selector) {
-                $linkElement = $node->filter($selector);
-                if ($linkElement->count() > 0) {
-                    $href = $linkElement->attr('href');
-                    if ($href && strpos($href, '/articles/') !== false) {
-                        return strpos($href, 'http') === 0 ? $href : $this->baseUrl.$href;
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            Log::debug('URL抽出エラー', ['error' => $e->getMessage()]);
-        }
-
-        return null;
-    }
-
-    /**
-     * セレクタ配列を使用してテキストを抽出
-     *
-     * @param  Crawler  $node  検索対象ノード
-     * @param  array  $selectors  セレクタ配列
-     * @param  string  $logType  ログ用の種別名
-     * @return string|null 見つかったテキストまたはnull
-     */
-    private function extractTextBySelectors(Crawler $node, array $selectors, string $logType): ?string
-    {
-        try {
-            foreach ($selectors as $selector) {
-                $element = $node->filter($selector);
-                if ($element->count() > 0) {
-                    $text = trim($element->text());
-                    Log::debug("Zenn {$logType}抽出デバッグ", [
-                        'selector' => $selector,
-                        'text' => $text,
-                        'html' => $element->html(),
-                    ]);
-                    if (! empty($text)) {
-                        return $text;
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            Log::debug("{$logType}抽出エラー", ['error' => $e->getMessage()]);
-        }
-
-        return null;
+        return $this->extractLinkBySelectors($node, $fallbackSelectors, '/articles/', $this->baseUrl);
     }
 
     /**
@@ -287,106 +260,100 @@ class ZennScraper extends BaseScraper
      */
     protected function extractLikesCount(Crawler $node): int
     {
-        $selectors = [
-            '[data-testid="like-count"]',
-            '[aria-label*="いいね"]',
-            '[aria-label*="like"]',
-            '[class*="Like"]',
-            '[class*="like"]',
-            'span[aria-label]',
+        // 新しい設定ベースのセレクタ戦略を使用
+        $likesCount = $this->extractByStrategies($node, 'engagement', 'number', [
+            'min_value' => 0,
+        ]);
+
+        if ($likesCount !== null) {
+            return $likesCount;
+        }
+
+        // フォールバック: 既存のセレクタも試行
+        $fallbackSelectors = [
             '.View_likeCount',
             'button[aria-label*="いいね"]',
         ];
 
-        return $this->extractNumberBySelectors($node, $selectors);
-    }
-
-    /**
-     * セレクタ配列を使用して数値を抽出
-     *
-     * @param  Crawler  $node  検索対象ノード
-     * @param  array  $selectors  セレクタ配列
-     * @return int 見つかった数値（デフォルト0）
-     */
-    private function extractNumberBySelectors(Crawler $node, array $selectors): int
-    {
-        try {
-            foreach ($selectors as $selector) {
-                $element = $node->filter($selector);
-                if ($element->count() > 0) {
-                    $text = $element->attr('aria-label') ?: $element->text();
-                    if ($text) {
-                        $number = (int) preg_replace('/[^0-9]/', '', $text);
-                        if ($number > 0) {
-                            return $number;
-                        }
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            Log::debug('数値抽出エラー', ['error' => $e->getMessage()]);
-        }
-
-        return 0;
+        return $this->extractNumberBySelectors($node, $fallbackSelectors);
     }
 
     protected function extractAuthor(Crawler $node): ?string
     {
         try {
-            // Zennの著者抽出セレクタパターンを試す（CSS Modules対応）
-            $selectors = [
-                '[class*="userName"]',  // userNameを含むクラス（CSS Modules）
-                '[class*="ArticleList_userName"]',  // 具体的なクラス名
-                'a[href*="/@"]',  // @付きユーザーリンク
-                '[data-testid="author-link"]',
-                '[class*="Author"]',
-                '[class*="author"]',
-                '.View_author',
-                'img[alt]',  // アバター画像のalt属性
-                '[class*="User"]',  // Userを含むクラス
-                '[class*="Profile"]',  // Profileを含むクラス
-                'a[href^="/"]',  // 相対パスのリンク
+            // 各種抽出方法を試行
+            $extractionMethods = [
+                // リンクベースの著者抽出を優先（Zennのテストで期待されている形式）
+                ['type' => 'link', 'options' => ['base_url' => '', 'exclude_patterns' => ['/articles/']]],
+                // テキストベースの著者抽出
+                ['type' => 'text', 'options' => ['max_length' => 50, 'min_length' => 1]],
+                // 属性ベースの著者抽出（画像のalt属性など）
+                ['type' => 'attribute', 'options' => ['attribute_name' => 'alt']],
             ];
 
-            foreach ($selectors as $selector) {
-                $authorElement = $node->filter($selector);
-                if ($authorElement->count() > 0) {
-                    Log::debug('Zenn 著者抽出デバッグ', [
-                        'selector' => $selector,
-                        'count' => $authorElement->count(),
-                        'html' => $authorElement->html(),
-                    ]);
-
-                    // hrefがある場合（リンク要素）
-                    $href = $authorElement->attr('href');
-                    if ($href) {
-                        // 記事URLでない場合はユーザーURLとみなす
-                        if (strpos($href, '/articles/') === false) {
-                            Log::debug("Found author href: {$href}");
-
-                            return trim($href);
-                        }
-                    }
-
-                    // alt属性がある場合（画像要素）
-                    $alt = $authorElement->attr('alt');
-                    if ($alt && ! empty(trim($alt))) {
-                        Log::debug("Found author alt: {$alt}");
-
-                        return trim($alt);
-                    }
-
-                    // テキストコンテンツがある場合
-                    $text = trim($authorElement->text());
-                    if (! empty($text) && strlen($text) < 50) { // 長すぎるテキストは除外
-                        Log::debug("Found author text: {$text}");
-
-                        return $text;
-                    }
+            foreach ($extractionMethods as $method) {
+                $result = $this->extractByStrategies($node, 'author', $method['type'], $method['options']);
+                if ($result) {
+                    return $result;
                 }
             }
+
+            // フォールバック: 既存の特殊セレクタも試行
+            return $this->extractAuthorFromFallbackSelectors($node);
         } catch (\Exception $e) {
             Log::debug('著者名抽出エラー', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
+     * フォールバックセレクタから著者情報を抽出
+     */
+    private function extractAuthorFromFallbackSelectors(Crawler $node): ?string
+    {
+        $fallbackSelectors = [
+            '.View_author',
+            '[class*="userName"]',  // CSS Modules対応
+            '[class*="ArticleList_userName"]',
+        ];
+
+        foreach ($fallbackSelectors as $selector) {
+            $result = $this->extractAuthorFromElement($node, $selector);
+            if ($result) {
+                return $result;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 要素から著者情報を抽出
+     */
+    private function extractAuthorFromElement(Crawler $node, string $selector): ?string
+    {
+        $authorElement = $node->filter($selector);
+        if ($authorElement->count() === 0) {
+            return null;
+        }
+
+        // hrefがある場合（リンク要素）
+        $href = $authorElement->attr('href');
+        if ($href && strpos($href, '/articles/') === false) {
+            return trim($href);
+        }
+
+        // alt属性がある場合（画像要素）
+        $alt = $authorElement->attr('alt');
+        if ($alt && ! empty(trim($alt))) {
+            return trim($alt);
+        }
+
+        // テキストコンテンツがある場合
+        $text = trim($authorElement->text());
+        if (! empty($text) && strlen($text) < 50) {
+            return $text;
         }
 
         return null;
@@ -410,19 +377,41 @@ class ZennScraper extends BaseScraper
     protected function extractPublishedAt(Crawler $node): ?string
     {
         try {
-            // Zennの日時抽出セレクタパターンを試す
-            $selectors = [
-                'time[datetime]',
-                'time',
-                '[datetime]',
-                '[data-testid="published-date"]',
-                '[class*="Date"]',
-                '[class*="date"]',
+            // datetime属性を優先的に抽出
+            $datetime = $this->extractByStrategies($node, 'datetime', 'attribute', [
+                'attribute_name' => 'datetime',
+            ]);
+
+            if ($datetime) {
+                return $datetime;
+            }
+
+            // title属性からも抽出を試行
+            $titleAttr = $this->extractByStrategies($node, 'datetime', 'attribute', [
+                'attribute_name' => 'title',
+            ]);
+
+            if ($titleAttr) {
+                return $titleAttr;
+            }
+
+            // テキストベースでも抽出を試行
+            $datetimeText = $this->extractByStrategies($node, 'datetime', 'text', [
+                'max_length' => 50,
+                'min_length' => 5,
+            ]);
+
+            if ($datetimeText) {
+                return $datetimeText;
+            }
+
+            // フォールバック: 既存の特殊セレクタも試行
+            $fallbackSelectors = [
                 '.View_date',
-                '[class*="Time"]',
+                '[data-testid="published-date"]',
             ];
 
-            foreach ($selectors as $selector) {
+            foreach ($fallbackSelectors as $selector) {
                 $timeElement = $node->filter($selector);
                 if ($timeElement->count() > 0) {
                     $datetime = $timeElement->attr('datetime') ?: $timeElement->attr('title');

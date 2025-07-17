@@ -188,68 +188,23 @@ class QiitaScraper extends BaseScraper
      */
     protected function extractUrl(Crawler $node): ?string
     {
-        $selectors = [
-            'h2 a',
-            'h1 a',
-            'a[href*="/items/"]',
+        // 新しい設定ベースのセレクタ戦略を使用
+        $url = $this->extractByStrategies($node, 'url', 'link', [
+            'base_url' => $this->baseUrl,
+            'path_pattern' => '/items/',
+            'exclude_patterns' => ['#', 'mailto:', 'tel:'],
+        ]);
+
+        if ($url) {
+            return $url;
+        }
+
+        // フォールバック: 既存のセレクタも試行
+        $fallbackSelectors = [
             'a',
         ];
 
-        return $this->extractLinkBySelectors($node, $selectors, '/items/');
-    }
-
-    /**
-     * セレクタ配列を使用してリンクを抽出
-     *
-     * @param  Crawler  $node  検索対象ノード
-     * @param  array  $selectors  セレクタ配列
-     * @param  string  $pathPattern  パスパターン
-     * @return string|null 見つかったリンクまたはnull
-     */
-    private function extractLinkBySelectors(Crawler $node, array $selectors, string $pathPattern): ?string
-    {
-        try {
-            foreach ($selectors as $selector) {
-                $linkElement = $node->filter($selector);
-                if ($linkElement->count() > 0) {
-                    $href = $linkElement->attr('href');
-                    if ($href && strpos($href, $pathPattern) !== false) {
-                        return strpos($href, 'http') === 0 ? $href : $this->baseUrl.$href;
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            Log::debug('URL抽出エラー', ['error' => $e->getMessage()]);
-        }
-
-        return null;
-    }
-
-    /**
-     * セレクタ配列を使用してテキストを抽出
-     *
-     * @param  Crawler  $node  検索対象ノード
-     * @param  array  $selectors  セレクタ配列
-     * @param  string  $logType  ログ用の種別名
-     * @return string|null 見つかったテキストまたはnull
-     */
-    private function extractTextBySelectors(Crawler $node, array $selectors, string $logType): ?string
-    {
-        try {
-            foreach ($selectors as $selector) {
-                $element = $node->filter($selector);
-                if ($element->count() > 0) {
-                    $text = trim($element->text());
-                    if (! empty($text)) {
-                        return $text;
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            Log::debug("{$logType}抽出エラー", ['error' => $e->getMessage()]);
-        }
-
-        return null;
+        return $this->extractLinkBySelectors($node, $fallbackSelectors, '/items/', $this->baseUrl);
     }
 
     /**
@@ -269,35 +224,6 @@ class QiitaScraper extends BaseScraper
         ];
 
         return $this->extractNumberBySelectors($node, $selectors);
-    }
-
-    /**
-     * セレクタ配列を使用して数値を抽出
-     *
-     * @param  Crawler  $node  検索対象ノード
-     * @param  array  $selectors  セレクタ配列
-     * @return int 見つかった数値（デフォルト0）
-     */
-    private function extractNumberBySelectors(Crawler $node, array $selectors): int
-    {
-        try {
-            foreach ($selectors as $selector) {
-                $element = $node->filter($selector);
-                if ($element->count() > 0) {
-                    $text = $element->attr('aria-label') ?: $element->text();
-                    if ($text) {
-                        $number = (int) preg_replace('/[^0-9]/', '', $text);
-                        if ($number > 0) {
-                            return $number;
-                        }
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            Log::debug('数値抽出エラー', ['error' => $e->getMessage()]);
-        }
-
-        return 0;
     }
 
     protected function extractAuthor(Crawler $node): ?string

@@ -40,6 +40,10 @@ gh pr create --title "PRタイトル" --body "Closes #issue番号"
 ```bash
 # PR作成前に実行
 php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memory-limit=1G && npm test && npm run build && npm run test:e2e
+
+# 循環的複雑度チェック（オプション）
+vendor/bin/phpmetrics --report-html=phpmetrics-report app/  # PHP
+npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0   # TypeScript
 ```
 
 #### 4. ドキュメント更新

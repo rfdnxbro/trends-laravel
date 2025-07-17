@@ -229,7 +229,7 @@ abstract class BaseScraper implements ScrapingService
 
         foreach ($selectors as $categoryName => $categorySelectors) {
             Log::debug("Testing selector category: {$categoryName} for {$selectorType}");
-            
+
             $result = $this->trySelectorsInCategory($node, $categorySelectors, $extractionType, $options, $selectorType);
             if ($result !== null) {
                 return $result;
@@ -237,17 +237,13 @@ abstract class BaseScraper implements ScrapingService
         }
 
         Log::debug("No {$selectorType} found with any configured selectors");
+
         return null;
     }
 
     /**
      * カテゴリ内のセレクタを試行
      *
-     * @param \Symfony\Component\DomCrawler\Crawler $node
-     * @param array $selectors
-     * @param string $extractionType
-     * @param array $options
-     * @param string $selectorType
      * @return mixed
      */
     private function trySelectorsInCategory(
@@ -263,18 +259,13 @@ abstract class BaseScraper implements ScrapingService
                 return $result;
             }
         }
-        
+
         return null;
     }
 
     /**
      * 単一セレクタを試行
      *
-     * @param \Symfony\Component\DomCrawler\Crawler $node
-     * @param string $selector
-     * @param string $extractionType
-     * @param array $options
-     * @param string $selectorType
      * @return mixed
      */
     private function trySelector(
@@ -304,6 +295,7 @@ abstract class BaseScraper implements ScrapingService
             return $result;
         } catch (\Exception $e) {
             Log::debug("Error with selector {$selector}: {$e->getMessage()}");
+
             return null;
         }
     }
@@ -407,23 +399,20 @@ abstract class BaseScraper implements ScrapingService
                 return null;
             }
 
-            if (!$this->isValidHref($href, $options)) {
+            if (! $this->isValidHref($href, $options)) {
                 return null;
             }
 
             return $this->normalizeHref($href, $options);
         } catch (\Exception $e) {
             Log::debug('Link extraction error', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
 
     /**
      * hrefが有効かチェック
-     *
-     * @param string $href
-     * @param array $options
-     * @return bool
      */
     private function isValidHref(string $href, array $options): bool
     {
@@ -446,10 +435,6 @@ abstract class BaseScraper implements ScrapingService
 
     /**
      * hrefを正規化
-     *
-     * @param string $href
-     * @param array $options
-     * @return string
      */
     private function normalizeHref(string $href, array $options): string
     {
@@ -460,6 +445,7 @@ abstract class BaseScraper implements ScrapingService
 
         // 相対URLの場合はベースURLと結合
         $baseUrl = $options['base_url'] ?? '';
+
         return $baseUrl ? $baseUrl.$href : $href;
     }
 

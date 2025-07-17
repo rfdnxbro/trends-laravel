@@ -302,15 +302,13 @@ class ZennScraper extends BaseScraper
             return $this->extractAuthorFromFallbackSelectors($node);
         } catch (\Exception $e) {
             Log::debug('著者名抽出エラー', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
 
     /**
      * フォールバックセレクタから著者情報を抽出
-     *
-     * @param Crawler $node
-     * @return string|null
      */
     private function extractAuthorFromFallbackSelectors(Crawler $node): ?string
     {
@@ -332,10 +330,6 @@ class ZennScraper extends BaseScraper
 
     /**
      * 要素から著者情報を抽出
-     *
-     * @param Crawler $node
-     * @param string $selector
-     * @return string|null
      */
     private function extractAuthorFromElement(Crawler $node, string $selector): ?string
     {

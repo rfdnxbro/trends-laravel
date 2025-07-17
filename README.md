@@ -42,4 +42,4 @@ Laravel 12 + React 19 + TypeScript + PostgreSQL
 
 ## License
 
-MIT License
+MIT License# CI並列化テスト

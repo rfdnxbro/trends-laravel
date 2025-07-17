@@ -240,6 +240,9 @@ jobs:
         run: |
           chmod +x vendor/bin/*
       
+      - name: Node.js依存関係をインストール
+        run: npm ci
+      
       - name: TypeScript循環的複雑度チェックを実行
         run: npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0
 
@@ -266,6 +269,9 @@ jobs:
       - name: 実行権限を修正
         run: |
           chmod +x vendor/bin/*
+      
+      - name: Node.js依存関係をインストール
+        run: npm ci
       
       - name: フロントエンドテストを実行
         run: npm run test

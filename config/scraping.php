@@ -101,6 +101,176 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | セレクタ戦略設定
+    |--------------------------------------------------------------------------
+    |
+    | 各データ要素に対する優先順位付きセレクタパターンを定義
+    | より安定性の高いセレクタを上位に配置
+    |
+    */
+    'selectors' => [
+        /*
+        |--------------------------------------------------------------------------
+        | 記事要素セレクタ（記事全体のコンテナ）
+        |--------------------------------------------------------------------------
+        */
+        'article_container' => [
+            'semantic' => [
+                'article',
+                '[role="article"]',
+                'main article',
+                'section[itemtype*="Article"]',
+            ],
+            'accessibility' => [
+                '[data-testid*="article"]',
+                '[data-testid*="item"]',
+                '[aria-labelledby]',
+            ],
+            'structural' => [
+                '[class*="article"]',
+                '[class*="item"]',
+                '[class*="card"]',
+                '[class*="entry"]',
+                'div[class*="style-"]', // CSS Modules対応
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | タイトルセレクタ
+        |--------------------------------------------------------------------------
+        */
+        'title' => [
+            'semantic' => [
+                'h1',
+                'h2',
+                'h3',
+                '[role="heading"]',
+            ],
+            'accessibility' => [
+                '[data-testid*="title"]',
+                '[aria-label*="title"]',
+                '[aria-labelledby*="title"]',
+            ],
+            'structural' => [
+                'a[href*="/articles/"]',
+                'a[href*="/items/"]',
+                '[class*="title"]',
+                '[class*="Title"]',
+                '[class*="heading"]',
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | URLセレクタ（記事リンク）
+        |--------------------------------------------------------------------------
+        */
+        'url' => [
+            'semantic' => [
+                'h1 a',
+                'h2 a',
+                'h3 a',
+                '[role="heading"] a',
+            ],
+            'specific' => [
+                'a[href*="/articles/"]',
+                'a[href*="/items/"]',
+            ],
+            'structural' => [
+                '[class*="title"] a',
+                '[class*="Title"] a',
+                'a',
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 著者セレクタ
+        |--------------------------------------------------------------------------
+        */
+        'author' => [
+            'accessibility' => [
+                '[data-testid*="author"]',
+                '[aria-label*="author"]',
+                '[aria-label*="user"]',
+            ],
+            'structural' => [
+                '[class*="author"]',
+                '[class*="Author"]',
+                '[class*="user"]',
+                '[class*="User"]',
+                '[class*="userName"]',
+                '[class*="profile"]',
+                '[class*="Profile"]',
+                'a[href*="/@"]',
+                'a[href^="/"]',
+                'img[alt]', // アバター画像のalt属性
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 日時セレクタ
+        |--------------------------------------------------------------------------
+        */
+        'datetime' => [
+            'semantic' => [
+                'time[datetime]',
+                'time',
+                '[datetime]',
+            ],
+            'accessibility' => [
+                '[data-testid*="date"]',
+                '[data-testid*="time"]',
+                '[aria-label*="date"]',
+                '[aria-label*="time"]',
+            ],
+            'structural' => [
+                '[class*="date"]',
+                '[class*="Date"]',
+                '[class*="time"]',
+                '[class*="Time"]',
+                '[class*="published"]',
+                '[class*="Published"]',
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | エンゲージメント数セレクタ（いいね、ブックマーク等）
+        |--------------------------------------------------------------------------
+        */
+        'engagement' => [
+            'accessibility' => [
+                '[data-testid*="like"]',
+                '[data-testid*="bookmark"]',
+                '[aria-label*="いいね"]',
+                '[aria-label*="like"]',
+                '[aria-label*="LGTM"]',
+                '[aria-label*="bookmark"]',
+                '[aria-label*="ブックマーク"]',
+            ],
+            'semantic' => [
+                'button[aria-label*="いいね"]',
+                'button[aria-label*="like"]',
+                'button[aria-label*="LGTM"]',
+            ],
+            'structural' => [
+                '[class*="like"]',
+                '[class*="Like"]',
+                '[class*="lgtm"]',
+                '[class*="LGTM"]',
+                '[class*="bookmark"]',
+                '[class*="Bookmark"]',
+                '[class*="users"]', // はてなブックマーク用
+                'span[aria-label]',
+            ],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | ログ設定
     |--------------------------------------------------------------------------
     */

@@ -230,7 +230,7 @@ class ZennScraperTest extends TestCase
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
         $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
-        $this->assertEquals('https://zenn.dev@username', $authorUrl);
+        $this->assertEquals('https://zenn.dev/@username', $authorUrl);
     }
 
     public function test_extract_author_url_絶対urlはそのまま返す(): void
@@ -285,7 +285,7 @@ class ZennScraperTest extends TestCase
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
         $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
-        $this->assertEquals('https://zenn.devnewuser', $authorUrl);
+        $this->assertEquals('https://zenn.dev/newuser', $authorUrl);
     }
 
     public function test_extract_author_url_画像alt属性から著者を取得する(): void

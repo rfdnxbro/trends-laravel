@@ -75,6 +75,7 @@ jobs:
             public/build/
             bootstrap/cache/
             .env
+            .env.ci
             storage/framework/cache/
           retention-days: 1
 
@@ -100,15 +101,28 @@ jobs:
         with:
           name: build-artifacts
       
-      - name: データベースを設定
+      - name: 環境とデータベースを設定
         run: |
+          # 環境変数を確実に設定
+          export DB_CONNECTION=sqlite
+          export DB_DATABASE=:memory:
+          
+          # キャッシュをクリアして再構築
           php artisan config:clear
           php artisan cache:clear
-          php artisan config:cache
+          
+          # 環境変数を再度確認
+          php -r "echo 'DB_DATABASE: ' . env('DB_DATABASE', 'not set') . PHP_EOL;"
+          php -r "echo 'Config DB: ' . config('database.connections.sqlite.database') . PHP_EOL;"
+          
+          # マイグレーションを実行
           php artisan migrate --force
       
       - name: PHPテストを実行
         run: php artisan test --stop-on-failure
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: :memory:
 
   # コードスタイルチェック
   code-style:
@@ -263,15 +277,24 @@ jobs:
         with:
           name: build-artifacts
       
-      - name: データベースを設定
+      - name: 環境とデータベースを設定
         run: |
+          # 環境変数を確実に設定
+          export DB_CONNECTION=sqlite
+          export DB_DATABASE=:memory:
+          
+          # キャッシュをクリアして再構築
           php artisan config:clear
           php artisan cache:clear
-          php artisan config:cache
+          
+          # マイグレーションを実行
           php artisan migrate --force
       
       - name: カバレッジ付きテストを実行
         run: php artisan test --coverage-html=coverage-html --coverage-clover=coverage-clover.xml --stop-on-failure
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: :memory:
       
       - name: カバレッジサマリーを生成と95%閾値チェック
         id: coverage

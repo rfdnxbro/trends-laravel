@@ -34,5 +34,11 @@
     "extensions": [
         "php"
     ],
-    "composer": true
+    "composer": true,
+    "failure": {
+        "cyclomaticComplexity": {
+            "warning": 15,
+            "error": 20
+        }
+    }
 }

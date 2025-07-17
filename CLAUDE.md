@@ -39,11 +39,11 @@ gh pr create --title "PRタイトル" --body "Closes #issue番号"
 #### 3. 品質チェック
 ```bash
 # PR作成前に実行（必須）
-php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memory-limit=1G && npm test && npm run build && npm run test:e2e
+php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memory-limit=1G && vendor/bin/phpmetrics --report-html=phpmetrics-report app/ && npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0 && npm test && npm run build && npm run test:e2e
 
-# 循環的複雑度チェック（オプション・ローカル実行用）
-vendor/bin/phpmetrics --report-html=phpmetrics-report app/  # PHP（HTMLレポート生成）
-npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0   # TypeScript（複雑度20以上でエラー）
+# 個別実行コマンド
+vendor/bin/phpmetrics --report-html=phpmetrics-report app/  # PHP循環的複雑度チェック
+npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0   # TypeScript循環的複雑度チェック
 ```
 
 #### 4. ドキュメント更新
@@ -67,7 +67,7 @@ npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0   # TypeScript（複雑
 - **メモリ制限**: PHPUnit 512M、PHPStan 1G
 - **CI並列実行**: 品質チェック + E2E テスト（約2分）
 - **カバレッジレポート**: phpunit.xmlで`coverage-html`ディレクトリに出力（.gitignoreで除外済み）
-- **循環的複雑度**: PHPMetrics（PHP）、ESLint（TypeScript）による自動チェック（CI統合済み）
+- **循環的複雑度**: PHPMetrics（PHP）、ESLint（TypeScript）による必須チェック（CI統合済み）
 - **詳細**: [開発フロー.md](docs/wiki/開発フロー.md)、[CI-CD.md](docs/wiki/CI-CD.md)を参照
 
 ### コード品質基準
@@ -89,9 +89,10 @@ npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0   # TypeScript（複雑
 - **IDE支援**: 型情報により自動補完とエラー検出を向上
 
 #### 循環的複雑度管理
-- **目標**: 全メソッドの循環的複雑度を20未満に維持
+- **目標**: 全メソッドの循環的複雑度を20未満に維持（必須）
 - **手法**: メソッド分離、戦略パターン、共通化によるリファクタリング
 - **測定**: PHPMetrics（PHP）、ESLint complexity rule（TypeScript）
+- **CI統合**: 複雑度超過時はCI失敗、PRマージ不可
 
 ### ⚡ 実行効率化の指示
 - **E2Eテスト実行時**: 結果が明確になった時点で即座に中断し、次の行動に移る

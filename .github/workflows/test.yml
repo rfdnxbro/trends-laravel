@@ -105,7 +105,7 @@ jobs:
         run: |
           # 環境変数を確実に設定
           export DB_CONNECTION=sqlite
-          export DB_DATABASE=:memory:
+          export DB_DATABASE=":memory:"
           
           # キャッシュをクリアして再構築
           php artisan config:clear
@@ -122,7 +122,7 @@ jobs:
         run: php artisan test --stop-on-failure
         env:
           DB_CONNECTION: sqlite
-          DB_DATABASE: :memory:
+          DB_DATABASE: ":memory:"
 
   # コードスタイルチェック
   code-style:
@@ -281,7 +281,7 @@ jobs:
         run: |
           # 環境変数を確実に設定
           export DB_CONNECTION=sqlite
-          export DB_DATABASE=:memory:
+          export DB_DATABASE=":memory:"
           
           # キャッシュをクリアして再構築
           php artisan config:clear
@@ -294,7 +294,7 @@ jobs:
         run: php artisan test --coverage-html=coverage-html --coverage-clover=coverage-clover.xml --stop-on-failure
         env:
           DB_CONNECTION: sqlite
-          DB_DATABASE: :memory:
+          DB_DATABASE: ":memory:"
       
       - name: カバレッジサマリーを生成と95%閾値チェック
         id: coverage

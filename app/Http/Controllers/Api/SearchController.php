@@ -83,55 +83,15 @@ class SearchController extends Controller
      */
     public function searchCompanies(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'q' => SearchConstants::getQueryValidationRule(),
-            'limit' => 'integer|min:1|max:'.config('constants.pagination.max_per_page'),
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => '検索クエリが無効です',
-                'details' => $validator->errors(),
-            ], Response::HTTP_BAD_REQUEST);
+        $validatedData = $this->validateSearchRequest($request, ['q', 'limit']);
+        if ($validatedData instanceof JsonResponse) {
+            return $validatedData;
         }
 
-        $query = $request->get('q');
-        $limit = $request->get('limit', config('constants.pagination.default_per_page'));
+        $query = $validatedData['q'];
+        $limit = $validatedData['limit'] ?? config('constants.pagination.default_per_page');
 
-        $cacheKey = 'search_companies_'.md5($query.$limit);
-
-        $result = Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($query, $limit) {
-            $startTime = microtime(true);
-
-            $companies = Company::active()
-                ->where(function ($q) use ($query) {
-                    $q->where('name', 'LIKE', "%{$query}%")
-                        ->orWhere('domain', 'LIKE', "%{$query}%")
-                        ->orWhere('description', 'LIKE', "%{$query}%");
-                })
-                ->with(['rankings' => function ($q) {
-                    $q->latest('calculated_at')->limit(SearchConstants::MIN_RANKING_DISPLAY);
-                }])
-                ->limit($limit)
-                ->get()
-                ->map(function ($company) use ($query) {
-                    // 関連度スコアを計算
-                    $score = $this->calculateRelevanceScore($company, $query);
-                    $company->match_score = $score;
-
-                    return $company;
-                })
-                ->sortByDesc('match_score')
-                ->values();
-
-            $searchTime = microtime(true) - $startTime;
-
-            return [
-                'companies' => $companies,
-                'search_time' => round($searchTime, 3),
-                'total_results' => $companies->count(),
-            ];
-        });
+        $result = $this->searchCompaniesWithCache($query, $limit);
 
         return response()->json([
             'data' => [
@@ -233,58 +193,17 @@ class SearchController extends Controller
      */
     public function searchArticles(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'q' => SearchConstants::getQueryValidationRule(),
-            'limit' => 'integer|min:1|max:'.config('constants.pagination.max_per_page'),
-            'days' => 'integer|min:1|max:'.config('constants.api.max_article_days'),
-            'min_bookmarks' => 'integer|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => '検索クエリが無効です',
-                'details' => $validator->errors(),
-            ], Response::HTTP_BAD_REQUEST);
+        $validatedData = $this->validateSearchRequest($request, ['q', 'limit', 'days', 'min_bookmarks']);
+        if ($validatedData instanceof JsonResponse) {
+            return $validatedData;
         }
 
-        $query = $request->get('q');
-        $limit = $request->get('limit', config('constants.pagination.default_per_page'));
-        $days = $request->get('days', config('constants.api.default_article_days'));
-        $minBookmarks = $request->get('min_bookmarks', 0);
+        $query = $validatedData['q'];
+        $limit = $validatedData['limit'] ?? config('constants.pagination.default_per_page');
+        $days = $validatedData['days'] ?? config('constants.api.default_article_days');
+        $minBookmarks = $validatedData['min_bookmarks'] ?? 0;
 
-        $cacheKey = 'search_articles_'.md5($query.$limit.$days.$minBookmarks);
-
-        $result = Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($query, $limit, $days, $minBookmarks) {
-            $startTime = microtime(true);
-
-            $articles = Article::with(['company', 'platform'])
-                ->recent($days)
-                ->where('bookmark_count', '>=', $minBookmarks)
-                ->where(function ($q) use ($query) {
-                    $q->where('title', 'LIKE', "%{$query}%")
-                        ->orWhere('author_name', 'LIKE', "%{$query}%");
-                })
-                ->orderBy('published_at', 'desc')
-                ->limit($limit)
-                ->get()
-                ->map(function ($article) use ($query) {
-                    // 関連度スコアを計算
-                    $score = $this->calculateArticleRelevanceScore($article, $query);
-                    $article->match_score = $score;
-
-                    return $article;
-                })
-                ->sortByDesc('match_score')
-                ->values();
-
-            $searchTime = microtime(true) - $startTime;
-
-            return [
-                'articles' => $articles,
-                'search_time' => round($searchTime, 3),
-                'total_results' => $articles->count(),
-            ];
-        });
+        $result = $this->searchArticlesWithCache($query, $limit, $days, $minBookmarks);
 
         return response()->json([
             'data' => [
@@ -386,89 +305,18 @@ class SearchController extends Controller
      */
     public function search(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'q' => SearchConstants::getQueryValidationRule(),
-            'type' => 'string|in:companies,articles,all',
-            'limit' => 'integer|min:1|max:'.config('constants.pagination.max_per_page'),
-            'days' => 'integer|min:1|max:'.config('constants.api.max_article_days'),
-            'min_bookmarks' => 'integer|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => '検索クエリが無効です',
-                'details' => $validator->errors(),
-            ], Response::HTTP_BAD_REQUEST);
+        $validatedData = $this->validateSearchRequest($request, ['q', 'type', 'limit', 'days', 'min_bookmarks']);
+        if ($validatedData instanceof JsonResponse) {
+            return $validatedData;
         }
 
-        $query = $request->get('q');
-        $type = $request->get('type', 'all');
-        $limit = $request->get('limit', config('constants.pagination.default_per_page'));
-        $days = $request->get('days', config('constants.api.default_article_days'));
-        $minBookmarks = $request->get('min_bookmarks', 0);
+        $query = $validatedData['q'];
+        $type = $validatedData['type'] ?? 'all';
+        $limit = $validatedData['limit'] ?? config('constants.pagination.default_per_page');
+        $days = $validatedData['days'] ?? config('constants.api.default_article_days');
+        $minBookmarks = $validatedData['min_bookmarks'] ?? 0;
 
-        $cacheKey = 'search_all_'.md5($query.$type.$limit.$days.$minBookmarks);
-
-        $result = Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($query, $type, $limit, $days, $minBookmarks) {
-            $startTime = microtime(true);
-            $data = [];
-
-            if ($type === 'companies' || $type === 'all') {
-                $companies = Company::active()
-                    ->where(function ($q) use ($query) {
-                        $q->where('name', 'LIKE', "%{$query}%")
-                            ->orWhere('domain', 'LIKE', "%{$query}%")
-                            ->orWhere('description', 'LIKE', "%{$query}%");
-                    })
-                    ->with(['rankings' => function ($q) {
-                        $q->latest('calculated_at')->limit(SearchConstants::MIN_RANKING_DISPLAY);
-                    }])
-                    ->limit($limit)
-                    ->get()
-                    ->map(function ($company) use ($query) {
-                        $score = $this->calculateRelevanceScore($company, $query);
-                        $company->match_score = $score;
-
-                        return $company;
-                    })
-                    ->sortByDesc('match_score')
-                    ->values();
-
-                $data['companies'] = CompanyResource::collection($companies);
-            }
-
-            if ($type === 'articles' || $type === 'all') {
-                $articles = Article::with(['company', 'platform'])
-                    ->recent($days)
-                    ->where('bookmark_count', '>=', $minBookmarks)
-                    ->where(function ($q) use ($query) {
-                        $q->where('title', 'LIKE', "%{$query}%")
-                            ->orWhere('author_name', 'LIKE', "%{$query}%");
-                    })
-                    ->orderBy('published_at', 'desc')
-                    ->limit($limit)
-                    ->get()
-                    ->map(function ($article) use ($query) {
-                        $score = $this->calculateArticleRelevanceScore($article, $query);
-                        $article->match_score = $score;
-
-                        return $article;
-                    })
-                    ->sortByDesc('match_score')
-                    ->values();
-
-                $data['articles'] = CompanyArticleResource::collection($articles);
-            }
-
-            $searchTime = microtime(true) - $startTime;
-            $totalResults = ($data['companies'] ?? collect())->count() + ($data['articles'] ?? collect())->count();
-
-            return [
-                'data' => $data,
-                'search_time' => round($searchTime, 3),
-                'total_results' => $totalResults,
-            ];
-        });
+        $result = $this->searchAllWithCache($query, $type, $limit, $days, $minBookmarks);
 
         return response()->json([
             'data' => $result['data'],
@@ -483,6 +331,208 @@ class SearchController extends Controller
                 ],
             ],
         ]);
+    }
+
+    /**
+     * バリデーション処理の共通化
+     */
+    private function validateSearchRequest(Request $request, array $fields): array|JsonResponse
+    {
+        $rules = [];
+
+        if (in_array('q', $fields)) {
+            $rules['q'] = SearchConstants::getQueryValidationRule();
+        }
+        if (in_array('type', $fields)) {
+            $rules['type'] = 'string|in:companies,articles,all';
+        }
+        if (in_array('limit', $fields)) {
+            $rules['limit'] = 'integer|min:1|max:'.config('constants.pagination.max_per_page');
+        }
+        if (in_array('days', $fields)) {
+            $rules['days'] = 'integer|min:1|max:'.config('constants.api.max_article_days');
+        }
+        if (in_array('min_bookmarks', $fields)) {
+            $rules['min_bookmarks'] = 'integer|min:0';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => '検索クエリが無効です',
+                'details' => $validator->errors(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $validator->validated();
+    }
+
+    /**
+     * 企業検索のキャッシュ処理
+     */
+    private function searchCompaniesWithCache(string $query, int $limit): array
+    {
+        $cacheKey = 'search_companies_'.md5($query.$limit);
+
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($query, $limit) {
+            return $this->executeCompanySearch($query, $limit);
+        });
+    }
+
+    /**
+     * 記事検索のキャッシュ処理
+     */
+    private function searchArticlesWithCache(string $query, int $limit, int $days, int $minBookmarks): array
+    {
+        $cacheKey = 'search_articles_'.md5($query.$limit.$days.$minBookmarks);
+
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($query, $limit, $days, $minBookmarks) {
+            return $this->executeArticleSearch($query, $limit, $days, $minBookmarks);
+        });
+    }
+
+    /**
+     * 統合検索のキャッシュ処理
+     */
+    private function searchAllWithCache(string $query, string $type, int $limit, int $days, int $minBookmarks): array
+    {
+        $cacheKey = 'search_all_'.md5($query.$type.$limit.$days.$minBookmarks);
+
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($query, $type, $limit, $days, $minBookmarks) {
+            return $this->executeUnifiedSearch($query, $type, $limit, $days, $minBookmarks);
+        });
+    }
+
+    /**
+     * 企業検索の実行
+     */
+    private function executeCompanySearch(string $query, int $limit): array
+    {
+        $startTime = microtime(true);
+
+        $companies = $this->buildCompanyQuery($query, $limit)
+            ->get()
+            ->map(function ($company) use ($query) {
+                $company->match_score = $this->calculateRelevanceScore($company, $query);
+
+                return $company;
+            })
+            ->sortByDesc('match_score')
+            ->values();
+
+        $searchTime = microtime(true) - $startTime;
+
+        return [
+            'companies' => $companies,
+            'search_time' => round($searchTime, 3),
+            'total_results' => $companies->count(),
+        ];
+    }
+
+    /**
+     * 記事検索の実行
+     */
+    private function executeArticleSearch(string $query, int $limit, int $days, int $minBookmarks): array
+    {
+        $startTime = microtime(true);
+
+        $articles = $this->buildArticleQuery($query, $limit, $days, $minBookmarks)
+            ->get()
+            ->map(function ($article) use ($query) {
+                $article->match_score = $this->calculateArticleRelevanceScore($article, $query);
+
+                return $article;
+            })
+            ->sortByDesc('match_score')
+            ->values();
+
+        $searchTime = microtime(true) - $startTime;
+
+        return [
+            'articles' => $articles,
+            'search_time' => round($searchTime, 3),
+            'total_results' => $articles->count(),
+        ];
+    }
+
+    /**
+     * 統合検索の実行
+     */
+    private function executeUnifiedSearch(string $query, string $type, int $limit, int $days, int $minBookmarks): array
+    {
+        $startTime = microtime(true);
+        $data = [];
+
+        if ($type === 'companies' || $type === 'all') {
+            $companies = $this->buildCompanyQuery($query, $limit)
+                ->get()
+                ->map(function ($company) use ($query) {
+                    $company->match_score = $this->calculateRelevanceScore($company, $query);
+
+                    return $company;
+                })
+                ->sortByDesc('match_score')
+                ->values();
+
+            $data['companies'] = CompanyResource::collection($companies);
+        }
+
+        if ($type === 'articles' || $type === 'all') {
+            $articles = $this->buildArticleQuery($query, $limit, $days, $minBookmarks)
+                ->get()
+                ->map(function ($article) use ($query) {
+                    $article->match_score = $this->calculateArticleRelevanceScore($article, $query);
+
+                    return $article;
+                })
+                ->sortByDesc('match_score')
+                ->values();
+
+            $data['articles'] = CompanyArticleResource::collection($articles);
+        }
+
+        $searchTime = microtime(true) - $startTime;
+        $totalResults = ($data['companies'] ?? collect())->count() + ($data['articles'] ?? collect())->count();
+
+        return [
+            'data' => $data,
+            'search_time' => round($searchTime, 3),
+            'total_results' => $totalResults,
+        ];
+    }
+
+    /**
+     * 企業検索クエリの構築
+     */
+    private function buildCompanyQuery(string $query, int $limit)
+    {
+        return Company::active()
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                    ->orWhere('domain', 'LIKE', "%{$query}%")
+                    ->orWhere('description', 'LIKE', "%{$query}%");
+            })
+            ->with(['rankings' => function ($q) {
+                $q->latest('calculated_at')->limit(SearchConstants::MIN_RANKING_DISPLAY);
+            }])
+            ->limit($limit);
+    }
+
+    /**
+     * 記事検索クエリの構築
+     */
+    private function buildArticleQuery(string $query, int $limit, int $days, int $minBookmarks)
+    {
+        return Article::with(['company', 'platform'])
+            ->recent($days)
+            ->where('bookmark_count', '>=', $minBookmarks)
+            ->where(function ($q) use ($query) {
+                $q->where('title', 'LIKE', "%{$query}%")
+                    ->orWhere('author_name', 'LIKE', "%{$query}%");
+            })
+            ->orderBy('published_at', 'desc')
+            ->limit($limit);
     }
 
     /**

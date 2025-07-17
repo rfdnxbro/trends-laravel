@@ -53,6 +53,7 @@ php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memor
 - **Issue-PR連携**: 必ずIssueを作成し、PRに `Closes #番号` を含める
 - **ドキュメント更新**: コード変更時は関連ドキュメントも同時更新
 - **CI確認**: PR後のGitHub Actions成功を確認
+- **PHPDoc必須**: 全てのpublic/privateメソッドに適切なPHPDocコメントを記載
 
 ### 開発禁止事項
 - **mainブランチにmerge済みのdatabase/migrationsファイルを後から変更してはいけない**
@@ -63,6 +64,29 @@ php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memor
 - **CI並列実行**: 品質チェック + E2E テスト（約2分）
 - **カバレッジレポート**: phpunit.xmlで`coverage-html`ディレクトリに出力（.gitignoreで除外済み）
 - **詳細**: [開発フロー.md](docs/wiki/開発フロー.md)を参照
+
+### コード品質基準
+
+#### PHPDocコメントの要件
+- **必須対象**: 全てのpublic/privateメソッド、クラス
+- **記載内容**: 
+  ```php
+  /**
+   * メソッドの目的と動作の説明
+   *
+   * @param string $param パラメータの説明
+   * @param int $limit 制限値の説明
+   * @return array 戻り値の構造説明（companies, search_time, total_results等）
+   */
+  ```
+- **動的プロパティ**: `@var` タグで型情報を明示（例：`/** @var \App\Models\Company $company */`）
+- **静的解析**: PHPStan エラー解消が必須
+- **IDE支援**: 型情報により自動補完とエラー検出を向上
+
+#### 循環的複雑度管理
+- **目標**: 全メソッドの循環的複雑度を20未満に維持
+- **手法**: メソッド分離、戦略パターン、共通化によるリファクタリング
+- **測定**: PHPMetrics（PHP）、ESLint complexity rule（TypeScript）
 
 ### ⚡ 実行効率化の指示
 - **E2Eテスト実行時**: 結果が明確になった時点で即座に中断し、次の行動に移る

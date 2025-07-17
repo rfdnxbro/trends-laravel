@@ -11,7 +11,7 @@ import {
     ChartOptions,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { InfluenceChartProps, ChartDataPoint } from '../types/index';
+import { InfluenceChartProps } from '../types/index';
 
 ChartJS.register(
     CategoryScale,

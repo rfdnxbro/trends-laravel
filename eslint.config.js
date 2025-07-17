@@ -27,7 +27,8 @@ export default [
                 HTMLElement: 'readonly',
                 HTMLButtonElement: 'readonly',
                 HTMLInputElement: 'readonly',
-                RequestInit: 'readonly'
+                RequestInit: 'readonly',
+                fetch: 'readonly'
             }
         },
         plugins: {

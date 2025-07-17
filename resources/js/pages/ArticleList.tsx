@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import { Article, Company, Platform, PaginationData } from '../types';
+import { PaginationData } from '../types';
 
 const ArticleList: React.FC = () => {
     const [articles, setArticles] = useState<PaginationData | null>(null);

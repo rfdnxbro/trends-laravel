@@ -27,7 +27,7 @@ const RankingHistoryChart: React.FC<RankingHistoryChartProps> = ({
     data,
     config = {},
     className = '',
-    companyId,
+    companyId: _companyId,
     maxRank = 100
 }) => {
     const defaultConfig = {

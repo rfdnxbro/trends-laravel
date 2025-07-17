@@ -38,12 +38,12 @@ gh pr create --title "PRタイトル" --body "Closes #issue番号"
 
 #### 3. 品質チェック
 ```bash
-# PR作成前に実行
+# PR作成前に実行（必須）
 php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memory-limit=1G && npm test && npm run build && npm run test:e2e
 
-# 循環的複雑度チェック（オプション）
-vendor/bin/phpmetrics --report-html=phpmetrics-report app/  # PHP
-npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0   # TypeScript
+# 循環的複雑度チェック（オプション・ローカル実行用）
+vendor/bin/phpmetrics --report-html=phpmetrics-report app/  # PHP（HTMLレポート生成）
+npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0   # TypeScript（複雑度20以上でエラー）
 ```
 
 #### 4. ドキュメント更新
@@ -67,7 +67,8 @@ npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0   # TypeScript
 - **メモリ制限**: PHPUnit 512M、PHPStan 1G
 - **CI並列実行**: 品質チェック + E2E テスト（約2分）
 - **カバレッジレポート**: phpunit.xmlで`coverage-html`ディレクトリに出力（.gitignoreで除外済み）
-- **詳細**: [開発フロー.md](docs/wiki/開発フロー.md)を参照
+- **循環的複雑度**: PHPMetrics（PHP）、ESLint（TypeScript）による自動チェック（CI統合済み）
+- **詳細**: [開発フロー.md](docs/wiki/開発フロー.md)、[CI-CD.md](docs/wiki/CI-CD.md)を参照
 
 ### コード品質基準
 

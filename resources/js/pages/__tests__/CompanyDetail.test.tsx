@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, useParams } from 'react-router-dom';
 import CompanyDetail from '@/pages/CompanyDetail';
-import { api } from '@/services/api';
+import { api as _api } from '@/services/api';
 
 // React Router のパラメータをモック
 vi.mock('react-router-dom', async () => {

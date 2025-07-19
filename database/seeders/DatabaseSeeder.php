@@ -15,8 +15,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             PlatformSeeder::class,
-            CompanySeeder::class,
-            RealisticTestDataSeeder::class,
         ]);
 
         $faker = fake('ja_JP');

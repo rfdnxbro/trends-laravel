@@ -8,6 +8,7 @@ use App\Models\Platform;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\Test;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class SearchApiTest extends TestCase
@@ -52,7 +53,7 @@ class SearchApiTest extends TestCase
     {
         $response = $this->getJson('/api/search/companies?q=Test');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'companies' => [
@@ -83,7 +84,7 @@ class SearchApiTest extends TestCase
     {
         $response = $this->getJson('/api/search/articles?q=Laravel');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'articles' => [
@@ -116,7 +117,7 @@ class SearchApiTest extends TestCase
     {
         $response = $this->getJson('/api/search?q=Test');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'companies' => [
@@ -150,7 +151,7 @@ class SearchApiTest extends TestCase
     {
         $response = $this->getJson('/api/search?q=Test&type=companies');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'companies' => [
@@ -178,7 +179,7 @@ class SearchApiTest extends TestCase
     {
         $response = $this->getJson('/api/search/companies?q=');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -191,7 +192,7 @@ class SearchApiTest extends TestCase
         $longQuery = str_repeat('a', 256);
         $response = $this->getJson("/api/search/companies?q={$longQuery}");
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -214,7 +215,7 @@ class SearchApiTest extends TestCase
 
         $response = $this->getJson('/api/search/articles?q=Laravel&days=30&min_bookmarks=10');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $articles = $response->json('data.articles');
 
         foreach ($articles as $article) {
@@ -234,7 +235,7 @@ class SearchApiTest extends TestCase
 
         $response = $this->getJson('/api/search/companies?q=TestExact');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $companies = $response->json('data.companies');
 
         // 完全一致の企業が最初に来ることを確認
@@ -262,7 +263,7 @@ class SearchApiTest extends TestCase
     {
         $response = $this->getJson('/api/search?q=test&type=invalid');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -280,7 +281,7 @@ class SearchApiTest extends TestCase
 
         $response = $this->getJson('/api/search/companies?q=Test&limit=5');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $this->assertLessThanOrEqual(5, count($response->json('data.companies')));
     }
 
@@ -289,7 +290,7 @@ class SearchApiTest extends TestCase
     {
         $response = $this->getJson('/api/search/articles?q=test_author');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $articles = $response->json('data.articles');
 
         $this->assertCount(1, $articles);
@@ -301,7 +302,7 @@ class SearchApiTest extends TestCase
     {
         $response = $this->getJson('/api/search?q=Test');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     // companies または articles が含まれる
@@ -335,7 +336,7 @@ class SearchApiTest extends TestCase
         // 空のクエリパラメータでエラーテスト
         $response = $this->getJson('/api/search?q=');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -383,7 +384,7 @@ class SearchApiTest extends TestCase
 
         $response = $this->getJson('/api/search/companies?q=TestCorp');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $companies = $response->json('data.companies');
 
         // 完全一致企業が最高スコアを持つことを確認
@@ -440,7 +441,7 @@ class SearchApiTest extends TestCase
 
         $response = $this->getJson('/api/search/articles?q=Laravel&days=365');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $articles = $response->json('data.articles');
 
         // 高ブックマーク数記事が最高スコアを持つことを確認
@@ -464,7 +465,7 @@ class SearchApiTest extends TestCase
 
         $response = $this->getJson('/api/search/companies?q=example.com');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $companies = $response->json('data.companies');
 
         $this->assertCount(1, $companies);
@@ -484,7 +485,7 @@ class SearchApiTest extends TestCase
 
         $response = $this->getJson('/api/search/companies?q=technology');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $companies = $response->json('data.companies');
 
         $this->assertCount(1, $companies);
@@ -527,7 +528,7 @@ class SearchApiTest extends TestCase
 
         $response = $this->getJson('/api/search/articles?q=React&days=365');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $articles = $response->json('data.articles');
 
         $this->assertCount(3, $articles);
@@ -580,7 +581,7 @@ class SearchApiTest extends TestCase
 
         $response = $this->getJson('/api/search/articles?q=Vue.js');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $articles = $response->json('data.articles');
 
         $this->assertCount(3, $articles);
@@ -604,7 +605,7 @@ class SearchApiTest extends TestCase
         // 無効なdays値でバリデーションエラー
         $response = $this->getJson('/api/search/articles?q=Laravel&days=0');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '検索クエリが無効です',
             ])
@@ -616,7 +617,7 @@ class SearchApiTest extends TestCase
         // 負のmin_bookmarks値でバリデーションエラー
         $response = $this->getJson('/api/search/articles?q=Laravel&min_bookmarks=-1');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '検索クエリが無効です',
             ])
@@ -656,7 +657,7 @@ class SearchApiTest extends TestCase
 
         $response = $this->getJson('/api/search/companies?q=Company');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $companies = $response->json('data.companies');
 
         // ランキングありの企業が高スコアを持つことを確認

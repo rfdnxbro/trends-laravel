@@ -339,7 +339,7 @@ jobs:
             echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
             echo "📈 現在のテストカバレッジ: $COVERAGE%"
             
-            # 95%閾値チェック
+            # 95%閾値チェック（高品質な目標設定）
             if (( $(echo "$COVERAGE < 95.0" | bc -l) )); then
               echo "❌ テストカバレッジが95%を下回っています: ${COVERAGE}%"
               echo "💡 カバレッジ向上のため、テスト実装をお願いします。"
@@ -368,7 +368,8 @@ jobs:
         if: always()
         with:
           script: |
-            const coverage = '${{ steps.coverage.outputs.coverage }}' || '0';
+            const coverageStr = '${{ steps.coverage.outputs.coverage }}' || '0';
+            const coverage = parseFloat(coverageStr);
             const coverageIcon = coverage >= 95 ? '🟢' : coverage >= 80 ? '🟡' : '🔴';
             const thresholdStatus = coverage >= 95 ? '✅ 95%閾値達成' : '❌ 95%閾値未達成';
             

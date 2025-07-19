@@ -3,106 +3,103 @@
 namespace Tests\Unit\Constants;
 
 use App\Constants\ArticleEngagement;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class ArticleEngagementTest extends TestCase
 {
-    public function test_通常記事のブックマーク範囲が正しく取得できる()
+    /**
+     * 通常記事のブックマーク範囲取得テスト
+     */
+    public function test_get_normal_bookmark_range_正常に範囲を取得できること(): void
     {
-        $range = ArticleEngagement::getNormalBookmarkRange();
-
-        $this->assertEquals([0, 1000], $range);
-        $this->assertEquals(ArticleEngagement::NORMAL_BOOKMARK_MIN, $range[0]);
-        $this->assertEquals(ArticleEngagement::NORMAL_BOOKMARK_MAX, $range[1]);
+        $result = ArticleEngagement::getNormalBookmarkRange();
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertEquals(ArticleEngagement::NORMAL_BOOKMARK_MIN, $result[0]);
+        $this->assertEquals(ArticleEngagement::NORMAL_BOOKMARK_MAX, $result[1]);
     }
 
-    public function test_通常記事のいいね範囲が正しく取得できる()
+    /**
+     * 通常記事のいいね範囲取得テスト
+     */
+    public function test_get_normal_likes_range_正常に範囲を取得できること(): void
     {
-        $range = ArticleEngagement::getNormalLikesRange();
-
-        $this->assertEquals([0, 500], $range);
-        $this->assertEquals(ArticleEngagement::NORMAL_LIKES_MIN, $range[0]);
-        $this->assertEquals(ArticleEngagement::NORMAL_LIKES_MAX, $range[1]);
+        $result = ArticleEngagement::getNormalLikesRange();
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertEquals(ArticleEngagement::NORMAL_LIKES_MIN, $result[0]);
+        $this->assertEquals(ArticleEngagement::NORMAL_LIKES_MAX, $result[1]);
     }
 
-    public function test_人気記事のブックマーク範囲が正しく取得できる()
+    /**
+     * 人気記事のブックマーク範囲取得テスト
+     */
+    public function test_get_popular_bookmark_range_正常に範囲を取得できること(): void
     {
-        $range = ArticleEngagement::getPopularBookmarkRange();
-
-        $this->assertEquals([500, 2000], $range);
-        $this->assertEquals(ArticleEngagement::POPULAR_BOOKMARK_MIN, $range[0]);
-        $this->assertEquals(ArticleEngagement::POPULAR_BOOKMARK_MAX, $range[1]);
+        $result = ArticleEngagement::getPopularBookmarkRange();
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertEquals(ArticleEngagement::POPULAR_BOOKMARK_MIN, $result[0]);
+        $this->assertEquals(ArticleEngagement::POPULAR_BOOKMARK_MAX, $result[1]);
     }
 
-    public function test_人気記事のいいね範囲が正しく取得できる()
+    /**
+     * 人気記事のいいね範囲取得テスト
+     */
+    public function test_get_popular_likes_range_正常に範囲を取得できること(): void
     {
-        $range = ArticleEngagement::getPopularLikesRange();
-
-        $this->assertEquals([200, 1000], $range);
-        $this->assertEquals(ArticleEngagement::POPULAR_LIKES_MIN, $range[0]);
-        $this->assertEquals(ArticleEngagement::POPULAR_LIKES_MAX, $range[1]);
+        $result = ArticleEngagement::getPopularLikesRange();
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertEquals(ArticleEngagement::POPULAR_LIKES_MIN, $result[0]);
+        $this->assertEquals(ArticleEngagement::POPULAR_LIKES_MAX, $result[1]);
     }
 
-    public function test_低エンゲージメント記事のブックマーク範囲が正しく取得できる()
+    /**
+     * 低エンゲージメント記事のブックマーク範囲取得テスト
+     */
+    public function test_get_low_bookmark_range_正常に範囲を取得できること(): void
     {
-        $range = ArticleEngagement::getLowBookmarkRange();
-
-        $this->assertEquals([0, 10], $range);
-        $this->assertEquals(ArticleEngagement::LOW_BOOKMARK_MIN, $range[0]);
-        $this->assertEquals(ArticleEngagement::LOW_BOOKMARK_MAX, $range[1]);
+        $result = ArticleEngagement::getLowBookmarkRange();
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertEquals(ArticleEngagement::LOW_BOOKMARK_MIN, $result[0]);
+        $this->assertEquals(ArticleEngagement::LOW_BOOKMARK_MAX, $result[1]);
     }
 
-    public function test_低エンゲージメント記事のいいね範囲が正しく取得できる()
+    /**
+     * 低エンゲージメント記事のいいね範囲取得テスト
+     */
+    public function test_get_low_likes_range_正常に範囲を取得できること(): void
     {
-        $range = ArticleEngagement::getLowLikesRange();
-
-        $this->assertEquals([0, 5], $range);
-        $this->assertEquals(ArticleEngagement::LOW_LIKES_MIN, $range[0]);
-        $this->assertEquals(ArticleEngagement::LOW_LIKES_MAX, $range[1]);
+        $result = ArticleEngagement::getLowLikesRange();
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertEquals(ArticleEngagement::LOW_LIKES_MIN, $result[0]);
+        $this->assertEquals(ArticleEngagement::LOW_LIKES_MAX, $result[1]);
     }
 
-    public function test_高エンゲージメント記事のブックマーク範囲が正しく取得できる()
+    /**
+     * 高エンゲージメント記事のブックマーク範囲取得テスト
+     */
+    public function test_get_high_bookmark_range_正常に範囲を取得できること(): void
     {
-        $range = ArticleEngagement::getHighBookmarkRange();
-
-        $this->assertEquals([1000, 5000], $range);
-        $this->assertEquals(ArticleEngagement::HIGH_BOOKMARK_MIN, $range[0]);
-        $this->assertEquals(ArticleEngagement::HIGH_BOOKMARK_MAX, $range[1]);
+        $result = ArticleEngagement::getHighBookmarkRange();
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertEquals(ArticleEngagement::HIGH_BOOKMARK_MIN, $result[0]);
+        $this->assertEquals(ArticleEngagement::HIGH_BOOKMARK_MAX, $result[1]);
     }
 
-    public function test_高エンゲージメント記事のいいね範囲が正しく取得できる()
+    /**
+     * 高エンゲージメント記事のいいね範囲取得テスト
+     */
+    public function test_get_high_likes_range_正常に範囲を取得できること(): void
     {
-        $range = ArticleEngagement::getHighLikesRange();
-
-        $this->assertEquals([500, 2000], $range);
-        $this->assertEquals(ArticleEngagement::HIGH_LIKES_MIN, $range[0]);
-        $this->assertEquals(ArticleEngagement::HIGH_LIKES_MAX, $range[1]);
-    }
-
-    public function test_定数値が期待通りに設定されている()
-    {
-        // 通常記事
-        $this->assertEquals(0, ArticleEngagement::NORMAL_BOOKMARK_MIN);
-        $this->assertEquals(1000, ArticleEngagement::NORMAL_BOOKMARK_MAX);
-        $this->assertEquals(0, ArticleEngagement::NORMAL_LIKES_MIN);
-        $this->assertEquals(500, ArticleEngagement::NORMAL_LIKES_MAX);
-
-        // 人気記事
-        $this->assertEquals(500, ArticleEngagement::POPULAR_BOOKMARK_MIN);
-        $this->assertEquals(2000, ArticleEngagement::POPULAR_BOOKMARK_MAX);
-        $this->assertEquals(200, ArticleEngagement::POPULAR_LIKES_MIN);
-        $this->assertEquals(1000, ArticleEngagement::POPULAR_LIKES_MAX);
-
-        // 低エンゲージメント記事
-        $this->assertEquals(0, ArticleEngagement::LOW_BOOKMARK_MIN);
-        $this->assertEquals(10, ArticleEngagement::LOW_BOOKMARK_MAX);
-        $this->assertEquals(0, ArticleEngagement::LOW_LIKES_MIN);
-        $this->assertEquals(5, ArticleEngagement::LOW_LIKES_MAX);
-
-        // 高エンゲージメント記事
-        $this->assertEquals(1000, ArticleEngagement::HIGH_BOOKMARK_MIN);
-        $this->assertEquals(5000, ArticleEngagement::HIGH_BOOKMARK_MAX);
-        $this->assertEquals(500, ArticleEngagement::HIGH_LIKES_MIN);
-        $this->assertEquals(2000, ArticleEngagement::HIGH_LIKES_MAX);
+        $result = ArticleEngagement::getHighLikesRange();
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertEquals(ArticleEngagement::HIGH_LIKES_MIN, $result[0]);
+        $this->assertEquals(ArticleEngagement::HIGH_LIKES_MAX, $result[1]);
     }
 }

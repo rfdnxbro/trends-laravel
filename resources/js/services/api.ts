@@ -57,6 +57,9 @@ export const apiService = {
     getTopCompanies: (limit = API_CONSTANTS.DEFAULT_LIMIT) => api.get(`/api/companies/top?limit=${limit}`),
     getCompanyDetail: (id: number) => api.get(`/api/companies/${id}`),
     searchCompanies: (query: string) => api.get(`/api/companies/search?q=${query}`),
+    createCompany: (data: Record<string, unknown>) => api.post('/api/companies', data),
+    updateCompany: (id: number, data: Record<string, unknown>) => api.put(`/api/companies/${id}`, data),
+    deleteCompany: (id: number) => api.delete(`/api/companies/${id}`),
     
     // 検索
     search: (query: string, filters?: Record<string, unknown>) => 

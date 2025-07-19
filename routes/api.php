@@ -44,32 +44,21 @@ Route::middleware(['throttle:60,1'])->group(function () {
         Route::get('company/{company_id}', [CompanyRankingController::class, 'company']);
     });
 
-    // 企業詳細 API
-    Route::prefix('companies')->group(function () {
-        // 企業一覧
-        Route::get('', [CompanyController::class, 'index']);
+    // 企業 API (Resource Route + 独自メソッド)
+    Route::apiResource('companies', CompanyController::class, [
+        'parameters' => ['companies' => 'company_id'],
+    ]);
 
-        // 企業詳細情報
-        Route::get('{company_id}', [CompanyController::class, 'show']);
-
-        // 企業の記事一覧
-        Route::get('{company_id}/articles', [CompanyController::class, 'articles']);
-
-        // 企業の影響力スコア履歴
-        Route::get('{company_id}/scores', [CompanyController::class, 'scores']);
-
-        // 企業のランキング情報
-        Route::get('{company_id}/rankings', [CompanyController::class, 'rankings']);
+    // 企業関連の追加エンドポイント
+    Route::prefix('companies/{company_id}')->group(function () {
+        Route::get('articles', [CompanyController::class, 'articles']);
+        Route::get('scores', [CompanyController::class, 'scores']);
+        Route::get('rankings', [CompanyController::class, 'rankings']);
+        Route::delete('force', [CompanyController::class, 'forceDestroy']);
     });
 
-    // 記事 API
-    Route::prefix('articles')->group(function () {
-        // 記事一覧
-        Route::get('', [App\Http\Controllers\Api\ArticleController::class, 'index']);
-
-        // 記事詳細
-        Route::get('{id}', [App\Http\Controllers\Api\ArticleController::class, 'show']);
-    });
+    // 記事 API (Resource Route - 読み取り専用)
+    Route::apiResource('articles', App\Http\Controllers\Api\ArticleController::class)->only(['index', 'show']);
 
     // 検索 API
     Route::prefix('search')->group(function () {

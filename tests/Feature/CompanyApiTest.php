@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class CompanyApiTest extends TestCase
@@ -90,7 +91,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'id',
@@ -121,7 +122,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson('/api/companies/99999');
 
         // Assert
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -134,7 +135,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson('/api/companies/0');
 
         // Assert
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -158,8 +159,8 @@ class CompanyApiTest extends TestCase
         $response2 = $this->getJson("/api/companies/{$company->id}");
 
         // Assert
-        $response1->assertStatus(200);
-        $response2->assertStatus(200);
+        $response1->assertStatus(Response::HTTP_OK);
+        $response2->assertStatus(Response::HTTP_OK);
         $this->assertEquals($response1->json(), $response2->json());
     }
 
@@ -184,7 +185,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/articles");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     '*' => [
@@ -245,7 +246,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/articles?days=7&min_bookmarks=10&per_page=10");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJson([
                 'meta' => [
                     'company_id' => $company->id,
@@ -266,7 +267,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson('/api/companies/99999/articles');
 
         // Assert
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -293,7 +294,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/articles?per_page=10&page=2");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJson([
                 'meta' => [
                     'current_page' => 2,
@@ -335,7 +336,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/scores");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -383,7 +384,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/scores?period=1w&days=60");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJson([
                 'meta' => [
                     'period' => '1w',
@@ -399,7 +400,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson('/api/companies/99999/scores');
 
         // Assert
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -442,7 +443,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/rankings");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -501,7 +502,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/rankings?include_history=true&history_days=30");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -524,7 +525,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson('/api/companies/99999/rankings');
 
         // Assert
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -546,7 +547,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/rankings?include_history=false");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -572,7 +573,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/scores?period=1d&days=30");
 
         // Assert
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
     }
 
     #[Test]
@@ -582,7 +583,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson('/api/companies/99999/scores');
 
         // Assert
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -604,7 +605,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/rankings");
 
         // Assert
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
     }
 
     #[Test]
@@ -629,7 +630,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/rankings?include_history=true");
 
         // Assert
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
     }
 
     #[Test]
@@ -639,7 +640,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson('/api/companies/99999/rankings');
 
         // Assert
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -659,12 +660,12 @@ class CompanyApiTest extends TestCase
         for ($i = 0; $i < 61; $i++) {
             $response = $this->getJson("/api/companies/{$company->id}");
             if ($i < 60) {
-                $response->assertStatus(200);
+                $response->assertStatus(Response::HTTP_OK);
             }
         }
 
         // Assert - 61回目はレート制限エラー
-        $response->assertStatus(429);
+        $response->assertStatus(Response::HTTP_TOO_MANY_REQUESTS);
     }
 
     #[Test]
@@ -683,8 +684,8 @@ class CompanyApiTest extends TestCase
         $response2 = $this->getJson("/api/companies/{$company->id}");
 
         // Assert
-        $response1->assertStatus(200);
-        $response2->assertStatus(200);
+        $response1->assertStatus(Response::HTTP_OK);
+        $response2->assertStatus(Response::HTTP_OK);
     }
 
     #[Test]
@@ -711,7 +712,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'recent_articles' => [
@@ -748,7 +749,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'current_rankings',
@@ -783,7 +784,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/articles");
 
         // Assert
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $articles = $response->json('data');
 
         // 新しい記事が最初に来ることを確認
@@ -818,7 +819,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/articles?days=7");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJson([
                 'meta' => [
                     'total' => 1, // 7日以内の記事は1件のみ
@@ -858,7 +859,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson("/api/companies/{$company->id}/articles?min_bookmarks=10");
 
         // Assert
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJson([
                 'meta' => [
                     'total' => 1, // ブックマーク数10以上の記事は1件のみ

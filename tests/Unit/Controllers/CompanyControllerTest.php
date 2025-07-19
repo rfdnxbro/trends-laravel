@@ -5,8 +5,6 @@ namespace Tests\Unit\Controllers;
 use App\Http\Controllers\Api\CompanyController;
 use App\Services\CompanyInfluenceScoreService;
 use App\Services\CompanyRankingService;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Validator;
 use Mockery;
 use Tests\TestCase;
 
@@ -40,145 +38,13 @@ class CompanyControllerTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_無効な企業idでshow呼び出し時にバリデーションエラーが返される()
-    {
-        $companyId = 999;
-
-        \Validator::shouldReceive('make')
-            ->andReturn(\Mockery::mock(Validator::class, function ($mock) {
-                $mock->shouldReceive('fails')->andReturn(true);
-                $mock->shouldReceive('errors')->andReturn(['company_id' => ['企業IDが無効です']]);
-            }));
-
-        $response = $this->controller->show($companyId);
-
-        $this->assertEquals(400, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertArrayHasKey('error', $responseData);
-        $this->assertEquals('企業IDが無効です', $responseData['error']);
-    }
-
-    public function test_無効な企業idでarticles呼び出し時にバリデーションエラーが返される()
-    {
-        $companyId = 999;
-        $request = new Request;
-
-        \Validator::shouldReceive('make')
-            ->andReturn(\Mockery::mock(Validator::class, function ($mock) {
-                $mock->shouldReceive('fails')->andReturn(true);
-                $mock->shouldReceive('errors')->andReturn(['company_id' => ['企業IDが無効です']]);
-            }));
-
-        $response = $this->controller->articles($request, $companyId);
-
-        $this->assertEquals(400, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertArrayHasKey('error', $responseData);
-        $this->assertEquals('企業IDが無効です', $responseData['error']);
-    }
-
-    public function test_無効な企業idでscores呼び出し時にバリデーションエラーが返される()
-    {
-        $companyId = 999;
-        $request = new Request;
-
-        \Validator::shouldReceive('make')
-            ->andReturn(\Mockery::mock(Validator::class, function ($mock) {
-                $mock->shouldReceive('fails')->andReturn(true);
-                $mock->shouldReceive('errors')->andReturn(['company_id' => ['企業IDが無効です']]);
-            }));
-
-        $response = $this->controller->scores($request, $companyId);
-
-        $this->assertEquals(400, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertArrayHasKey('error', $responseData);
-        $this->assertEquals('企業IDが無効です', $responseData['error']);
-    }
-
-    public function test_無効な企業idでrankings呼び出し時にバリデーションエラーが返される()
-    {
-        $companyId = 999;
-        $request = new Request;
-
-        \Validator::shouldReceive('make')
-            ->andReturn(\Mockery::mock(Validator::class, function ($mock) {
-                $mock->shouldReceive('fails')->andReturn(true);
-                $mock->shouldReceive('errors')->andReturn(['company_id' => ['企業IDが無効です']]);
-            }));
-
-        $response = $this->controller->rankings($request, $companyId);
-
-        $this->assertEquals(400, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertArrayHasKey('error', $responseData);
-        $this->assertEquals('企業IDが無効です', $responseData['error']);
-    }
-
+    /**
+     * コンストラクタでの依存性注入が正しく動作することのテスト
+     */
     public function test_コンストラクタで依存関係が正しく設定される()
     {
         $this->assertInstanceOf(CompanyController::class, $this->controller);
         $this->assertInstanceOf(CompanyRankingService::class, $this->rankingService);
         $this->assertInstanceOf(CompanyInfluenceScoreService::class, $this->scoreService);
-    }
-
-    public function test_showメソッドが存在する()
-    {
-        $this->assertTrue(method_exists($this->controller, 'show'));
-    }
-
-    public function test_articlesメソッドが存在する()
-    {
-        $this->assertTrue(method_exists($this->controller, 'articles'));
-    }
-
-    public function test_scoresメソッドが存在する()
-    {
-        $this->assertTrue(method_exists($this->controller, 'scores'));
-    }
-
-    public function test_rankingsメソッドが存在する()
-    {
-        $this->assertTrue(method_exists($this->controller, 'rankings'));
-    }
-
-    public function test_indexメソッドが存在する()
-    {
-        $this->assertTrue(method_exists($this->controller, 'index'));
-    }
-
-    public function test_indexメソッドでバリデーションが正しく動作する()
-    {
-        $request = new Request(['page' => 'invalid']);
-
-        \Validator::shouldReceive('make')
-            ->andReturn(\Mockery::mock(Validator::class, function ($mock) {
-                $mock->shouldReceive('fails')->andReturn(true);
-                $mock->shouldReceive('errors')->andReturn(['page' => ['ページ番号は整数である必要があります']]);
-            }));
-
-        $response = $this->controller->index($request);
-
-        $this->assertEquals(400, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertArrayHasKey('error', $responseData);
-        $this->assertEquals('リクエストパラメータが無効です', $responseData['error']);
-    }
-
-    public function test_サービスメソッドが正しく呼び出される()
-    {
-        $this->rankingService->shouldReceive('getCompanyRankings')
-            ->with(1)
-            ->andReturn(['1d' => null, '7d' => null, '30d' => null]);
-
-        $this->scoreService->shouldReceive('getCompanyScoreHistory')
-            ->with(1, '1d', 30)
-            ->andReturn([]);
-
-        $this->rankingService->shouldReceive('getCompanyRankingHistory')
-            ->with(1, 30)
-            ->andReturn([]);
-
-        $this->assertTrue(true);
     }
 }

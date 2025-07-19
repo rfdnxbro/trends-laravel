@@ -132,11 +132,12 @@ class CompanyInfluenceScoreService
     private function getArticlesForPeriod(Company $company, Carbon $periodStart, Carbon $periodEnd)
     {
         return Article::where('company_id', $company->id)
-            ->whereBetween('published_at', [$periodStart, $periodEnd])
-            ->orWhere(function ($query) use ($company, $periodStart, $periodEnd) {
-                $query->where('company_id', $company->id)
-                    ->whereNull('published_at')
-                    ->whereBetween('scraped_at', [$periodStart, $periodEnd]);
+            ->where(function ($query) use ($periodStart, $periodEnd) {
+                $query->whereBetween('published_at', [$periodStart, $periodEnd])
+                    ->orWhere(function ($subQuery) use ($periodStart, $periodEnd) {
+                        $subQuery->whereNull('published_at')
+                            ->whereBetween('scraped_at', [$periodStart, $periodEnd]);
+                    });
             })
             ->get();
     }

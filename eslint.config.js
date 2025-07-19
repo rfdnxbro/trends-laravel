@@ -27,6 +27,9 @@ export default [
                 HTMLElement: 'readonly',
                 HTMLButtonElement: 'readonly',
                 HTMLInputElement: 'readonly',
+                HTMLTextAreaElement: 'readonly',
+                Element: 'readonly',
+                URL: 'readonly',
                 RequestInit: 'readonly',
                 fetch: 'readonly'
             }

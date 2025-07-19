@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Platform;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class ArticleControllerTest extends TestCase
@@ -26,7 +27,7 @@ class ArticleControllerTest extends TestCase
 
         $response = $this->getJson('/api/articles');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     '*' => [
@@ -74,7 +75,7 @@ class ArticleControllerTest extends TestCase
 
         $response = $this->getJson("/api/articles?company_id={$company1->id}");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $this->assertCount(3, $response->json('data'));
 
         foreach ($response->json('data') as $article) {
@@ -101,7 +102,7 @@ class ArticleControllerTest extends TestCase
 
         $response = $this->getJson("/api/articles?platform_id={$platform1->id}");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $this->assertCount(3, $response->json('data'));
 
         foreach ($response->json('data') as $article) {
@@ -135,7 +136,7 @@ class ArticleControllerTest extends TestCase
 
         $response = $this->getJson('/api/articles');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $articles = $response->json('data');
 
         $this->assertEquals($article2->id, $articles[0]['id']);
@@ -156,7 +157,7 @@ class ArticleControllerTest extends TestCase
 
         $response = $this->getJson('/api/articles');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $this->assertCount(20, $response->json('data'));
         $this->assertEquals(25, $response->json('total'));
         $this->assertEquals(2, $response->json('last_page'));
@@ -175,7 +176,7 @@ class ArticleControllerTest extends TestCase
 
         $response = $this->getJson("/api/articles/{$article->id}");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'id',
                 'title',
@@ -206,7 +207,7 @@ class ArticleControllerTest extends TestCase
     {
         $response = $this->getJson('/api/articles/99999');
 
-        $response->assertStatus(404)
+        $response->assertStatus(Response::HTTP_NOT_FOUND)
             ->assertJson([
                 'message' => 'Article not found',
             ]);
@@ -225,7 +226,7 @@ class ArticleControllerTest extends TestCase
 
         $response = $this->getJson('/api/articles?limit=5');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $this->assertCount(5, $response->json('data'));
     }
 
@@ -257,7 +258,7 @@ class ArticleControllerTest extends TestCase
 
         $response = $this->getJson("/api/articles?company_id={$company1->id}&platform_id={$platform1->id}");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $this->assertCount(3, $response->json('data'));
 
         foreach ($response->json('data') as $article) {
@@ -271,7 +272,7 @@ class ArticleControllerTest extends TestCase
     {
         $response = $this->getJson('/api/articles');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data',
                 'current_page',
@@ -298,12 +299,12 @@ class ArticleControllerTest extends TestCase
 
         // 存在しないcompany_idを指定
         $response = $this->getJson('/api/articles?company_id=99999');
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $this->assertCount(0, $response->json('data'));
 
         // 存在しないplatform_idを指定
         $response = $this->getJson('/api/articles?platform_id=99999');
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $this->assertCount(0, $response->json('data'));
     }
 }

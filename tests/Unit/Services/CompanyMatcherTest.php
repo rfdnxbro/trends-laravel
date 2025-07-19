@@ -398,4 +398,390 @@ class CompanyMatcherTest extends TestCase
                 ]
             );
     }
+
+    #[Test]
+    public function test_identify_by_specific_url_urlパターンでの企業特定()
+    {
+        $company = Company::factory()->create([
+            'name' => 'URLパターンテスト会社',
+            'url_patterns' => ['blog.example.com', 'tech.example.com'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyBySpecificUrl');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'https://blog.example.com/article/123');
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('URLパターンテスト会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_specific_url_マッチしない場合nullを返す()
+    {
+        Company::factory()->create([
+            'name' => 'URLパターンテスト会社',
+            'url_patterns' => ['blog.example.com'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyBySpecificUrl');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'https://other.example.com/article/123');
+
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_identify_by_exact_domain_完全一致でドメイン企業を特定()
+    {
+        $company = Company::factory()->create([
+            'name' => 'ドメイン完全一致会社',
+            'domain' => 'exact.example.com',
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByExactDomain');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'exact.example.com');
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('ドメイン完全一致会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_exact_domain_domain_patternsで柔軟な検索()
+    {
+        $company = Company::factory()->create([
+            'name' => 'ドメインパターン会社',
+            'domain_patterns' => ['example.com', 'test.co.jp'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByExactDomain');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'api.example.com');
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('ドメインパターン会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_username_qiitaユーザー名での企業特定()
+    {
+        $company = Company::factory()->create([
+            'name' => 'Qiitaユーザー名会社',
+            'qiita_username' => 'test_qiita_user',
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByUsername');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'qiita', 'test_qiita_user');
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('Qiitaユーザー名会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_username_zennユーザー名での企業特定()
+    {
+        $company = Company::factory()->create([
+            'name' => 'Zennユーザー名会社',
+            'zenn_username' => 'test_zenn_user',
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByUsername');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'zenn', 'test_zenn_user');
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('Zennユーザー名会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_username_不正なプラットフォームでnullを返す()
+    {
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByUsername');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'invalid_platform', 'test_user');
+
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_identify_by_strict_keywords_厳密なキーワードマッチング()
+    {
+        $company = Company::factory()->create([
+            'name' => 'キーワード厳密テスト会社',
+            'keywords' => ['TestKeyword', 'ExactMatch'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByStrictKeywords');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'title' => 'TestKeyword について詳しく説明します',
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('キーワード厳密テスト会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_strict_keywords_部分一致では対象外()
+    {
+        $company = Company::factory()->create([
+            'name' => 'キーワード部分一致テスト会社',
+            'keywords' => ['test'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByStrictKeywords');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'title' => 'testing について詳しく説明します',  // testingはtestを含むが単語境界で区切られない
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_clean_username_ユーザー名のクリーンアップ()
+    {
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('cleanUsername');
+        $method->setAccessible(true);
+
+        $result1 = $method->invoke($this->matcher, '@test_user');
+        $this->assertEquals('test_user', $result1);
+
+        $result2 = $method->invoke($this->matcher, '/test_user');
+        $this->assertEquals('test_user', $result2);
+
+        $result3 = $method->invoke($this->matcher, '/@test_user');
+        $this->assertEquals('test_user', $result3);
+
+        $result4 = $method->invoke($this->matcher, '  test_user  ');
+        $this->assertEquals('test_user', $result4);
+    }
+
+    #[Test]
+    public function test_extract_zenn_organization_zenn組織記事の抽出()
+    {
+        $company = Company::factory()->create([
+            'name' => 'Zenn組織抽出テスト会社',
+            'zenn_organizations' => ['test-org', 'another-org'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('extractZennOrganization');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'https://zenn.dev/test-org/articles/sample-article');
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('Zenn組織抽出テスト会社', $result->name);
+    }
+
+    #[Test]
+    public function test_extract_zenn_organization_不正な_ur_lパターンでnullを返す()
+    {
+        Company::factory()->create([
+            'name' => 'Zenn組織抽出テスト会社',
+            'zenn_organizations' => ['test-org'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('extractZennOrganization');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'https://zenn.dev/invalid-structure');
+
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_extract_zenn_organization_組織が見つからない場合nullを返す()
+    {
+        Company::factory()->create([
+            'name' => 'Zenn組織抽出テスト会社',
+            'zenn_organizations' => ['test-org'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('extractZennOrganization');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'https://zenn.dev/unknown-org/articles/sample-article');
+
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_identify_by_specific_url_zenn組織_ur_lの特別処理()
+    {
+        $company = Company::factory()->create([
+            'name' => 'Zenn組織URLテスト会社',
+            'zenn_organizations' => ['special-org'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyBySpecificUrl');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'https://zenn.dev/special-org/articles/test-article');
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('Zenn組織URLテスト会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_username_クリーンアップされたユーザー名での検索()
+    {
+        $company = Company::factory()->create([
+            'name' => 'クリーンアップユーザー名会社',
+            'qiita_username' => 'clean_user',
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByUsername');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'qiita', '@clean_user');
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('クリーンアップユーザー名会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_username_元のユーザー名でも検索()
+    {
+        $company = Company::factory()->create([
+            'name' => '元ユーザー名会社',
+            'qiita_username' => '@original_user',
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByUsername');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'qiita', '@original_user');
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('元ユーザー名会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_exact_domain_完全一致優先でdomain_patterns検索()
+    {
+        $exactCompany = Company::factory()->create([
+            'name' => '完全一致会社',
+            'domain' => 'exact.example.com',
+            'is_active' => true,
+        ]);
+
+        $patternCompany = Company::factory()->create([
+            'name' => 'パターン会社',
+            'domain_patterns' => ['exact.example.com'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByExactDomain');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'exact.example.com');
+
+        $this->assertNotNull($result);
+        $this->assertEquals($exactCompany->id, $result->id);
+        $this->assertEquals('完全一致会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_strict_keywords_大文字小文字を正しく処理()
+    {
+        $company = Company::factory()->create([
+            'name' => '大文字小文字テスト会社',
+            'keywords' => ['TestKeyword', 'camelCase'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByStrictKeywords');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'title' => 'testkeyword について解説します',  // 小文字で入力
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('大文字小文字テスト会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_strict_keywords_日本語キーワードの処理()
+    {
+        $company = Company::factory()->create([
+            'name' => '日本語キーワード会社',
+            'keywords' => ['株式会社テスト', '日本語'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByStrictKeywords');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'title' => '株式会社テスト の新製品について',
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('日本語キーワード会社', $result->name);
+    }
 }

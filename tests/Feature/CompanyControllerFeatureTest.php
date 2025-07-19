@@ -8,6 +8,7 @@ use App\Models\CompanyInfluenceScore;
 use App\Models\CompanyRanking;
 use App\Models\Platform;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class CompanyControllerFeatureTest extends TestCase
@@ -25,7 +26,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson('/api/companies');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     '*' => [
@@ -57,7 +58,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson('/api/companies?search=Test');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json();
         $this->assertEquals(1, $data['meta']['total']);
         $this->assertStringContainsString('Test', $data['data'][0]['name']);
@@ -70,7 +71,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson('/api/companies?domain=example');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json();
         $this->assertEquals(1, $data['meta']['total']);
         $this->assertStringContainsString('example.com', $data['data'][0]['domain']);
@@ -83,7 +84,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson('/api/companies?is_active=1');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json();
         $this->assertEquals(1, $data['meta']['total']);
         $this->assertTrue($data['data'][0]['is_active']);
@@ -96,7 +97,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson('/api/companies?sort_by=name&sort_order=asc');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json();
         $this->assertEquals('A Company', $data['data'][0]['name']);
         $this->assertEquals('Z Company', $data['data'][1]['name']);
@@ -108,7 +109,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson('/api/companies?page=2&per_page=10');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json();
         $this->assertEquals(2, $data['meta']['current_page']);
         $this->assertEquals(10, $data['meta']['per_page']);
@@ -120,7 +121,7 @@ class CompanyControllerFeatureTest extends TestCase
     {
         $response = $this->getJson('/api/companies?page=invalid&per_page=-1');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => 'リクエストパラメータが無効です',
             ]);
@@ -137,7 +138,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson("/api/companies/{$company->id}");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'id',
@@ -157,7 +158,7 @@ class CompanyControllerFeatureTest extends TestCase
     {
         $response = $this->getJson('/api/companies/999');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -167,7 +168,7 @@ class CompanyControllerFeatureTest extends TestCase
     {
         $response = $this->getJson('/api/companies/invalid');
 
-        $response->assertStatus(500);
+        $response->assertStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     public function test_企業記事一覧取得_apiで有効な企業idの場合に正常なレスポンスが返される()
@@ -182,7 +183,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson("/api/companies/{$company->id}/articles");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     '*' => [
@@ -209,7 +210,7 @@ class CompanyControllerFeatureTest extends TestCase
     {
         $response = $this->getJson('/api/companies/999/articles');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -227,7 +228,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson("/api/companies/{$company->id}/articles?page=2&per_page=10");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json();
         $this->assertEquals(2, $data['meta']['current_page']);
         $this->assertEquals(10, $data['meta']['per_page']);
@@ -242,7 +243,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson("/api/companies/{$company->id}/scores");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -260,7 +261,7 @@ class CompanyControllerFeatureTest extends TestCase
     {
         $response = $this->getJson('/api/companies/999/scores');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -278,7 +279,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson("/api/companies/{$company->id}/rankings");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -291,7 +292,7 @@ class CompanyControllerFeatureTest extends TestCase
     {
         $response = $this->getJson('/api/companies/999/rankings');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([
                 'error' => '企業IDが無効です',
             ]);
@@ -307,7 +308,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson("/api/companies/{$company->id}/rankings?include_history=true");
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     'company_id',
@@ -338,7 +339,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson("/api/companies/{$company->id}/articles?min_bookmarks=10");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json();
         $this->assertEquals(1, $data['meta']['total']);
     }
@@ -362,7 +363,7 @@ class CompanyControllerFeatureTest extends TestCase
 
         $response = $this->getJson("/api/companies/{$company->id}/articles?days=7");
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json();
         $this->assertEquals(1, $data['meta']['total']);
     }

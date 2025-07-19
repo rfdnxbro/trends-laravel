@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Company;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class CompanyListApiTest extends TestCase
@@ -41,7 +42,7 @@ class CompanyListApiTest extends TestCase
     {
         $response = $this->getJson('/api/companies');
 
-        $response->assertStatus(200)
+        $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
                     '*' => [
@@ -76,7 +77,7 @@ class CompanyListApiTest extends TestCase
     {
         $response = $this->getJson('/api/companies?search=Company A');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json('data');
         $this->assertCount(1, $data);
         $this->assertEquals('Test Company A', $data[0]['name']);
@@ -86,7 +87,7 @@ class CompanyListApiTest extends TestCase
     {
         $response = $this->getJson('/api/companies?domain=test-b');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json('data');
         $this->assertCount(1, $data);
         $this->assertEquals('test-b.com', $data[0]['domain']);
@@ -97,7 +98,7 @@ class CompanyListApiTest extends TestCase
         // 非アクティブ企業も含めて取得
         $response = $this->getJson('/api/companies?is_active=0');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json('data');
         $this->assertCount(1, $data);
         $this->assertEquals('Inactive Company', $data[0]['name']);
@@ -109,7 +110,7 @@ class CompanyListApiTest extends TestCase
         // 名前の降順でソート
         $response = $this->getJson('/api/companies?sort_by=name&sort_order=desc');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json('data');
         $this->assertEquals('Test Company B', $data[0]['name']);
         $this->assertEquals('Test Company A', $data[1]['name']);
@@ -120,7 +121,7 @@ class CompanyListApiTest extends TestCase
         // 1ページあたり1件で取得
         $response = $this->getJson('/api/companies?per_page=1&page=1');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $meta = $response->json('meta');
         $this->assertEquals(1, $meta['per_page']);
         $this->assertEquals(1, $meta['current_page']);
@@ -135,7 +136,7 @@ class CompanyListApiTest extends TestCase
     {
         $response = $this->getJson('/api/companies?per_page=200');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $meta = $response->json('meta');
         $this->assertEquals(100, $meta['per_page']); // 上限100に制限される
     }
@@ -144,7 +145,7 @@ class CompanyListApiTest extends TestCase
     {
         $response = $this->getJson('/api/companies?page=-1&per_page=0&sort_by=invalid&sort_order=invalid');
 
-        $response->assertStatus(400)
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonStructure([
                 'error',
                 'details',
@@ -155,7 +156,7 @@ class CompanyListApiTest extends TestCase
     {
         $response = $this->getJson('/api/companies?search=Test&sort_by=name&sort_order=desc&per_page=10');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json('data');
         $this->assertCount(2, $data);
         // 降順ソートが適用されている
@@ -167,11 +168,11 @@ class CompanyListApiTest extends TestCase
     {
         // 1回目のリクエスト
         $response1 = $this->getJson('/api/companies');
-        $response1->assertStatus(200);
+        $response1->assertStatus(Response::HTTP_OK);
 
         // 2回目のリクエスト（キャッシュから取得）
         $response2 = $this->getJson('/api/companies');
-        $response2->assertStatus(200);
+        $response2->assertStatus(Response::HTTP_OK);
 
         // 同じレスポンスが返される
         $this->assertEquals($response1->json(), $response2->json());
@@ -182,7 +183,7 @@ class CompanyListApiTest extends TestCase
         // 存在しない企業名で検索
         $response = $this->getJson('/api/companies?search=NonExistentCompany');
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
         $data = $response->json('data');
         $this->assertCount(0, $data);
 

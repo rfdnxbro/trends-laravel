@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Constants\CacheTime;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCompanyRequest;
+use App\Http\Requests\UpdateCompanyRequest;
 use App\Http\Resources\CompanyArticleResource;
 use App\Http\Resources\CompanyResource;
 use App\Models\Company;
@@ -12,6 +14,8 @@ use App\Services\CompanyRankingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -667,5 +671,378 @@ class CompanyController extends Controller
 
             return response()->json($response);
         });
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/companies",
+     *     tags={"企業管理"},
+     *     summary="企業新規作成",
+     *     description="新しい企業を作成します。",
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *             required={"name", "domain"},
+     *
+     *             @OA\Property(property="name", type="string", example="株式会社サンプル"),
+     *             @OA\Property(property="domain", type="string", example="sample.com"),
+     *             @OA\Property(property="description", type="string", example="サンプル企業の説明"),
+     *             @OA\Property(property="logo_url", type="string", example="https://example.com/logo.png"),
+     *             @OA\Property(property="website_url", type="string", example="https://sample.com"),
+     *             @OA\Property(property="is_active", type="boolean", example=true),
+     *             @OA\Property(property="url_patterns", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="domain_patterns", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="keywords", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="zenn_organizations", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="qiita_username", type="string", example="sample_qiita"),
+     *             @OA\Property(property="zenn_username", type="string", example="sample_zenn")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=201,
+     *         description="企業作成成功",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="企業を作成しました")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=422,
+     *         description="バリデーションエラー",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function store(StoreCompanyRequest $request): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            $company = Company::create($request->validated());
+
+            // キャッシュクリア
+            Cache::tags(['companies'])->flush();
+
+            DB::commit();
+
+            return response()->json([
+                'data' => new CompanyResource($company),
+                'message' => '企業を作成しました',
+            ], Response::HTTP_CREATED);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('企業作成エラー: '.$e->getMessage());
+
+            return response()->json([
+                'error' => '企業の作成に失敗しました',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/companies/{company_id}",
+     *     tags={"企業管理"},
+     *     summary="企業情報更新",
+     *     description="既存の企業情報を更新します。",
+     *
+     *     @OA\Parameter(
+     *         name="company_id",
+     *         in="path",
+     *         required=true,
+     *         description="企業ID",
+     *
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *             required={"name", "domain"},
+     *
+     *             @OA\Property(property="name", type="string", example="株式会社サンプル"),
+     *             @OA\Property(property="domain", type="string", example="sample.com"),
+     *             @OA\Property(property="description", type="string", example="サンプル企業の説明"),
+     *             @OA\Property(property="logo_url", type="string", example="https://example.com/logo.png"),
+     *             @OA\Property(property="website_url", type="string", example="https://sample.com"),
+     *             @OA\Property(property="is_active", type="boolean", example=true),
+     *             @OA\Property(property="url_patterns", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="domain_patterns", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="keywords", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="zenn_organizations", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="qiita_username", type="string", example="sample_qiita"),
+     *             @OA\Property(property="zenn_username", type="string", example="sample_zenn")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="企業更新成功",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="企業情報を更新しました")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=404,
+     *         description="企業が見つかりません",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="error", type="string", example="企業が見つかりません")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=422,
+     *         description="バリデーションエラー",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function update(UpdateCompanyRequest $request, int $companyId): JsonResponse
+    {
+        try {
+            $company = Company::find($companyId);
+
+            if (! $company) {
+                return response()->json([
+                    'error' => '企業が見つかりません',
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            DB::beginTransaction();
+
+            $company->update($request->validated());
+
+            // キャッシュクリア
+            Cache::forget("company_detail_{$companyId}");
+            Cache::tags(['companies'])->flush();
+
+            DB::commit();
+
+            return response()->json([
+                'data' => new CompanyResource($company),
+                'message' => '企業情報を更新しました',
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('企業更新エラー: '.$e->getMessage());
+
+            return response()->json([
+                'error' => '企業情報の更新に失敗しました',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/companies/{company_id}",
+     *     tags={"企業管理"},
+     *     summary="企業削除",
+     *     description="企業を削除します。",
+     *
+     *     @OA\Parameter(
+     *         name="company_id",
+     *         in="path",
+     *         required=true,
+     *         description="企業ID",
+     *
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="企業削除成功",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="message", type="string", example="企業を削除しました")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=404,
+     *         description="企業が見つかりません",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="error", type="string", example="企業が見つかりません")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=409,
+     *         description="関連データが存在するため削除できません",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="error", type="string", example="関連データが存在するため削除できません")
+     *         )
+     *     )
+     * )
+     */
+    public function destroy(int $companyId): JsonResponse
+    {
+        try {
+            $company = Company::find($companyId);
+
+            if (! $company) {
+                return response()->json([
+                    'error' => '企業が見つかりません',
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            DB::beginTransaction();
+
+            // 関連データのチェック
+            if ($company->articles()->exists() || $company->rankings()->exists() || $company->influenceScores()->exists()) {
+                DB::rollBack();
+
+                return response()->json([
+                    'error' => '関連データが存在するため削除できません',
+                    'details' => [
+                        'articles' => $company->articles()->count(),
+                        'rankings' => $company->rankings()->count(),
+                        'scores' => $company->influenceScores()->count(),
+                    ],
+                ], Response::HTTP_CONFLICT);
+            }
+
+            $company->delete();
+
+            // キャッシュクリア
+            Cache::forget("company_detail_{$companyId}");
+            Cache::tags(['companies'])->flush();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => '企業を削除しました',
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('企業削除エラー: '.$e->getMessage());
+
+            return response()->json([
+                'error' => '企業の削除に失敗しました',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/companies/{company_id}/force",
+     *     tags={"企業管理"},
+     *     summary="企業強制削除",
+     *     description="企業を関連データと共に強制削除します。",
+     *
+     *     @OA\Parameter(
+     *         name="company_id",
+     *         in="path",
+     *         required=true,
+     *         description="企業ID",
+     *
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="削除成功",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="message", type="string", example="企業を関連データと共に削除しました"),
+     *             @OA\Property(property="deleted", type="object",
+     *                 @OA\Property(property="articles", type="integer", example=31),
+     *                 @OA\Property(property="rankings", type="integer", example=0),
+     *                 @OA\Property(property="scores", type="integer", example=12)
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=404,
+     *         description="企業が見つかりません",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="error", type="string", example="企業が見つかりません")
+     *         )
+     *     )
+     * )
+     */
+    public function forceDestroy(int $companyId): JsonResponse
+    {
+        try {
+            $company = Company::find($companyId);
+            if (! $company) {
+                return response()->json([
+                    'error' => '企業が見つかりません',
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            DB::beginTransaction();
+
+            // 削除される関連データの数を記録
+            $deleted = [
+                'articles' => $company->articles()->count(),
+                'rankings' => $company->rankings()->count(),
+                'scores' => $company->influenceScores()->count(),
+            ];
+
+            // 関連データを削除
+            $company->articles()->delete();
+            $company->rankings()->delete();
+            $company->influenceScores()->delete();
+
+            // 企業を削除
+            $company->delete();
+
+            // キャッシュクリア
+            Cache::forget("company_detail_{$companyId}");
+            Cache::tags(['companies'])->flush();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => '企業を関連データと共に削除しました',
+                'deleted' => $deleted,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('企業強制削除エラー: '.$e->getMessage());
+
+            return response()->json([
+                'error' => '企業の削除に失敗しました',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

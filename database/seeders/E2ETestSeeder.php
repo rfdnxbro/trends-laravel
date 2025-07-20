@@ -34,11 +34,10 @@ class E2ETestSeeder extends Seeder
             ]
         );
 
-        // 記事を作成（ID=1で確実に作成）
+        // 記事を作成（URLをキーとして使用）
         Article::updateOrCreate(
-            ['id' => 1],
+            ['url' => 'https://qiita.com/example/items/test1'],
             [
-                'url' => 'https://qiita.com/example/items/test123',
                 'title' => 'E2Eテスト用記事タイトル',
                 'author_name' => 'テスト著者',
                 'author' => 'test_author',

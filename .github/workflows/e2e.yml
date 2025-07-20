@@ -74,7 +74,9 @@ jobs:
           php artisan key:generate
       
       - name: フロントエンドアセットをビルド
-        run: npm run build
+        run: |
+          npm run build
+          ls -la public/build/
       
       - name: データベースを設定
         run: |

@@ -146,6 +146,29 @@ export interface CompanyListFilters {
     per_page?: number;
 }
 
+export interface ArticleListFilters {
+    search?: string;
+    company_id?: number;
+    platform_id?: number;
+    start_date?: string;
+    end_date?: string;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
+    page?: number;
+    per_page?: number;
+}
+
+export interface ArticlesListResponse {
+    data: Article[];
+    meta: {
+        current_page: number;
+        per_page: number;
+        total: number;
+        last_page: number;
+        filters?: ArticleListFilters;
+    };
+}
+
 // 検索関連型定義
 export interface SearchFilters {
     platforms?: string[];
@@ -320,6 +343,8 @@ export const QueryKeys = {
     TOP_COMPANIES: ['top-companies'] as const,
     COMPANIES_LIST: (filters?: CompanyListFilters) => ['companies-list', filters] as const,
     COMPANY_DETAIL: (id: number) => ['company-detail', id] as const,
+    ARTICLES_LIST: (filters?: ArticleListFilters) => ['articles-list', filters] as const,
+    ARTICLE_DETAIL: (id: number) => ['article-detail', id] as const,
     SEARCH_COMPANIES: (query: string) => ['search-companies', query] as const,
     SEARCH_RESULTS: (query: string, filters?: SearchFilters) => ['search-results', query, filters] as const,
     COMPANY_RANKINGS: (filters: RankingFilters) => ['company-rankings', filters] as const,

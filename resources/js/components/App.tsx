@@ -5,6 +5,7 @@ import Dashboard from '../pages/Dashboard';
 import CompanyDetail from '../pages/CompanyDetail';
 import CompanyList from '../pages/CompanyList';
 import ArticleList from '../pages/ArticleList';
+import ArticleDetail from '../pages/ArticleDetail';
 
 const App: React.FC = () => {
     return (
@@ -15,6 +16,7 @@ const App: React.FC = () => {
                 <Route path="/companies" element={<CompanyList />} />
                 <Route path="/companies/:id" element={<CompanyDetail />} />
                 <Route path="/articles" element={<ArticleList />} />
+                <Route path="/articles/:id" element={<ArticleDetail />} />
             </Routes>
         </Layout>
     );

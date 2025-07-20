@@ -464,7 +464,7 @@ class ArticleTest extends TestCase
         $this->assertEquals('新しい記事', $result->first()->title);
     }
 
-    public function test_withFiltersスコープで複数フィルタを組み合わせできる()
+    public function test_withFiltersスコープで複数フィルタを組み合わせできる(): void
     {
         $company1 = Company::create([
             'name' => 'Target Company',

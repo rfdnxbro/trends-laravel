@@ -324,3 +324,4 @@ class ArticleResourceTest extends TestCase
         $this->assertLessThan(2.0, $endTime - $startTime, 'パフォーマンスが期待値を下回っています');
     }
 }
+}

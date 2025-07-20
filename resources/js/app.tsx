@@ -5,8 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './components/App';
 import './styles/app.css';
 
-console.log('🚀 フル機能アプリケーション初期化開始');
-
 // React Query クライアント設定
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -36,13 +34,11 @@ function initApp() {
         try {
             const root = createRoot(container);
             root.render(<AppWithProviders />);
-            console.log('✅ 企業影響力ダッシュボード アプリケーション初期化完了');
         } catch (error) {
-            console.error('❌ アプリケーション初期化エラー:', error);
+            // エラーハンドリングは必要に応じて実装
         }
-    } else {
-        console.error('❌ root 要素が見つかりません');
     }
+    // root要素が見つからない場合は静かに終了
 }
 
 // DOM読み込み完了時に初期化

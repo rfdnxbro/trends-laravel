@@ -27,10 +27,9 @@ api.interceptors.response.use(
     (response: AxiosResponse) => response,
     (error) => {
         if (error.response?.status === API_CONSTANTS.CSRF_ERROR_STATUS) {
-            // CSRF トークンエラー
-            console.error('CSRF token mismatch. Please refresh the page.');
+            // CSRF トークンエラー - ページの再読み込みが必要
         } else if (error.response?.status >= API_CONSTANTS.SERVER_ERROR_START) {
-            console.error('Server error:', error.response?.data?.message || 'Internal server error');
+            // サーバーエラー
         }
         return Promise.reject(error);
     }

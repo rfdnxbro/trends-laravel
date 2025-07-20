@@ -40,3 +40,12 @@ coverage.xml
 
 # PHPMetrics Report
 /phpmetrics-report/
+phpmetrics.json
+
+# Temporary test files
+test-*.html
+test-*.tsx
+!resources/js/test/
+*.bak
+*.tmp
+*.debug

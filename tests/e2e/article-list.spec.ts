@@ -3,7 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('記事一覧ページ', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/articles');
-    await page.waitForLoadState('networkidle');
+    // より安定した待機戦略に変更
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('h1, [data-testid="article-list"], .main-content', { timeout: 15000 });
   });
 
   test('記事一覧ページが正しく表示される', async ({ page }) => {

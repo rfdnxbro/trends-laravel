@@ -4,7 +4,8 @@ test.describe('企業詳細ページ', () => {
   // 有効な企業IDを取得する関数
   async function getValidCompanyId(page: any): Promise<string | null> {
     await page.goto('/companies');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('.data-table, .main-content, h1', { timeout: 15000 });
     
     const table = page.locator('.data-table');
     const tableExists = await table.isVisible();
@@ -146,11 +147,11 @@ test.describe('企業詳細ページ', () => {
     const zennLink = page.locator('a[href*="zenn.dev"]');
     const websiteLink = page.locator('a[href*="http"]:not([href*="qiita"]):not([href*="zenn"])').first();
     
-    // Qiitaリンクが存在する場合
-    const hasQiitaLink = await qiitaLink.isVisible();
+    // Qiitaリンクが存在する場合（複数ある場合は最初のものを使用）
+    const hasQiitaLink = await qiitaLink.first().isVisible();
     if (hasQiitaLink) {
-      await expect(qiitaLink).toHaveAttribute('target', '_blank');
-      await expect(qiitaLink).toHaveAttribute('rel', /noopener/);
+      await expect(qiitaLink.first()).toHaveAttribute('target', '_blank');
+      await expect(qiitaLink.first()).toHaveAttribute('rel', /noopener/);
     }
     
     // Zennリンクが存在する場合

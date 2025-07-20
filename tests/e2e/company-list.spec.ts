@@ -95,7 +95,8 @@ test.describe('企業一覧ページ', () => {
 
   test('ソート機能が動作する', async ({ page }) => {
     await page.goto('/companies');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('.data-table, .main-content, h1', { timeout: 15000 });
     
     // ソート可能なヘッダーの存在確認
     const nameHeader = page.locator('th:has-text("企業名")');

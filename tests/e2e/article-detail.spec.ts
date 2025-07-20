@@ -46,7 +46,8 @@ test.describe('記事詳細ページ', () => {
 
   test('記事URLセクションが機能する', async ({ page }) => {
     // ページ読み込み完了まで待機
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('h1, .main-content, [data-testid="article-detail"]', { timeout: 15000 });
     
     // 記事URLセクションが存在することを確認
     await expect(page.locator('text=記事URL').first()).toBeVisible({ timeout: 10000 });

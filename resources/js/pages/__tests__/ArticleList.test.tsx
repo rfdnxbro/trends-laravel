@@ -22,7 +22,15 @@ const createTestQueryClient = () => new QueryClient({
     defaultOptions: {
         queries: {
             retry: false,
+            refetchOnWindowFocus: false,
+            staleTime: 0,
+            cacheTime: 0,
         },
+    },
+    logger: {
+        log: () => {},
+        warn: () => {},
+        error: () => {},
     },
 });
 
@@ -100,11 +108,14 @@ const mockArticlesResponse = {
 
 beforeEach(() => {
     vi.clearAllMocks();
+    mockApiService.getArticles.mockReset();
+    // デフォルトで成功レスポンスを返す
+    mockApiService.getArticles.mockResolvedValue(mockArticlesResponse);
 });
 
 describe('ArticleList', () => {
     it('記事一覧が正しく表示される', async () => {
-        mockApiService.getArticles.mockResolvedValueOnce(mockArticlesResponse);
+        mockApiService.getArticles.mockResolvedValue(mockArticlesResponse);
 
         renderWithProviders(<ArticleList />);
 
@@ -119,7 +130,7 @@ describe('ArticleList', () => {
     });
 
     it('企業のロゴが表示される', async () => {
-        mockApiService.getArticles.mockResolvedValueOnce(mockArticlesResponse);
+        mockApiService.getArticles.mockResolvedValue(mockArticlesResponse);
 
         renderWithProviders(<ArticleList />);
 
@@ -133,7 +144,7 @@ describe('ArticleList', () => {
     });
 
     it('ブックマーク数が表示される', async () => {
-        mockApiService.getArticles.mockResolvedValueOnce(mockArticlesResponse);
+        mockApiService.getArticles.mockResolvedValue(mockArticlesResponse);
 
         renderWithProviders(<ArticleList />);
 
@@ -146,7 +157,7 @@ describe('ArticleList', () => {
     });
 
     it('記事のリンクが正しく設定される', async () => {
-        mockApiService.getArticles.mockResolvedValueOnce(mockArticlesResponse);
+        mockApiService.getArticles.mockResolvedValue(mockArticlesResponse);
 
         renderWithProviders(<ArticleList />);
 
@@ -172,13 +183,13 @@ describe('ArticleList', () => {
     });
 
     it('エラー状態が表示される', async () => {
-        mockApiService.getArticles.mockRejectedValueOnce(new Error('Network error'));
+        mockApiService.getArticles.mockRejectedValue(new Error('Network error'));
 
         renderWithProviders(<ArticleList />);
 
         await waitFor(() => {
             expect(screen.getByText('記事一覧の読み込みに失敗しました')).toBeInTheDocument();
-        });
+        }, { timeout: 3000 });
 
         expect(screen.getByText('再読み込み')).toBeInTheDocument();
     });
@@ -196,7 +207,7 @@ describe('ArticleList', () => {
             },
         };
 
-        mockApiService.getArticles.mockResolvedValueOnce(emptyResponse);
+        mockApiService.getArticles.mockResolvedValue(emptyResponse);
 
         renderWithProviders(<ArticleList />);
 

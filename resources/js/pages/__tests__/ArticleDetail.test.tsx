@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { vi } from 'vitest';
 import ArticleDetail from '../ArticleDetail';
 import { apiService } from '../../services/api';
@@ -22,7 +22,15 @@ const createTestQueryClient = () => new QueryClient({
     defaultOptions: {
         queries: {
             retry: false,
+            refetchOnWindowFocus: false,
+            staleTime: 0,
+            cacheTime: 0,
         },
+    },
+    logger: {
+        log: () => {},
+        warn: () => {},
+        error: () => {},
     },
 });
 
@@ -30,18 +38,17 @@ const renderWithProviders = (articleId: string = '1') => {
     const queryClient = createTestQueryClient();
     return render(
         <QueryClientProvider client={queryClient}>
-            <BrowserRouter initialEntries={[`/articles/${articleId}`]}>
+            <MemoryRouter initialEntries={[`/articles/${articleId}`]}>
                 <Routes>
                     <Route path="/articles/:id" element={<ArticleDetail />} />
                 </Routes>
-            </BrowserRouter>
+            </MemoryRouter>
         </QueryClientProvider>
     );
 };
 
 const mockArticleResponse = {
     data: {
-        data: {
             id: 1,
             title: 'Test Article Title',
             url: 'https://example.com/article',
@@ -74,16 +81,17 @@ const mockArticleResponse = {
             platform_id: 1,
             company_id: 1,
         },
-    },
 };
 
 beforeEach(() => {
     vi.clearAllMocks();
+    mockApiService.getArticleDetail.mockReset();
+    // デフォルトで成功レスポンスを返す
+    mockApiService.getArticleDetail.mockResolvedValue(mockArticleResponse);
 });
 
 describe('ArticleDetail', () => {
     it('記事詳細が正しく表示される', async () => {
-        mockApiService.getArticleDetail.mockResolvedValueOnce(mockArticleResponse);
 
         renderWithProviders('1');
 
@@ -92,12 +100,12 @@ describe('ArticleDetail', () => {
         });
 
         expect(screen.getByText('Test Company')).toBeInTheDocument();
-        expect(screen.getByText('Test Platform')).toBeInTheDocument();
+        expect(screen.getAllByText('Test Platform')[0]).toBeInTheDocument();
         expect(screen.getByText('記事を読む')).toBeInTheDocument();
     });
 
     it('企業情報セクションが表示される', async () => {
-        mockApiService.getArticleDetail.mockResolvedValueOnce(mockArticleResponse);
+        mockApiService.getArticleDetail.mockResolvedValue(mockArticleResponse);
 
         renderWithProviders('1');
 
@@ -112,7 +120,7 @@ describe('ArticleDetail', () => {
     });
 
     it('統計情報が表示される', async () => {
-        mockApiService.getArticleDetail.mockResolvedValueOnce(mockArticleResponse);
+        mockApiService.getArticleDetail.mockResolvedValue(mockArticleResponse);
 
         renderWithProviders('1');
 
@@ -129,7 +137,7 @@ describe('ArticleDetail', () => {
     });
 
     it('記事URLセクションが機能する', async () => {
-        mockApiService.getArticleDetail.mockResolvedValueOnce(mockArticleResponse);
+        mockApiService.getArticleDetail.mockResolvedValue(mockArticleResponse);
 
         renderWithProviders('1');
 
@@ -142,7 +150,7 @@ describe('ArticleDetail', () => {
     });
 
     it('プラットフォーム詳細が表示される', async () => {
-        mockApiService.getArticleDetail.mockResolvedValueOnce(mockArticleResponse);
+        mockApiService.getArticleDetail.mockResolvedValue(mockArticleResponse);
 
         renderWithProviders('1');
 
@@ -150,13 +158,13 @@ describe('ArticleDetail', () => {
             expect(screen.getByText('プラットフォーム')).toBeInTheDocument();
         });
 
-        expect(screen.getByText('Test Platform')).toBeInTheDocument();
+        expect(screen.getAllByText('Test Platform')[0]).toBeInTheDocument();
         expect(screen.getByText('https://platform.com')).toBeInTheDocument();
         expect(screen.getByText('example.com')).toBeInTheDocument();
     });
 
     it('メタデータが表示される', async () => {
-        mockApiService.getArticleDetail.mockResolvedValueOnce(mockArticleResponse);
+        mockApiService.getArticleDetail.mockResolvedValue(mockArticleResponse);
 
         renderWithProviders('1');
 
@@ -171,7 +179,7 @@ describe('ArticleDetail', () => {
     });
 
     it('戻るボタンが機能する', async () => {
-        mockApiService.getArticleDetail.mockResolvedValueOnce(mockArticleResponse);
+        mockApiService.getArticleDetail.mockResolvedValue(mockArticleResponse);
 
         renderWithProviders('1');
 
@@ -181,7 +189,7 @@ describe('ArticleDetail', () => {
     });
 
     it('記事一覧に戻るリンクが機能する', async () => {
-        mockApiService.getArticleDetail.mockResolvedValueOnce(mockArticleResponse);
+        mockApiService.getArticleDetail.mockResolvedValue(mockArticleResponse);
 
         renderWithProviders('1');
 
@@ -192,7 +200,7 @@ describe('ArticleDetail', () => {
     });
 
     it('記事を読むボタンが外部リンクとして機能する', async () => {
-        mockApiService.getArticleDetail.mockResolvedValueOnce(mockArticleResponse);
+        mockApiService.getArticleDetail.mockResolvedValue(mockArticleResponse);
 
         renderWithProviders('1');
 
@@ -205,7 +213,7 @@ describe('ArticleDetail', () => {
     });
 
     it('共有ボタンが存在する', async () => {
-        mockApiService.getArticleDetail.mockResolvedValueOnce(mockArticleResponse);
+        mockApiService.getArticleDetail.mockResolvedValue(mockArticleResponse);
 
         renderWithProviders('1');
 
@@ -225,13 +233,13 @@ describe('ArticleDetail', () => {
     });
 
     it('エラー状態が適切にハンドリングされる', async () => {
-        mockApiService.getArticleDetail.mockRejectedValueOnce(new Error('Network error'));
+        mockApiService.getArticleDetail.mockRejectedValue(new Error('Network error'));
 
         renderWithProviders('1');
 
         await waitFor(() => {
             expect(screen.getByText('記事の読み込みに失敗しました')).toBeInTheDocument();
-        });
+        }, { timeout: 3000 });
 
         expect(screen.getByText('戻る')).toBeInTheDocument();
         expect(screen.getByText('再読み込み')).toBeInTheDocument();

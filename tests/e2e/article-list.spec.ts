@@ -108,7 +108,7 @@ test.describe('記事一覧ページ', () => {
         await nextButton.click();
         
         // ページが変更されることを確認（URLまたは内容の変化）
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('domcontentloaded');
       }
     } catch (error) {
       // APIデータが存在しない場合のエラーハンドリング
@@ -128,7 +128,7 @@ test.describe('記事一覧ページ', () => {
   test('レスポンシブ対応：モバイル表示', async ({ page }) => {
     // モバイルサイズに変更
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 主要コンテンツが適切に表示されることを確認
     await expect(page.locator('h1:has-text("記事一覧")').first()).toBeVisible({ timeout: 10000 });
@@ -138,7 +138,7 @@ test.describe('記事一覧ページ', () => {
   test('レスポンシブ対応：デスクトップ表示', async ({ page }) => {
     // デスクトップサイズに変更
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // すべての要素が適切に表示されることを確認
     await expect(page.locator('h1:has-text("記事一覧")').first()).toBeVisible({ timeout: 10000 });
@@ -148,7 +148,7 @@ test.describe('記事一覧ページ', () => {
   test('フィルタークリア機能が動作する', async ({ page }) => {
     // フィルターを開く
     await page.click('button:has-text("フィルター")');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 日付フィルターに値を入力
     await page.fill('input[type="date"]', '2024-01-01');
@@ -168,7 +168,7 @@ test.describe('記事一覧ページ', () => {
     await page.press('input[placeholder*="記事タイトルや著者名で検索"]', 'Enter');
     
     // 検索結果の読み込み完了を待機
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('ローディング状態が適切に表示される', async ({ page }) => {
@@ -200,7 +200,7 @@ test.describe('記事一覧ページ', () => {
     });
     
     await page.goto('/articles');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // エラーメッセージが表示されることを確認
     await expect(page.locator('text=記事一覧の読み込みに失敗しました').first()).toBeVisible({ timeout: 10000 });

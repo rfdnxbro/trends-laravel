@@ -41,10 +41,10 @@ test.describe('企業詳細ページ', () => {
     await expect(page).toHaveTitle(/DevCorpTrends/);
     
     // ページが完全にロードされるまで待機
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 企業詳細のコンテンツが表示されている（テキストがロードされるまで待機）
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000); // APIからのデータロード待機
     
     // ページのメインコンテンツが表示されていることを確認
@@ -61,7 +61,7 @@ test.describe('企業詳細ページ', () => {
     }
     
     await page.goto(`/companies/${testCompanyId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 企業名が表示されている（テキストコンテンツがある要素を確認）
     await page.waitForTimeout(3000); // データロード待機
@@ -91,7 +91,7 @@ test.describe('企業詳細ページ', () => {
     }
     
     await page.goto(`/companies/${testCompanyId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // ランキング関連の要素を確認
     const rankingElements = page.locator('text=/ランキング|順位|スコア/');
@@ -111,7 +111,7 @@ test.describe('企業詳細ページ', () => {
     }
     
     await page.goto(`/companies/${testCompanyId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // データロード待機
     await page.waitForTimeout(3000);
@@ -140,7 +140,7 @@ test.describe('企業詳細ページ', () => {
     }
     
     await page.goto(`/companies/${testCompanyId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // SNSリンクの確認
     const qiitaLink = page.locator('a[href*="qiita.com"]');
@@ -177,7 +177,7 @@ test.describe('企業詳細ページ', () => {
     }
     
     await page.goto(`/companies/${testCompanyId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // Chart.js または類似のチャートライブラリの要素を確認
     const charts = page.locator('canvas, .chart, [data-chart]');
@@ -197,7 +197,7 @@ test.describe('企業詳細ページ', () => {
     }
     
     await page.goto(`/companies/${testCompanyId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // サイドバーまたはナビゲーションの企業一覧リンクを確認（重複解決）
     const companyListLink = page.locator('a[href="/companies"]:has-text("企業一覧")').first();
@@ -208,7 +208,7 @@ test.describe('企業詳細ページ', () => {
       
       // 企業一覧ページに遷移していることを確認
       await expect(page).toHaveURL('/companies');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       await expect(page.locator('h1:has-text("企業一覧")')).toBeVisible();
     }
   });
@@ -216,7 +216,7 @@ test.describe('企業詳細ページ', () => {
   test('404エラーページの処理確認', async ({ page }) => {
     const nonExistentId = '999999';
     await page.goto(`/companies/${nonExistentId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(3000); // データロード待機
     
     // エラー状態が適切に処理されていることを確認
@@ -237,7 +237,7 @@ test.describe('企業詳細ページ', () => {
     }
     
     await page.goto(`/companies/${testCompanyId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 記事リンクが存在する場合のテスト
     const articleLinks = page.locator('a[href*="/articles/"], a[href*="qiita.com"], a[href*="zenn.dev"]');
@@ -263,7 +263,7 @@ test.describe('企業詳細ページ', () => {
     }
     
     await page.goto(`/companies/${testCompanyId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // タブまたはアコーディオンの要素を確認
     const tabs = page.locator('[role="tab"], .tab, button:has-text("詳細"), button:has-text("記事"), button:has-text("ランキング")');
@@ -289,7 +289,7 @@ test.describe('企業詳細ページ', () => {
     // モバイルビューポートでテスト
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto(`/companies/${testCompanyId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // モバイルでページが正常に表示されることを確認
     await page.waitForTimeout(2000); // データロード待機
@@ -298,7 +298,7 @@ test.describe('企業詳細ページ', () => {
     
     // タブレットビューポートでテスト
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // タブレットでページが正常に表示されることを確認
     const tabletContent = page.locator('.dashboard-card').first();
@@ -306,7 +306,7 @@ test.describe('企業詳細ページ', () => {
     
     // デスクトップビューポートに戻す
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // デスクトップでも正常に表示されることを確認
     const desktopContent = page.locator('.dashboard-card').first();
@@ -330,7 +330,7 @@ test.describe('企業詳細ページ', () => {
     const isLoadingVisible = await loadingSpinner.isVisible();
     
     // データロード完了まで待機
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // ローディング状態が消えてコンテンツが表示されることを確認
     await page.waitForTimeout(2000); // データロード待機

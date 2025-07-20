@@ -7,7 +7,7 @@ test.describe('記事詳細ページ', () => {
 
   test('記事詳細ページが正しく表示される', async ({ page }) => {
     // ページ読み込み完了まで待機
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // タイトルが表示されることを確認
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -21,7 +21,7 @@ test.describe('記事詳細ページ', () => {
 
   test('企業情報セクションが表示される', async ({ page }) => {
     // ページ読み込み完了まで待機
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 企業情報セクションが存在することを確認
     await expect(page.locator('text=企業情報').first()).toBeVisible({ timeout: 10000 });
@@ -35,7 +35,7 @@ test.describe('記事詳細ページ', () => {
 
   test('統計情報が表示される', async ({ page }) => {
     // ページ読み込み完了まで待機
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 統計情報セクションが存在することを確認
     await expect(page.locator('text=統計情報').first()).toBeVisible({ timeout: 10000 });
@@ -58,7 +58,7 @@ test.describe('記事詳細ページ', () => {
 
   test('プラットフォーム詳細が表示される', async ({ page }) => {
     // ページ読み込み完了まで待機
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // プラットフォームセクションが存在することを確認
     await expect(page.locator('text=プラットフォーム').first()).toBeVisible({ timeout: 10000 });

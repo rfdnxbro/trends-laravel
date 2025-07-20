@@ -11,12 +11,12 @@ test.describe('ホームページ', () => {
     await expect(page.locator('#root')).toBeVisible();
     
     // ページが完全にロードされるまで待機
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('検索機能が正常に動作する', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 検索フィールドを探す
     const searchInput = page.locator('input[type="search"], input[placeholder*="検索"], input[placeholder*="search"]');
@@ -38,7 +38,7 @@ test.describe('ホームページ', () => {
 
   test('メインナビゲーションが動作する', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // ナビゲーション要素を探す
     const navLinks = page.locator('nav a, header a, [role="navigation"] a');

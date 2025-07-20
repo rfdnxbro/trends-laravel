@@ -8,7 +8,7 @@ test.describe('企業一覧ページ', () => {
     await expect(page).toHaveTitle(/DevCorpTrends/);
     
     // ページが完全にロードされるまで待機
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 企業一覧のヘッダーが表示されている
     await expect(page.locator('h1')).toContainText('企業一覧');
@@ -19,7 +19,7 @@ test.describe('企業一覧ページ', () => {
 
   test('企業データが正常に表示される', async ({ page }) => {
     await page.goto('/companies');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 企業一覧のロードを待機（テーブルまたはカード形式）
     await page.waitForSelector('.data-table, .dashboard-card', { timeout: 10000 });
@@ -54,7 +54,7 @@ test.describe('企業一覧ページ', () => {
 
   test('検索機能が正常に動作する', async ({ page }) => {
     await page.goto('/companies');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 検索ボックスの存在確認
     const searchInput = page.locator('input[placeholder*="企業名で検索"]');
@@ -75,7 +75,7 @@ test.describe('企業一覧ページ', () => {
 
   test('ページサイズ変更機能が動作する', async ({ page }) => {
     await page.goto('/companies');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // ページサイズ選択ボックスの存在確認
     const perPageSelect = page.locator('select').filter({ hasText: '件' });
@@ -113,7 +113,7 @@ test.describe('企業一覧ページ', () => {
 
   test('企業詳細ページへの遷移が動作する', async ({ page }) => {
     await page.goto('/companies');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 企業一覧のロードを待機
     await page.waitForSelector('.data-table, .dashboard-card', { timeout: 10000 });
@@ -135,7 +135,7 @@ test.describe('企業一覧ページ', () => {
         await expect(page).toHaveURL(/\/companies\/\d+/);
         
         // 詳細ページのロード完了を待機
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('domcontentloaded');
         await page.waitForTimeout(2000); // APIからのデータロード待機
         
         // 企業名またはコンテンツが表示されていることを確認
@@ -147,7 +147,7 @@ test.describe('企業一覧ページ', () => {
 
   test('ページネーション機能が動作する', async ({ page }) => {
     await page.goto('/companies?per_page=1');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // データが十分にある場合のみページネーションをテスト
     await page.waitForTimeout(2000); // データロード待機
@@ -163,7 +163,7 @@ test.describe('企業一覧ページ', () => {
       
       if (isNextEnabled) {
         await nextButton.click();
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('domcontentloaded');
         
         // ページが変更されていることを確認（UIの変化を確認）
         const pageInfo = page.locator('text=/ページ \\d+ \\/ \\d+/');
@@ -174,7 +174,7 @@ test.describe('企業一覧ページ', () => {
 
   test('空の結果の場合の表示確認', async ({ page }) => {
     await page.goto('/companies');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 検索ボックスに存在しない企業名を入力
     const searchInput = page.locator('input[placeholder*="企業名で検索"]');
@@ -219,7 +219,7 @@ test.describe('企業一覧ページ', () => {
     // モバイルビューポートでテスト
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/companies');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // モバイルでページが正常に表示されることを確認
     await expect(page.locator('h1')).toBeVisible();
@@ -230,7 +230,7 @@ test.describe('企業一覧ページ', () => {
     
     // デスクトップビューポートに戻す
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // デスクトップでも正常に表示されることを確認
     await expect(page.locator('h1')).toBeVisible();
@@ -247,7 +247,7 @@ test.describe('企業一覧ページ', () => {
     });
     
     await page.goto('/companies');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // データロード待機
     await page.waitForTimeout(3000);

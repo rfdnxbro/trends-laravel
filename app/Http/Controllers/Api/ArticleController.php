@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Constants\CacheTime;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ArticleResource;
 use App\Models\Article;
@@ -19,53 +20,29 @@ class ArticleController extends Controller
     {
         // キャッシュキーの生成
         $cacheKey = $this->generateCacheKey($request);
-        $cacheTtl = 600; // 10分間キャッシュ
 
-        return Cache::remember($cacheKey, $cacheTtl, function () use ($request) {
-            $query = Article::with(['company', 'platform']);
+        return Cache::remember($cacheKey, CacheTime::ARTICLE_LIST, function () use ($request) {
+            // リクエストパラメータからフィルタ配列を生成
+            $filters = [
+                'search' => $request->input('search'),
+                'company_id' => $request->input('company_id'),
+                'platform_id' => $request->input('platform_id'),
+                'start_date' => $request->input('start_date'),
+                'end_date' => $request->input('end_date'),
+            ];
 
-            // 検索機能（タイトル、著者名）
-            if ($request->has('search') && $request->search) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'LIKE', "%{$search}%")
-                        ->orWhere('author_name', 'LIKE', "%{$search}%");
-                });
-            }
-
-            // 企業でフィルタリング
-            if ($request->has('company_id')) {
-                $query->where('company_id', $request->company_id);
-            }
-
-            // プラットフォームでフィルタリング
-            if ($request->has('platform_id')) {
-                $query->where('platform_id', $request->platform_id);
-            }
-
-            // 期間でフィルタリング
-            if ($request->has('start_date')) {
-                $query->where('published_at', '>=', $request->start_date);
-            }
-            if ($request->has('end_date')) {
-                $query->where('published_at', '<=', $request->end_date.' 23:59:59');
-            }
-
-            // ソート機能
+            // ソートパラメータ
             $sortBy = $request->input('sort_by', 'published_at');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            // 許可されたソートカラムのみ受け付ける
-            $allowedSortColumns = ['published_at', 'likes_count', 'bookmark_count'];
-            if (in_array($sortBy, $allowedSortColumns)) {
-                $query->orderBy($sortBy, $sortOrder);
-            } else {
-                $query->orderBy('published_at', 'desc');
-            }
-
             // ページネーション
             $perPage = $request->input('limit', 20);
-            $articles = $query->paginate($perPage);
+
+            // モデルのスコープを使用してクエリを構築
+            $articles = Article::with(['company', 'platform'])
+                ->withFilters($filters)
+                ->withSort($sortBy, $sortOrder)
+                ->paginate($perPage);
 
             return ArticleResource::collection($articles);
         });
@@ -80,9 +57,8 @@ class ArticleController extends Controller
     public function show($id)
     {
         $cacheKey = "article_detail_{$id}";
-        $cacheTtl = 600; // 10分間キャッシュ
 
-        return Cache::remember($cacheKey, $cacheTtl, function () use ($id) {
+        return Cache::remember($cacheKey, CacheTime::ARTICLE_DETAIL, function () use ($id) {
             $article = Article::with(['company', 'platform'])->find($id);
 
             if (! $article) {

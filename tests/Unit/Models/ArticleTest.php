@@ -272,7 +272,7 @@ class ArticleTest extends TestCase
         $this->assertNotEquals($data['created_at'], $article->created_at);
     }
 
-    public function test_withFiltersスコープでタイトル検索ができる()
+    public function test_with_filtersスコープでタイトル検索ができる()
     {
         $company = Company::create([
             'name' => $this->faker()->company(),
@@ -307,7 +307,7 @@ class ArticleTest extends TestCase
         $this->assertStringContainsString('Laravel', $result->first()->title);
     }
 
-    public function test_withFiltersスコープで著者名検索ができる()
+    public function test_with_filtersスコープで著者名検索ができる()
     {
         $company = Company::create([
             'name' => $this->faker()->company(),
@@ -344,7 +344,7 @@ class ArticleTest extends TestCase
         $this->assertStringContainsString('John', $result->first()->author_name);
     }
 
-    public function test_withFiltersスコープで企業フィルタリングができる()
+    public function test_with_filtersスコープで企業フィルタリングができる()
     {
         $company1 = Company::create([
             'name' => $this->faker()->company(),
@@ -384,7 +384,7 @@ class ArticleTest extends TestCase
         $this->assertEquals($company1->id, $result->first()->company_id);
     }
 
-    public function test_withFiltersスコープでプラットフォームフィルタリングができる()
+    public function test_with_filtersスコープでプラットフォームフィルタリングができる()
     {
         $company = Company::create([
             'name' => $this->faker()->company(),
@@ -424,7 +424,7 @@ class ArticleTest extends TestCase
         $this->assertEquals($platform1->id, $result->first()->platform_id);
     }
 
-    public function test_withFiltersスコープで日付範囲フィルタリングができる()
+    public function test_with_filtersスコープで日付範囲フィルタリングができる()
     {
         $company = Company::create([
             'name' => $this->faker()->company(),
@@ -464,7 +464,7 @@ class ArticleTest extends TestCase
         $this->assertEquals('新しい記事', $result->first()->title);
     }
 
-    public function test_withFiltersスコープで複数フィルタを組み合わせできる(): void
+    public function test_with_filtersスコープで複数フィルタを組み合わせできる(): void
     {
         $company1 = Company::create([
             'name' => 'Target Company',
@@ -520,7 +520,7 @@ class ArticleTest extends TestCase
         $this->assertEquals('Laravel マッチする記事', $result->first()->title);
     }
 
-    public function test_withSortスコープでpublished_atソートができる()
+    public function test_with_sortスコープでpublished_atソートができる()
     {
         $company = Company::create([
             'name' => $this->faker()->company(),
@@ -556,7 +556,7 @@ class ArticleTest extends TestCase
         $this->assertEquals($article2->id, $result->last()->id);
     }
 
-    public function test_withSortスコープでlikes_countソートができる()
+    public function test_with_sortスコープでlikes_countソートができる()
     {
         $company = Company::create([
             'name' => $this->faker()->company(),
@@ -592,7 +592,7 @@ class ArticleTest extends TestCase
         $this->assertEquals($article2->id, $result->last()->id);
     }
 
-    public function test_withSortスコープでbookmark_countソートができる()
+    public function test_with_sortスコープでbookmark_countソートができる()
     {
         $company = Company::create([
             'name' => $this->faker()->company(),
@@ -628,7 +628,7 @@ class ArticleTest extends TestCase
         $this->assertEquals($article2->id, $result->last()->id);
     }
 
-    public function test_withSortスコープで無効なカラム指定時はデフォルトソートになる()
+    public function test_with_sortスコープで無効なカラム指定時はデフォルトソートになる()
     {
         $company = Company::create([
             'name' => $this->faker()->company(),
@@ -664,7 +664,7 @@ class ArticleTest extends TestCase
         $this->assertEquals($article1->id, $result->first()->id);
     }
 
-    public function test_withFiltersスコープで空のフィルタは影響しない()
+    public function test_with_filtersスコープで空のフィルタは影響しない()
     {
         $company = Company::create([
             'name' => $this->faker()->company(),

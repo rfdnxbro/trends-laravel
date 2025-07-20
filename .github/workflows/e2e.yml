@@ -80,7 +80,7 @@ jobs:
         run: |
           php artisan config:cache
           php artisan migrate:fresh --force
-          php artisan db:seed --force
+          php artisan db:seed --class=E2ETestSeeder --force
         env:
           DB_CONNECTION: pgsql
           DB_HOST: localhost

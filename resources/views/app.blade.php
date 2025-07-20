@@ -6,15 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name') }}</title>
     
-    @production
+    @if(file_exists(public_path('build/manifest.json')))
         @php
-            $manifestPath = public_path('build/manifest.json');
-            if (file_exists($manifestPath)) {
-                $manifest = json_decode(file_get_contents($manifestPath), true);
-                $entrypoint = $manifest['resources/js/app.tsx'] ?? null;
-            }
+            $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+            $entrypoint = $manifest['resources/js/app.tsx'] ?? null;
         @endphp
-        @if(isset($entrypoint))
+        @if($entrypoint)
             @if(isset($entrypoint['css']))
                 <link rel="stylesheet" href="{{ asset('build/' . $entrypoint['css'][0]) }}">
             @endif
@@ -24,7 +21,7 @@
         @endif
     @else
         @vite('resources/js/app.tsx')
-    @endproduction
+    @endif
 </head>
 <body>
     <div id="root">

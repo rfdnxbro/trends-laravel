@@ -56,21 +56,23 @@ class E2ETestSeeder extends Seeder
 
         // 追加の記事を作成（ページネーションテスト用）
         for ($i = 2; $i <= 25; $i++) {
-            Article::create([
-                'url' => "https://qiita.com/example/items/test{$i}",
-                'title' => "テスト記事 {$i}",
-                'author_name' => "著者 {$i}",
-                'author' => "author_{$i}",
-                'author_url' => "https://qiita.com/author_{$i}",
-                'published_at' => now()->subDays($i),
-                'bookmark_count' => rand(10, 200),
-                'likes_count' => rand(5, 100),
-                'platform_id' => $platform->id,
-                'company_id' => $company->id,
-                'domain' => 'example.com',
-                'platform' => 'Qiita',
-                'scraped_at' => now()->subDays(1),
-            ]);
+            Article::updateOrCreate(
+                ['url' => "https://qiita.com/example/items/test{$i}"],
+                [
+                    'title' => "テスト記事 {$i}",
+                    'author_name' => "著者 {$i}",
+                    'author' => "author_{$i}",
+                    'author_url' => "https://qiita.com/author_{$i}",
+                    'published_at' => now()->subDays($i),
+                    'bookmark_count' => rand(10, 200),
+                    'likes_count' => rand(5, 100),
+                    'platform_id' => $platform->id,
+                    'company_id' => $company->id,
+                    'domain' => 'example.com',
+                    'platform' => 'Qiita',
+                    'scraped_at' => now()->subDays(1),
+                ]
+            );
         }
     }
 }

@@ -11,8 +11,6 @@ class E2ETestSeeder extends Seeder
 {
     /**
      * E2Eテスト用のシードデータを作成
-     *
-     * @return void
      */
     public function run(): void
     {
@@ -21,7 +19,6 @@ class E2ETestSeeder extends Seeder
             ['name' => 'Qiita'],
             [
                 'base_url' => 'https://qiita.com',
-                'domain' => 'qiita.com',
                 'is_active' => true,
             ]
         );

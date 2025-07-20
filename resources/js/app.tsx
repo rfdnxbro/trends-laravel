@@ -34,7 +34,7 @@ function initApp() {
         try {
             const root = createRoot(container);
             root.render(<AppWithProviders />);
-        } catch (error) {
+        } catch {
             // エラーハンドリングは必要に応じて実装
         }
     }

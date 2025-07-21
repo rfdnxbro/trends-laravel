@@ -117,7 +117,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'テスト記事',
                 'url' => 'https://zenn.dev/articles/test-article',
-                'likes_count' => 10,
+                'engagement_count' => 10,
                 'author' => '/@testcompany',
                 'author_url' => 'https://zenn.dev/@testcompany',
                 'published_at' => '2023-01-01T00:00:00Z',
@@ -443,7 +443,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => null, // 無効なデータ
                 'url' => 'https://zenn.dev/articles/invalid',
-                'likes_count' => 'invalid', // 数値以外
+                'engagement_count' => 'invalid', // 数値以外
                 'author' => '',
                 'author_url' => null,
                 'published_at' => 'invalid-date',
@@ -464,7 +464,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'テスト記事',
                 'url' => 'https://zenn.dev/articles/test',
-                'likes_count' => 10,
+                'engagement_count' => 10,
                 'author' => 'ユーザー名in株式会社テスト', // "in会社名"パターン
                 'author_url' => 'https://zenn.dev/@test',
                 'published_at' => '2024-01-01T00:00:00Z',
@@ -687,7 +687,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'Zennテスト記事1',
                 'url' => 'https://zenn.dev/articles/test1',
-                'likes_count' => 100,
+                'engagement_count' => 100,
                 'author' => '/@testuser',
                 'author_url' => 'https://zenn.dev/@testuser',
                 'published_at' => '2024-01-01T10:00:00Z',
@@ -697,7 +697,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'Zennテスト記事2',
                 'url' => 'https://zenn.dev/articles/test2',
-                'likes_count' => 50,
+                'engagement_count' => 50,
                 'author' => 'testuser2in株式会社テスト',
                 'author_url' => 'https://zenn.dev/testuser2',
                 'published_at' => '2024-01-02T15:30:00Z',
@@ -829,7 +829,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'Zennテスト記事',
                 'url' => 'https://zenn.dev/articles/test',
-                'likes_count' => 10,
+                'engagement_count' => 10,
                 'author' => null,
                 'author_url' => null,
                 'published_at' => '2024-01-01T10:00:00Z',
@@ -839,7 +839,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'Zennテスト記事2',
                 'url' => 'https://zenn.dev/articles/test2',
-                'likes_count' => 20,
+                'engagement_count' => 20,
                 'author' => '',
                 'author_url' => '',
                 'published_at' => '2024-01-01T10:00:00Z',
@@ -862,7 +862,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'テスト記事1',
                 'url' => 'https://zenn.dev/articles/test1',
-                'likes_count' => 10,
+                'engagement_count' => 10,
                 'author' => 'ユーザーin株式会社',
                 'author_url' => 'https://zenn.dev/@test1',
                 'published_at' => '2024-01-01T00:00:00Z',
@@ -872,7 +872,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'テスト記事2',
                 'url' => 'https://zenn.dev/articles/test2',
-                'likes_count' => 20,
+                'engagement_count' => 20,
                 'author' => '普通のユーザー',
                 'author_url' => 'https://zenn.dev/@test2',
                 'published_at' => '2024-01-01T00:00:00Z',
@@ -882,7 +882,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'テスト記事3',
                 'url' => 'https://zenn.dev/articles/test3',
-                'likes_count' => 30,
+                'engagement_count' => 30,
                 'author' => 'ユーザー名inテック株式会社開発部',
                 'author_url' => 'https://zenn.dev/@test3',
                 'published_at' => '2024-01-01T00:00:00Z',

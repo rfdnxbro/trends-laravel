@@ -171,8 +171,8 @@ class ZennScraper extends BaseScraper
             $author = $this->extractAuthor($node);
             $authorInfo = $this->parseAuthorInfo($author);
 
-            // authorから抽出したいいね数を優先し、セレクタで取得できない場合のフォールバック
-            $engagementCount = $authorInfo['likes_count'] > 0 ? $authorInfo['likes_count'] : $this->extractLikesCount($node);
+            // authorから抽出したエンゲージメント数を優先し、セレクタで取得できない場合のフォールバック
+            $engagementCount = $authorInfo['engagement_count'] > 0 ? $authorInfo['engagement_count'] : $this->extractLikesCount($node);
 
             $articleData = [
                 'title' => $title,
@@ -351,7 +351,7 @@ class ZennScraper extends BaseScraper
             return [
                 'author_name' => null,
                 'company_name' => null,
-                'likes_count' => 0,
+                'engagement_count' => 0,
                 'relative_date' => null,
             ];
         }
@@ -359,10 +359,11 @@ class ZennScraper extends BaseScraper
         // authorがURLの場合は、URLからユーザー名を抽出
         if (strpos($author, '/') !== false) {
             $pathParts = explode('/', trim($author, '/'));
+
             return [
                 'author_name' => end($pathParts),
                 'company_name' => null,
-                'likes_count' => 0,
+                'engagement_count' => 0,
                 'relative_date' => null,
             ];
         }
@@ -371,14 +372,14 @@ class ZennScraper extends BaseScraper
         $result = [
             'author_name' => null,
             'company_name' => null,
-            'likes_count' => 0,
+            'engagement_count' => 0,
             'relative_date' => null,
         ];
 
-        // ステップ1: 末尾の数字（いいね数）を抽出
+        // ステップ1: 末尾の数字（エンゲージメント数）を抽出
         if (preg_match('/^(.+?)\s+(\d+)$/', $text, $matches)) {
             $text = trim($matches[1]);
-            $result['likes_count'] = (int) $matches[2];
+            $result['engagement_count'] = (int) $matches[2];
         }
 
         // ステップ2: 日時表現を抽出
@@ -392,14 +393,14 @@ class ZennScraper extends BaseScraper
         if (preg_match('/^(.+?)in(.+)$/u', $text, $matches)) {
             $result['author_name'] = trim($matches[1]);
             $result['company_name'] = trim($matches[2]);
-        } 
+        }
         // パターン2: 直接企業名が含まれる場合
-        else if (preg_match('/^(.+?)(株式会社.+|有限会社.+|合同会社.+|合資会社.+|合名会社.+)$/u', $text, $matches)) {
+        elseif (preg_match('/^(.+?)(株式会社.+|有限会社.+|合同会社.+|合資会社.+|合名会社.+)$/u', $text, $matches)) {
             $result['author_name'] = trim($matches[1]);
             $result['company_name'] = trim($matches[2]);
         }
         // パターン3: 英語企業名
-        else if (preg_match('/^(.+?)([A-Z][a-zA-Z\s]+(?:Corporation|Inc|Corp|Ltd|Company|Group|Holdings).*)$/u', $text, $matches)) {
+        elseif (preg_match('/^(.+?)([A-Z][a-zA-Z\s]+(?:Corporation|Inc|Corp|Ltd|Company|Group|Holdings).*)$/u', $text, $matches)) {
             $result['author_name'] = trim($matches[1]);
             $result['company_name'] = trim($matches[2]);
         }
@@ -420,6 +421,7 @@ class ZennScraper extends BaseScraper
     private function extractAuthorName(?string $author): ?string
     {
         $info = $this->parseAuthorInfo($author);
+
         return $info['author_name'];
     }
 

@@ -50,8 +50,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'platform' => 'qiita',
-            'bookmark_count' => 100,
-            'likes_count' => 50,
+            'engagement_count' => 150,
             'published_at' => Carbon::create(2024, 1, 3),
         ]);
 
@@ -77,8 +76,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'platform' => 'qiita',
-            'bookmark_count' => 100,
-            'likes_count' => 50,
+            'engagement_count' => 150,
             'published_at' => Carbon::create(2024, 1, 3),
         ]);
 
@@ -191,8 +189,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $article = Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'bookmark_count' => 100,
-            'likes_count' => 50,
+            'engagement_count' => 150,
             'published_at' => Carbon::create(2024, 1, 3),
         ]);
 
@@ -215,7 +212,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $this->assertEquals('weekly', $result->period_type);
         $this->assertEquals($totalScore, $result->total_score);
         $this->assertEquals(1, $result->article_count);
-        $this->assertEquals(100, $result->total_bookmarks);
+        $this->assertEquals(150, $result->total_bookmarks);
     }
 
     #[Test]
@@ -232,7 +229,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'company_id' => $company1->id,
             'platform_id' => $platform->id,
             'platform' => 'qiita',
-            'bookmark_count' => 100,
+            'engagement_count' => 100,
             'published_at' => Carbon::create(2024, 1, 3),
         ]);
 
@@ -240,7 +237,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'company_id' => $company2->id,
             'platform_id' => $platform->id,
             'platform' => 'qiita',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'published_at' => Carbon::create(2024, 1, 4),
         ]);
 
@@ -249,7 +246,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'company_id' => $company3->id,
             'platform_id' => $platform->id,
             'platform' => 'qiita',
-            'bookmark_count' => 200,
+            'engagement_count' => 200,
             'published_at' => Carbon::create(2024, 1, 5),
         ]);
 
@@ -276,7 +273,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'platform' => 'qiita',
-            'bookmark_count' => 100,
+            'engagement_count' => 100,
             'published_at' => now()->subDays(1),
         ]);
 
@@ -411,8 +408,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'platform' => 'qiita',
-            'bookmark_count' => 100,
-            'likes_count' => 50,
+            'engagement_count' => 150,
             'published_at' => Carbon::create(2024, 1, 3),
         ]);
 
@@ -427,10 +423,10 @@ class CompanyInfluenceScoreServiceTest extends TestCase
         $score = $method->invoke($this->service, $article, $periodStart, $periodEnd);
 
         // Assert
-        // 基本スコア(1.0) + ブックマーク(100 * 0.1) + ライク(50 * 0.05) = 1.0 + 10.0 + 2.5 = 13.5
+        // 基本スコア(1.0) + エンゲージメント(150 * 0.15) = 1.0 + 22.5 = 23.5
         // プラットフォーム重み(1.0) * 時間重み(可変) を考慮
-        $this->assertGreaterThan(13.5 * 0.1, $score); // 最小時間重み0.1を考慮
-        $this->assertLessThanOrEqual(13.5 * 1.0, $score); // 最大時間重み1.0を考慮
+        $this->assertGreaterThan(23.5 * 0.1, $score); // 最小時間重み0.1を考慮
+        $this->assertLessThanOrEqual(23.5 * 1.0, $score); // 最大時間重み1.0を考慮
     }
 
     #[Test]
@@ -444,8 +440,8 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'platform' => 'hatena',
-            'bookmark_count' => 100,
-            'likes_count' => 0,
+            'engagement_count' => 100,
+            'engagement_count' => 0,
             'published_at' => Carbon::create(2024, 1, 3),
         ]);
 
@@ -541,7 +537,7 @@ class CompanyInfluenceScoreServiceTest extends TestCase
             'company_id' => $company1->id,
             'platform_id' => $platform->id,
             'platform' => 'qiita',
-            'bookmark_count' => 100,
+            'engagement_count' => 100,
             'published_at' => Carbon::create(2024, 1, 3),
         ]);
 

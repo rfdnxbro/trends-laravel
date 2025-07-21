@@ -43,7 +43,7 @@ class SearchApiTest extends TestCase
             'platform' => 'Qiita',
             'title' => 'Laravel テストに関する記事',
             'author_name' => 'test_author',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'published_at' => Carbon::now()->subDays(5),
         ]);
     }
@@ -93,7 +93,7 @@ class SearchApiTest extends TestCase
                             'title',
                             'url',
                             'author_name',
-                            'bookmark_count',
+                            'engagement_count',
                             'match_score',
                             'company',
                             'published_at',
@@ -209,17 +209,17 @@ class SearchApiTest extends TestCase
             'platform' => 'Qiita',
             'title' => 'Laravel 古い記事',
             'author_name' => 'old_author',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(40),
         ]);
 
-        $response = $this->getJson('/api/search/articles?q=Laravel&days=30&min_bookmarks=10');
+        $response = $this->getJson('/api/search/articles?q=Laravel&days=30&min_engagement=10');
 
         $response->assertStatus(Response::HTTP_OK);
         $articles = $response->json('data.articles');
 
         foreach ($articles as $article) {
-            $this->assertGreaterThanOrEqual(10, $article['bookmark_count']);
+            $this->assertGreaterThanOrEqual(10, $article['engagement_count']);
         }
     }
 
@@ -314,7 +314,7 @@ class SearchApiTest extends TestCase
                     'type',
                     'filters' => [
                         'days',
-                        'min_bookmarks',
+                        'min_engagement',
                     ],
                 ],
             ]);
@@ -405,7 +405,7 @@ class SearchApiTest extends TestCase
             'platform_id' => $this->platform->id,
             'title' => 'Laravel advanced techniques',
             'author_name' => 'expert_author',
-            'bookmark_count' => 100,
+            'engagement_count' => 100,
             'published_at' => Carbon::now()->subDays(2),
         ]);
 
@@ -415,7 +415,7 @@ class SearchApiTest extends TestCase
             'platform_id' => $this->platform->id,
             'title' => 'Laravel basic guide',
             'author_name' => 'regular_author',
-            'bookmark_count' => 30,
+            'engagement_count' => 30,
             'published_at' => Carbon::now()->subDays(5),
         ]);
 
@@ -425,7 +425,7 @@ class SearchApiTest extends TestCase
             'platform_id' => $this->platform->id,
             'title' => 'Laravel introduction',
             'author_name' => 'beginner_author',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(10),
         ]);
 
@@ -435,7 +435,7 @@ class SearchApiTest extends TestCase
             'platform_id' => $this->platform->id,
             'title' => 'Old Laravel article',
             'author_name' => 'old_author',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'published_at' => Carbon::now()->subDays(150),
         ]);
 
@@ -502,7 +502,7 @@ class SearchApiTest extends TestCase
             'platform_id' => $this->platform->id,
             'title' => 'React recent tutorial',
             'author_name' => 'recent_author',
-            'bookmark_count' => 20,
+            'engagement_count' => 20,
             'published_at' => Carbon::now()->subDays(3),
         ]);
 
@@ -512,7 +512,7 @@ class SearchApiTest extends TestCase
             'platform_id' => $this->platform->id,
             'title' => 'React somewhat old tutorial',
             'author_name' => 'somewhat_old_author',
-            'bookmark_count' => 20,
+            'engagement_count' => 20,
             'published_at' => Carbon::now()->subDays(20),
         ]);
 
@@ -522,7 +522,7 @@ class SearchApiTest extends TestCase
             'platform_id' => $this->platform->id,
             'title' => 'React old tutorial',
             'author_name' => 'old_author',
-            'bookmark_count' => 20,
+            'engagement_count' => 20,
             'published_at' => Carbon::now()->subDays(120),
         ]);
 
@@ -555,7 +555,7 @@ class SearchApiTest extends TestCase
             'platform_id' => $this->platform->id,
             'title' => 'Vue.js high bookmark article',
             'author_name' => 'high_author',
-            'bookmark_count' => 200,
+            'engagement_count' => 200,
             'published_at' => Carbon::now()->subDays(10),
         ]);
 
@@ -565,7 +565,7 @@ class SearchApiTest extends TestCase
             'platform_id' => $this->platform->id,
             'title' => 'Vue.js medium bookmark article',
             'author_name' => 'medium_author',
-            'bookmark_count' => 25,
+            'engagement_count' => 25,
             'published_at' => Carbon::now()->subDays(10),
         ]);
 
@@ -575,7 +575,7 @@ class SearchApiTest extends TestCase
             'platform_id' => $this->platform->id,
             'title' => 'Vue.js low bookmark article',
             'author_name' => 'low_author',
-            'bookmark_count' => 3,
+            'engagement_count' => 3,
             'published_at' => Carbon::now()->subDays(10),
         ]);
 
@@ -614,8 +614,8 @@ class SearchApiTest extends TestCase
                 'details',
             ]);
 
-        // 負のmin_bookmarks値でバリデーションエラー
-        $response = $this->getJson('/api/search/articles?q=Laravel&min_bookmarks=-1');
+        // 負のmin_engagement値でバリデーションエラー
+        $response = $this->getJson('/api/search/articles?q=Laravel&min_engagement=-1');
 
         $response->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJson([

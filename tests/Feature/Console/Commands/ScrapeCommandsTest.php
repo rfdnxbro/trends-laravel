@@ -26,7 +26,7 @@ class ScrapeCommandsTest extends TestCase
         // QiitaScraperのモック
         $qiitaMock = Mockery::mock(QiitaScraper::class);
         $qiitaMock->shouldReceive('scrapeTrendingArticles')->andReturn([
-            ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test', 'likes_count' => 10, 'author' => 'test_author', 'published_at' => '2024-01-01'],
+            ['title' => 'Test Qiita Article', 'url' => 'https://qiita.com/test', 'engagement_count' => 10, 'author' => 'test_author', 'published_at' => '2024-01-01'],
         ]);
         $qiitaMock->shouldReceive('normalizeAndSaveData')->andReturn([]);
         $qiitaMock->shouldReceive('getErrorLog')->andReturn([]);
@@ -35,7 +35,7 @@ class ScrapeCommandsTest extends TestCase
         // ZennScraperのモック
         $zennMock = Mockery::mock(ZennScraper::class);
         $zennMock->shouldReceive('scrapeTrendingArticles')->andReturn([
-            ['title' => 'Test Zenn Article', 'url' => 'https://zenn.dev/test', 'likes_count' => 5, 'author' => 'test_author', 'published_at' => '2024-01-01'],
+            ['title' => 'Test Zenn Article', 'url' => 'https://zenn.dev/test', 'engagement_count' => 5, 'author' => 'test_author', 'published_at' => '2024-01-01'],
         ]);
         $zennMock->shouldReceive('normalizeAndSaveData')->andReturn([]);
         $zennMock->shouldReceive('getErrorLog')->andReturn([]);
@@ -44,7 +44,7 @@ class ScrapeCommandsTest extends TestCase
         // HatenaBookmarkScraperのモック
         $hatenaMock = Mockery::mock(HatenaBookmarkScraper::class);
         $hatenaMock->shouldReceive('scrapePopularItEntries')->andReturn([
-            ['title' => 'Test Hatena Article', 'url' => 'https://example.com/test', 'bookmark_count' => 100, 'domain' => 'example.com'],
+            ['title' => 'Test Hatena Article', 'url' => 'https://example.com/test', 'engagement_count' => 100, 'domain' => 'example.com'],
         ]);
         $hatenaMock->shouldReceive('normalizeAndSaveData')->andReturn([]);
         $hatenaMock->shouldReceive('getErrorLog')->andReturn([]);

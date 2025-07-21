@@ -160,13 +160,13 @@ class ComplexQueryTest extends TestCase
         Article::factory()->count(3)->create([
             'company_id' => $company->id,
             'platform_id' => $platform1->id,
-            'bookmark_count' => 100,
+            'engagement_count' => 100,
         ]);
 
         Article::factory()->count(2)->create([
             'company_id' => $company->id,
             'platform_id' => $platform2->id,
-            'bookmark_count' => 200,
+            'engagement_count' => 200,
         ]);
 
         $platformInfluence = Article::query()
@@ -175,15 +175,15 @@ class ComplexQueryTest extends TestCase
             ->where('articles.company_id', $company->id)
             ->select('platforms.name as platform_name')
             ->selectRaw('COUNT(articles.id) as article_count')
-            ->selectRaw('SUM(articles.bookmark_count) as total_bookmarks')
-            ->selectRaw('AVG(articles.bookmark_count) as avg_bookmarks')
+            ->selectRaw('SUM(articles.engagement_count) as total_engagement')
+            ->selectRaw('AVG(articles.engagement_count) as avg_engagement')
             ->groupBy('platforms.id', 'platforms.name')
-            ->orderBy('total_bookmarks', 'desc')
+            ->orderBy('total_engagement', 'desc')
             ->get();
 
         $this->assertCount(2, $platformInfluence);
         $this->assertEquals('Zenn', $platformInfluence->first()->platform_name);
-        $this->assertEquals(400, $platformInfluence->first()->total_bookmarks);
+        $this->assertEquals(400, $platformInfluence->first()->total_engagement);
     }
 
     public function test_大量データでのパフォーマンステスト()
@@ -227,7 +227,7 @@ class ComplexQueryTest extends TestCase
         Article::factory()->count(5)->create([
             'company_id' => $activeCompany->id,
             'platform_id' => $platform->id,
-            'bookmark_count' => 100,
+            'engagement_count' => 100,
         ]);
 
         CompanyRanking::factory()->create([
@@ -253,7 +253,7 @@ class ComplexQueryTest extends TestCase
             ->where('company_rankings.total_score', '>=', 100)
             ->select('companies.name', 'company_rankings.rank_position', 'company_rankings.total_score')
             ->selectRaw('COUNT(articles.id) as article_count')
-            ->selectRaw('SUM(articles.bookmark_count) as total_bookmarks')
+            ->selectRaw('SUM(articles.engagement_count) as total_engagement')
             ->groupBy('companies.id', 'companies.name', 'company_rankings.rank_position', 'company_rankings.total_score')
             ->orderBy('company_rankings.rank_position')
             ->get();

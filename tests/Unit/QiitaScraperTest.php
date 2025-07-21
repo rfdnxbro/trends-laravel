@@ -48,7 +48,7 @@ class QiitaScraperTest extends TestCase
 
         $this->assertEquals('Reactの新機能について', $result[0]['title']);
         $this->assertEquals('https://qiita.com/items/12345', $result[0]['url']);
-        $this->assertEquals(150, $result[0]['likes_count']);
+        $this->assertEquals(150, $result[0]['engagement_count']);
         $this->assertNull($result[0]['author']);
         $this->assertNull($result[0]['author_url']);
         $this->assertEquals('qiita', $result[0]['platform']);
@@ -92,7 +92,7 @@ class QiitaScraperTest extends TestCase
             [
                 'title' => 'テスト記事',
                 'url' => 'https://qiita.com/items/test123',
-                'likes_count' => 100,
+                'engagement_count' => 100,
                 'author' => '/test_user',
                 'author_url' => 'https://qiita.com/test_user',
                 'published_at' => '2024-01-01T10:00:00Z',
@@ -108,7 +108,7 @@ class QiitaScraperTest extends TestCase
             'title' => 'テスト記事',
             'url' => 'https://qiita.com/items/test123',
             'company_id' => $company->id,
-            'likes_count' => 100,
+            'engagement_count' => 100,
             'platform' => 'qiita',
         ]);
     }
@@ -374,7 +374,7 @@ class QiitaScraperTest extends TestCase
             [
                 'title' => null, // 無効なデータ
                 'url' => 'https://qiita.com/items/invalid',
-                'likes_count' => 'invalid', // 数値以外
+                'engagement_count' => 'invalid', // 数値以外
                 'author' => '',
                 'author_url' => null,
                 'published_at' => 'invalid-date',
@@ -436,7 +436,7 @@ class QiitaScraperTest extends TestCase
         $this->assertIsArray($result);
         $this->assertCount(1, $result);
         $this->assertEquals('タイトルのみ', $result[0]['title']);
-        $this->assertEquals(0, $result[0]['likes_count']);
+        $this->assertEquals(0, $result[0]['engagement_count']);
         $this->assertNull($result[0]['author']);
     }
 
@@ -629,7 +629,7 @@ class QiitaScraperTest extends TestCase
             [
                 'title' => 'テスト記事1',
                 'url' => 'https://qiita.com/items/test1',
-                'likes_count' => 100,
+                'engagement_count' => 100,
                 'author' => '/@testuser',
                 'author_url' => 'https://qiita.com/@testuser',
                 'published_at' => '2024-01-01T10:00:00Z',
@@ -639,7 +639,7 @@ class QiitaScraperTest extends TestCase
             [
                 'title' => 'テスト記事2',
                 'url' => 'https://qiita.com/items/test2',
-                'likes_count' => 50,
+                'engagement_count' => 50,
                 'author' => '/testuser2',
                 'author_url' => 'https://qiita.com/testuser2',
                 'published_at' => '2024-01-02T15:30:00Z',
@@ -757,7 +757,7 @@ class QiitaScraperTest extends TestCase
             [
                 'title' => 'テスト記事',
                 'url' => 'https://qiita.com/items/test',
-                'likes_count' => 10,
+                'engagement_count' => 10,
                 'author' => null,
                 'author_url' => null,
                 'published_at' => '2024-01-01T10:00:00Z',
@@ -767,7 +767,7 @@ class QiitaScraperTest extends TestCase
             [
                 'title' => 'テスト記事2',
                 'url' => 'https://qiita.com/items/test2',
-                'likes_count' => 20,
+                'engagement_count' => 20,
                 'author' => '',
                 'author_url' => '',
                 'published_at' => '2024-01-01T10:00:00Z',

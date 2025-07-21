@@ -190,7 +190,7 @@ class CompanyControllerFeatureTest extends TestCase
                         'id',
                         'title',
                         'url',
-                        'bookmark_count',
+                        'engagement_count',
                         'published_at',
                         'platform',
                     ],
@@ -318,7 +318,7 @@ class CompanyControllerFeatureTest extends TestCase
             ]);
     }
 
-    public function test_企業記事一覧取得_apiでmin_bookmarksフィルタが正しく動作する()
+    public function test_企業記事一覧取得_apiでmin_engagementフィルタが正しく動作する()
     {
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
@@ -326,18 +326,18 @@ class CompanyControllerFeatureTest extends TestCase
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => now()->subDays(1),
         ]);
 
         Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'bookmark_count' => 15,
+            'engagement_count' => 15,
             'published_at' => now()->subDays(1),
         ]);
 
-        $response = $this->getJson("/api/companies/{$company->id}/articles?min_bookmarks=10");
+        $response = $this->getJson("/api/companies/{$company->id}/articles?min_engagement=10");
 
         $response->assertStatus(Response::HTTP_OK);
         $data = $response->json();

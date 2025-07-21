@@ -44,7 +44,7 @@ class ArticleUpdateFeatureTest extends TestCase
         $updateData = [
             'title' => 'Updated Title',
             'company_id' => $this->anotherCompany->id,
-            'bookmark_count' => 100,
+            'engagement_count' => 100,
         ];
 
         $response = $this->putJson("/api/articles/{$this->article->id}", $updateData);
@@ -57,20 +57,20 @@ class ArticleUpdateFeatureTest extends TestCase
                     'url',
                     'company',
                     'platform',
-                    'bookmark_count',
+                    'engagement_count',
                     'updated_at',
                 ],
             ])
             ->assertJsonPath('data.title', 'Updated Title')
             ->assertJsonPath('data.company.id', $this->anotherCompany->id)
-            ->assertJsonPath('data.bookmark_count', 100);
+            ->assertJsonPath('data.engagement_count', 100);
 
         // データベースの確認
         $this->assertDatabaseHas('articles', [
             'id' => $this->article->id,
             'title' => 'Updated Title',
             'company_id' => $this->anotherCompany->id,
-            'bookmark_count' => 100,
+            'engagement_count' => 100,
         ]);
     }
 
@@ -160,7 +160,7 @@ class ArticleUpdateFeatureTest extends TestCase
         $invalidData = [
             'title' => str_repeat('a', 501), // 500文字制限超過
             'url' => 'invalid-url', // 無効なURL
-            'bookmark_count' => -1, // 負の値
+            'engagement_count' => -1, // 負の値
             'platform_id' => 'invalid', // 文字列
         ];
 
@@ -170,7 +170,7 @@ class ArticleUpdateFeatureTest extends TestCase
             ->assertJsonValidationErrors([
                 'title',
                 'url',
-                'bookmark_count',
+                'engagement_count',
                 'platform_id',
             ]);
     }

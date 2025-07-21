@@ -79,12 +79,12 @@ class QiitaScraperTest extends TestCase
 
         $this->assertArrayHasKey('title', $result[0]);
         $this->assertArrayHasKey('url', $result[0]);
-        $this->assertArrayHasKey('likes_count', $result[0]);
+        $this->assertArrayHasKey('engagement_count', $result[0]);
         $this->assertArrayHasKey('platform', $result[0]);
 
         $this->assertEquals('Test Article 1', $result[0]['title']);
         $this->assertEquals('https://qiita.com/items/article1', $result[0]['url']);
-        $this->assertEquals(10, $result[0]['likes_count']);
+        $this->assertEquals(10, $result[0]['engagement_count']);
         $this->assertEquals('qiita', $result[0]['platform']);
     }
 
@@ -208,7 +208,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extract_likes_count_いいね数を正しく抽出する()
+    public function test_extract_engagement_count_エンゲージメント数を正しく抽出する()
     {
         $html = '<article>
             <div data-testid="like-count" aria-label="25 likes">25</div>
@@ -227,7 +227,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extract_likes_count_いいね数が見つからない場合ゼロを返す()
+    public function test_extract_engagement_count_エンゲージメント数が見つからない場合ゼロを返す()
     {
         $html = '<article>
             <div>No likes count</div>
@@ -426,7 +426,7 @@ class QiitaScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://qiita.com/items/article1',
-                'likes_count' => 25,
+                'engagement_count' => 25,
                 'author' => '/@test_user',
                 'author_url' => 'https://qiita.com/@test_user',
                 'published_at' => '2024-01-01T12:00:00Z',
@@ -444,7 +444,7 @@ class QiitaScraperTest extends TestCase
         $article = $result[0];
         $this->assertEquals('Test Article', $article->title);
         $this->assertEquals('https://qiita.com/items/article1', $article->url);
-        $this->assertEquals(25, $article->likes_count);
+        $this->assertEquals(25, $article->engagement_count);
         $this->assertEquals('test_user', $article->author_name);
         $this->assertEquals($company->id, $article->company_id);
         $this->assertEquals($platform->id, $article->platform_id);
@@ -462,7 +462,7 @@ class QiitaScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://qiita.com/items/article1',
-                'likes_count' => 25,
+                'engagement_count' => 25,
                 'author' => '/@test_user',
                 'author_url' => 'https://qiita.com/@test_user',
                 'published_at' => '2024-01-01T12:00:00Z',
@@ -492,7 +492,7 @@ class QiitaScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://qiita.com/items/article1',
-                'likes_count' => 25,
+                'engagement_count' => 25,
                 'author' => '/@unknown_user',
                 'author_url' => 'https://qiita.com/@unknown_user',
                 'published_at' => '2024-01-01T12:00:00Z',
@@ -527,14 +527,14 @@ class QiitaScraperTest extends TestCase
         $existingArticle = Article::factory()->create([
             'url' => 'https://qiita.com/items/article1',
             'title' => 'Old Title',
-            'likes_count' => 10,
+            'engagement_count' => 10,
         ]);
 
         $articles = [
             [
                 'title' => 'Updated Title',
                 'url' => 'https://qiita.com/items/article1',
-                'likes_count' => 25,
+                'engagement_count' => 25,
                 'author' => '/@test_user',
                 'author_url' => 'https://qiita.com/@test_user',
                 'published_at' => '2024-01-01T12:00:00Z',
@@ -551,7 +551,7 @@ class QiitaScraperTest extends TestCase
         $article = $result[0];
         $this->assertEquals($existingArticle->id, $article->id);
         $this->assertEquals('Updated Title', $article->title);
-        $this->assertEquals(25, $article->likes_count);
+        $this->assertEquals(25, $article->engagement_count);
         $this->assertEquals($company->id, $article->company_id);
     }
 
@@ -566,7 +566,7 @@ class QiitaScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://qiita.com/items/article1',
-                'likes_count' => 25,
+                'engagement_count' => 25,
                 'author' => '/@test_user',
                 'author_url' => 'https://qiita.com/@test_user',
                 'published_at' => '2024-01-01T12:00:00Z',
@@ -608,11 +608,11 @@ class QiitaScraperTest extends TestCase
         $this->assertCount(1, $result);
         $this->assertArrayHasKey('title', $result[0]);
         $this->assertArrayHasKey('url', $result[0]);
-        $this->assertArrayHasKey('likes_count', $result[0]);
+        $this->assertArrayHasKey('engagement_count', $result[0]);
         $this->assertArrayHasKey('platform', $result[0]);
         $this->assertEquals('Test Article 1', $result[0]['title']);
         $this->assertEquals('https://qiita.com/items/article1', $result[0]['url']);
-        $this->assertEquals(10, $result[0]['likes_count']);
+        $this->assertEquals(10, $result[0]['engagement_count']);
         $this->assertEquals('qiita', $result[0]['platform']);
     }
 

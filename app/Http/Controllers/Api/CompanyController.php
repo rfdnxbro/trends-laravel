@@ -329,9 +329,9 @@ class CompanyController extends Controller
      *     ),
      *
      *     @OA\Parameter(
-     *         name="min_bookmarks",
+     *         name="min_engagement",
      *         in="query",
-     *         description="最小ブックマーク数",
+     *         description="最小エンゲージメント数",
      *
      *         @OA\Schema(type="integer", default=0, example=0)
      *     ),
@@ -391,11 +391,11 @@ class CompanyController extends Controller
         $page = $request->get('page', 1);
         $perPage = min($request->get('per_page', config('constants.pagination.default_per_page')), config('constants.pagination.max_per_page'));
         $days = $request->get('days', config('constants.api.default_article_days'));
-        $minBookmarks = $request->get('min_bookmarks', 0);
+        $minEngagement = $request->get('min_engagement', 0);
 
-        $cacheKey = "company_articles_{$companyId}_{$page}_{$perPage}_{$days}_{$minBookmarks}";
+        $cacheKey = "company_articles_{$companyId}_{$page}_{$perPage}_{$days}_{$minEngagement}";
 
-        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($companyId, $page, $perPage, $days, $minBookmarks) {
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($companyId, $page, $perPage, $days, $minEngagement) {
             $company = Company::find($companyId);
 
             if (! $company) {
@@ -407,7 +407,7 @@ class CompanyController extends Controller
             $query = $company->articles()
                 ->with('platform')
                 ->where('published_at', '>=', now()->subDays($days))
-                ->where('bookmark_count', '>=', $minBookmarks)
+                ->where('engagement_count', '>=', $minEngagement)
                 ->orderBy('published_at', 'desc');
 
             $articles = $query->paginate($perPage, ['*'], 'page', $page);
@@ -422,7 +422,7 @@ class CompanyController extends Controller
                     'company_id' => $companyId,
                     'filters' => [
                         'days' => $days,
-                        'min_bookmarks' => $minBookmarks,
+                        'min_engagement' => $minEngagement,
                     ],
                 ],
             ]);

@@ -138,9 +138,9 @@ class SearchController extends Controller
      *     ),
      *
      *     @OA\Parameter(
-     *         name="min_bookmarks",
+     *         name="min_engagement",
      *         in="query",
-     *         description="最小ブックマーク数",
+     *         description="最小エンゲージメント数",
      *
      *         @OA\Schema(type="integer", minimum=0, default=0, example=0)
      *     ),
@@ -161,8 +161,7 @@ class SearchController extends Controller
      *                     @OA\Property(property="author_name", type="string", example="sample_author"),
      *                     @OA\Property(property="author_url", type="string", example="https://qiita.com/sample_author"),
      *                     @OA\Property(property="published_at", type="string", format="date-time"),
-     *                     @OA\Property(property="bookmark_count", type="integer", example=125),
-     *                     @OA\Property(property="likes_count", type="integer", example=45),
+     *                     @OA\Property(property="engagement_count", type="integer", example=170),
      *                     @OA\Property(property="match_score", type="number", format="float", example=0.92),
      *                     @OA\Property(property="company", type="object"),
      *                     @OA\Property(property="platform_details", type="object")
@@ -174,7 +173,7 @@ class SearchController extends Controller
      *                 @OA\Property(property="query", type="string", example="Laravel"),
      *                 @OA\Property(property="filters", type="object",
      *                     @OA\Property(property="days", type="integer", example=30),
-     *                     @OA\Property(property="min_bookmarks", type="integer", example=0)
+     *                     @OA\Property(property="min_engagement", type="integer", example=0)
      *                 )
      *             )
      *         )
@@ -193,7 +192,7 @@ class SearchController extends Controller
      */
     public function searchArticles(Request $request): JsonResponse
     {
-        $validatedData = $this->validateSearchRequest($request, ['q', 'limit', 'days', 'min_bookmarks']);
+        $validatedData = $this->validateSearchRequest($request, ['q', 'limit', 'days', 'min_engagement']);
         if ($validatedData instanceof JsonResponse) {
             return $validatedData;
         }
@@ -201,9 +200,9 @@ class SearchController extends Controller
         $query = $validatedData['q'];
         $limit = $validatedData['limit'] ?? config('constants.pagination.default_per_page');
         $days = $validatedData['days'] ?? config('constants.api.default_article_days');
-        $minBookmarks = $validatedData['min_bookmarks'] ?? 0;
+        $minEngagement = $validatedData['min_engagement'] ?? 0;
 
-        $result = $this->searchArticlesWithCache($query, $limit, $days, $minBookmarks);
+        $result = $this->searchArticlesWithCache($query, $limit, $days, $minEngagement);
 
         return response()->json([
             'data' => [
@@ -215,7 +214,7 @@ class SearchController extends Controller
                 'query' => $query,
                 'filters' => [
                     'days' => $days,
-                    'min_bookmarks' => $minBookmarks,
+                    'min_engagement' => $minEngagement,
                 ],
             ],
         ]);
@@ -262,9 +261,9 @@ class SearchController extends Controller
      *     ),
      *
      *     @OA\Parameter(
-     *         name="min_bookmarks",
+     *         name="min_engagement",
      *         in="query",
-     *         description="記事検索の最小ブックマーク数",
+     *         description="記事検索の最小エンゲージメント数",
      *
      *         @OA\Schema(type="integer", minimum=0, default=0, example=0)
      *     ),
@@ -286,7 +285,7 @@ class SearchController extends Controller
      *                 @OA\Property(property="type", type="string", example="all"),
      *                 @OA\Property(property="filters", type="object",
      *                     @OA\Property(property="days", type="integer", example=30),
-     *                     @OA\Property(property="min_bookmarks", type="integer", example=0)
+     *                     @OA\Property(property="min_engagement", type="integer", example=0)
      *                 )
      *             )
      *         )
@@ -305,7 +304,7 @@ class SearchController extends Controller
      */
     public function search(Request $request): JsonResponse
     {
-        $validatedData = $this->validateSearchRequest($request, ['q', 'type', 'limit', 'days', 'min_bookmarks']);
+        $validatedData = $this->validateSearchRequest($request, ['q', 'type', 'limit', 'days', 'min_engagement']);
         if ($validatedData instanceof JsonResponse) {
             return $validatedData;
         }
@@ -314,9 +313,9 @@ class SearchController extends Controller
         $type = $validatedData['type'] ?? 'all';
         $limit = $validatedData['limit'] ?? config('constants.pagination.default_per_page');
         $days = $validatedData['days'] ?? config('constants.api.default_article_days');
-        $minBookmarks = $validatedData['min_bookmarks'] ?? 0;
+        $minEngagement = $validatedData['min_engagement'] ?? 0;
 
-        $result = $this->searchAllWithCache($query, $type, $limit, $days, $minBookmarks);
+        $result = $this->searchAllWithCache($query, $type, $limit, $days, $minEngagement);
 
         return response()->json([
             'data' => $result['data'],
@@ -327,7 +326,7 @@ class SearchController extends Controller
                 'type' => $type,
                 'filters' => [
                     'days' => $days,
-                    'min_bookmarks' => $minBookmarks,
+                    'min_engagement' => $minEngagement,
                 ],
             ],
         ]);
@@ -356,8 +355,8 @@ class SearchController extends Controller
         if (in_array('days', $fields)) {
             $rules['days'] = 'integer|min:1|max:'.config('constants.api.max_article_days');
         }
-        if (in_array('min_bookmarks', $fields)) {
-            $rules['min_bookmarks'] = 'integer|min:0';
+        if (in_array('min_engagement', $fields)) {
+            $rules['min_engagement'] = 'integer|min:0';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -394,15 +393,15 @@ class SearchController extends Controller
      * @param  string  $query  検索クエリ
      * @param  int  $limit  取得件数
      * @param  int  $days  検索対象期間（日数）
-     * @param  int  $minBookmarks  最小ブックマーク数
+     * @param  int  $minEngagement  最小エンゲージメント数
      * @return array 検索結果配列（articles, search_time, total_results）
      */
-    private function searchArticlesWithCache(string $query, int $limit, int $days, int $minBookmarks): array
+    private function searchArticlesWithCache(string $query, int $limit, int $days, int $minEngagement): array
     {
-        $cacheKey = 'search_articles_'.md5($query.$limit.$days.$minBookmarks);
+        $cacheKey = 'search_articles_'.md5($query.$limit.$days.$minEngagement);
 
-        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($query, $limit, $days, $minBookmarks) {
-            return $this->executeArticleSearch($query, $limit, $days, $minBookmarks);
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($query, $limit, $days, $minEngagement) {
+            return $this->executeArticleSearch($query, $limit, $days, $minEngagement);
         });
     }
 
@@ -413,15 +412,15 @@ class SearchController extends Controller
      * @param  string  $type  検索タイプ（companies|articles|all）
      * @param  int  $limit  取得件数
      * @param  int  $days  記事検索の対象期間（日数）
-     * @param  int  $minBookmarks  記事検索の最小ブックマーク数
+     * @param  int  $minEngagement  記事検索の最小エンゲージメント数
      * @return array 検索結果配列（data, search_time, total_results）
      */
-    private function searchAllWithCache(string $query, string $type, int $limit, int $days, int $minBookmarks): array
+    private function searchAllWithCache(string $query, string $type, int $limit, int $days, int $minEngagement): array
     {
-        $cacheKey = 'search_all_'.md5($query.$type.$limit.$days.$minBookmarks);
+        $cacheKey = 'search_all_'.md5($query.$type.$limit.$days.$minEngagement);
 
-        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($query, $type, $limit, $days, $minBookmarks) {
-            return $this->executeUnifiedSearch($query, $type, $limit, $days, $minBookmarks);
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($query, $type, $limit, $days, $minEngagement) {
+            return $this->executeUnifiedSearch($query, $type, $limit, $days, $minEngagement);
         });
     }
 
@@ -462,14 +461,14 @@ class SearchController extends Controller
      * @param  string  $query  検索クエリ
      * @param  int  $limit  取得件数
      * @param  int  $days  検索対象期間（日数）
-     * @param  int  $minBookmarks  最小ブックマーク数
+     * @param  int  $minEngagement  最小エンゲージメント数
      * @return array 検索結果配列（articles, search_time, total_results）
      */
-    private function executeArticleSearch(string $query, int $limit, int $days, int $minBookmarks): array
+    private function executeArticleSearch(string $query, int $limit, int $days, int $minEngagement): array
     {
         $startTime = microtime(true);
 
-        $articles = $this->buildArticleQuery($query, $limit, $days, $minBookmarks)
+        $articles = $this->buildArticleQuery($query, $limit, $days, $minEngagement)
             ->get()
             ->map(function ($article) use ($query) {
                 /** @var \App\Models\Article $article */
@@ -496,10 +495,10 @@ class SearchController extends Controller
      * @param  string  $type  検索タイプ（companies|articles|all）
      * @param  int  $limit  取得件数
      * @param  int  $days  記事検索の対象期間（日数）
-     * @param  int  $minBookmarks  記事検索の最小ブックマーク数
+     * @param  int  $minEngagement  記事検索の最小エンゲージメント数
      * @return array 検索結果配列（data, search_time, total_results）
      */
-    private function executeUnifiedSearch(string $query, string $type, int $limit, int $days, int $minBookmarks): array
+    private function executeUnifiedSearch(string $query, string $type, int $limit, int $days, int $minEngagement): array
     {
         $startTime = microtime(true);
         $data = [];
@@ -520,7 +519,7 @@ class SearchController extends Controller
         }
 
         if ($type === 'articles' || $type === 'all') {
-            $articles = $this->buildArticleQuery($query, $limit, $days, $minBookmarks)
+            $articles = $this->buildArticleQuery($query, $limit, $days, $minEngagement)
                 ->get()
                 ->map(function ($article) use ($query) {
                     /** @var \App\Models\Article $article */
@@ -571,14 +570,14 @@ class SearchController extends Controller
      * @param  string  $query  検索クエリ
      * @param  int  $limit  取得件数
      * @param  int  $days  検索対象期間（日数）
-     * @param  int  $minBookmarks  最小ブックマーク数
+     * @param  int  $minEngagement  最小エンゲージメント数
      * @return \Illuminate\Database\Eloquent\Builder 記事検索用クエリビルダー
      */
-    private function buildArticleQuery(string $query, int $limit, int $days, int $minBookmarks)
+    private function buildArticleQuery(string $query, int $limit, int $days, int $minEngagement)
     {
         return Article::with(['company', 'platform'])
             ->recent($days)
-            ->where('bookmark_count', '>=', $minBookmarks)
+            ->where('engagement_count', '>=', $minEngagement)
             ->where(function ($q) use ($query) {
                 $q->where('title', 'LIKE', "%{$query}%")
                     ->orWhere('author_name', 'LIKE', "%{$query}%");
@@ -640,12 +639,12 @@ class SearchController extends Controller
             $score += ScoringConstants::ARTICLE_AUTHOR_MATCH_WEIGHT;
         }
 
-        // ブックマーク数によるスコア調整
-        if ($article->bookmark_count > ScoringConstants::HIGH_BOOKMARKS_THRESHOLD) {
+        // エンゲージメント数によるスコア調整
+        if ($article->engagement_count > ScoringConstants::HIGH_BOOKMARKS_THRESHOLD) {
             $score += ScoringConstants::ARTICLE_HIGH_BOOKMARK_WEIGHT;
-        } elseif ($article->bookmark_count > ScoringConstants::MEDIUM_BOOKMARKS_THRESHOLD) {
+        } elseif ($article->engagement_count > ScoringConstants::MEDIUM_BOOKMARKS_THRESHOLD) {
             $score += ScoringConstants::ARTICLE_MEDIUM_BOOKMARK_WEIGHT;
-        } elseif ($article->bookmark_count > ScoringConstants::LOW_BOOKMARKS_THRESHOLD) {
+        } elseif ($article->engagement_count > ScoringConstants::LOW_BOOKMARKS_THRESHOLD) {
             $score += ScoringConstants::ARTICLE_LOW_BOOKMARK_WEIGHT;
         }
 

@@ -54,7 +54,7 @@ class HatenaBookmarkScraperTest extends TestCase
 
         $this->assertEquals('テストタイトル1', $result[0]['title']);
         $this->assertEquals('https://example.com/article1', $result[0]['url']);
-        $this->assertEquals(100, $result[0]['bookmark_count']);
+        $this->assertEquals(100, $result[0]['engagement_count']);
         $this->assertEquals('example.com', $result[0]['domain']);
         $this->assertEquals('hatena_bookmark', $result[0]['platform']);
     }
@@ -102,7 +102,7 @@ class HatenaBookmarkScraperTest extends TestCase
             [
                 'title' => 'テスト記事',
                 'url' => 'https://example.com/test',
-                'bookmark_count' => 50,
+                'engagement_count' => 50,
                 'domain' => 'example.com',
                 'platform' => 'hatena_bookmark',
                 'scraped_at' => now(),
@@ -116,7 +116,7 @@ class HatenaBookmarkScraperTest extends TestCase
             'title' => 'テスト記事',
             'url' => 'https://example.com/test',
             'company_id' => $company->id,
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'platform' => 'hatena_bookmark',
         ]);
     }
@@ -483,7 +483,7 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertCount(3, $result);
         $this->assertEquals('通常の記事タイトル', $result[0]['title']);
         $this->assertEquals('example.com', $result[0]['domain']);
-        $this->assertEquals(120, $result[0]['bookmark_count']);
+        $this->assertEquals(120, $result[0]['engagement_count']);
     }
 
     /**
@@ -537,7 +537,7 @@ class HatenaBookmarkScraperTest extends TestCase
             [
                 'title' => 'プラットフォームなし記事',
                 'url' => 'https://example.com/no-platform',
-                'bookmark_count' => 10,
+                'engagement_count' => 10,
                 'domain' => 'example.com',
                 'platform' => 'hatena_bookmark',
                 'scraped_at' => now(),
@@ -566,7 +566,7 @@ class HatenaBookmarkScraperTest extends TestCase
         \App\Models\Article::factory()->create([
             'url' => 'https://example.com/duplicate',
             'title' => '元のタイトル',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'platform_id' => $platform->id,
         ]);
 
@@ -574,7 +574,7 @@ class HatenaBookmarkScraperTest extends TestCase
             [
                 'title' => '更新されたタイトル',
                 'url' => 'https://example.com/duplicate',
-                'bookmark_count' => 100,
+                'engagement_count' => 100,
                 'domain' => 'example.com',
                 'platform' => 'hatena_bookmark',
                 'scraped_at' => now(),
@@ -587,7 +587,7 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertDatabaseHas('articles', [
             'url' => 'https://example.com/duplicate',
             'title' => '更新されたタイトル',
-            'bookmark_count' => 100,
+            'engagement_count' => 100,
         ]);
     }
 
@@ -602,7 +602,7 @@ class HatenaBookmarkScraperTest extends TestCase
             [
                 'title' => str_repeat('a', 1000), // 異常に長いタイトル
                 'url' => 'invalid-url',
-                'bookmark_count' => 'invalid',
+                'engagement_count' => 'invalid',
                 'domain' => '',
                 'platform' => 'hatena_bookmark',
                 'scraped_at' => 'invalid-date',
@@ -669,7 +669,7 @@ class HatenaBookmarkScraperTest extends TestCase
             [
                 'title' => '企業記事',
                 'url' => 'https://tech-company.com/article', // 完全に一致するドメインに変更
-                'bookmark_count' => 75,
+                'engagement_count' => 75,
                 'domain' => 'tech-company.com',
                 'platform' => 'hatena_bookmark',
                 'scraped_at' => now(),

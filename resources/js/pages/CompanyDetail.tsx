@@ -217,8 +217,8 @@ const CompanyDetail: React.FC = () => {
                                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                                     <span>{article.platform.name}</span>
                                     <span>{new Date(article.published_at).toLocaleDateString('ja-JP')}</span>
-                                    {article.bookmark_count > 0 && (
-                                        <span>ブックマーク: {article.bookmark_count}</span>
+                                    {article.engagement_count > 0 && (
+                                        <span>エンゲージメント: {article.engagement_count}</span>
                                     )}
                                 </div>
                             </div>

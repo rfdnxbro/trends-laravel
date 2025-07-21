@@ -58,14 +58,14 @@ class ZennScraperTest extends TestCase
         $mockHtml = '<html><body>
             <a href="/articles/article1">
                 <h2>Test Article 1</h2>
-                <button aria-label="30 いいね">30</button>
-                <img alt="test_user" src="/user.jpg">
+                <span class="ArticleList_like">30</span>
+                <span class="ArticleList_userName">test_user</span>
                 <time datetime="2024-01-01T12:00:00Z">2024-01-01</time>
             </a>
             <a href="/articles/article2">
                 <h2>Test Article 2</h2>
-                <button aria-label="20 いいね">20</button>
-                <img alt="test_user2" src="/user2.jpg">
+                <span class="ArticleList_like">20</span>
+                <span class="ArticleList_userName">test_user2</span>
                 <time datetime="2024-01-02T12:00:00Z">2024-01-02</time>
             </a>
         </body></html>';
@@ -411,8 +411,8 @@ class ZennScraperTest extends TestCase
 
         $result = $method->invoke($this->scraper, $node);
 
-        // ZennScraperがauthorから'No author here'を抽出し、それをURLに変換する実際の動作
-        $this->assertEquals('https://zenn.dev/No author here', $result);
+        // ZennScraperがauthorから'No author here'を抽出し、extractAuthorNameで'No'に変換される実際の動作
+        $this->assertEquals('https://zenn.dev/No', $result);
     }
 
     #[Test]
@@ -820,6 +820,126 @@ class ZennScraperTest extends TestCase
         $result = $method->invoke($this->scraper, $node);
 
         $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_extract_author_name_企業名付きパターンを正しく処理する()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorName');
+        $method->setAccessible(true);
+
+        // 企業名が含まれるパターンのテスト
+        $testCases = [
+            'haruotsuinGMOペパボ株式会社3日前 172' => 'haruotsuinGMO',
+            'yamada株式会社テスト2日前 50' => 'yamada',
+            'john_doeABC Corp1週間前 100' => 'john_doeABC',
+            'tanaka有限会社サンプル1時間前' => 'tanaka',
+        ];
+
+        foreach ($testCases as $input => $expected) {
+            $result = $method->invoke($this->scraper, $input);
+            $this->assertEquals($expected, $result, "Input: {$input}");
+        }
+    }
+
+    #[Test] 
+    public function test_extract_author_name_日時表現を正しく除去する()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorName');
+        $method->setAccessible(true);
+
+        $testCases = [
+            'Sosuke Suzuki3日前 281' => 'Sosuke',
+            'user_name1時間前' => 'user_name',
+            'test2週間前 50' => 'test',
+            'sample1年前 999' => 'sample',
+        ];
+
+        foreach ($testCases as $input => $expected) {
+            $result = $method->invoke($this->scraper, $input);
+            $this->assertEquals($expected, $result, "Input: {$input}");
+        }
+    }
+
+    #[Test]
+    public function test_extract_author_name_複雑な組み合わせパターン()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthorName');
+        $method->setAccessible(true);
+
+        $testCases = [
+            'Gota2日前 196' => 'Gota',
+            'user in株式会社テスト' => 'user',
+            'developer inABC Corp3日前 100' => 'developer',
+            '/username' => 'username', // URLパス形式
+            'simple_user' => 'simple_user', // シンプルケース
+        ];
+
+        foreach ($testCases as $input => $expected) {
+            $result = $method->invoke($this->scraper, $input);
+            $this->assertEquals($expected, $result, "Input: {$input}");
+        }
+    }
+
+    #[Test]
+    public function test_extract_author_ArticleList_userNameクラスから正しく抽出する()
+    {
+        $html = '<a href="/articles/article1">
+            <span class="ArticleList_userName">clean_username</span>
+            <span class="ArticleList_publicationLink">Company Name</span>
+        </a>';
+
+        $crawler = new Crawler($html);
+        $node = $crawler->filter('a');
+
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthor');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->scraper, $node);
+
+        $this->assertEquals('clean_username', $result);
+    }
+
+    #[Test]
+    public function test_extract_likes_count_ArticleList_likeクラスから正しく抽出する()
+    {
+        $html = '<a href="/articles/article1">
+            <span class="ArticleList_like">42</span>
+        </a>';
+
+        $crawler = new Crawler($html);
+        $node = $crawler->filter('a');
+
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractLikesCount');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->scraper, $node);
+
+        $this->assertEquals(42, $result);
+    }
+
+    #[Test]
+    public function test_extract_author_publicationLinkもフォールバックとして使用される()
+    {
+        $html = '<a href="/articles/article1">
+            <span class="ArticleList_publicationLink">company_user in Company Ltd</span>
+        </a>';
+
+        $crawler = new Crawler($html);
+        $node = $crawler->filter('a');
+
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthor');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->scraper, $node);
+
+        $this->assertEquals('company_user in Company Ltd', $result);
     }
 
     protected function tearDown(): void

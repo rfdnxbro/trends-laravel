@@ -190,24 +190,12 @@ const ArticleStats: React.FC<ArticleStatsProps> = ({ article }) => (
             <div className="flex items-center justify-between">
                 <div className="flex items-center">
                     <BookmarkIcon className="h-5 w-5 text-orange-500 mr-2" />
-                    <span className="text-sm text-gray-600">ブックマーク</span>
+                    <span className="text-sm text-gray-600">エンゲージメント</span>
                 </div>
                 <span className="text-lg font-semibold text-orange-600">
-                    {(article.bookmark_count || 0).toLocaleString()}
+                    {(article.engagement_count || 0).toLocaleString()}
                 </span>
             </div>
-
-            {article.likes_count !== undefined && article.likes_count > 0 && (
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                        <HeartIcon className="h-5 w-5 text-red-500 mr-2" />
-                        <span className="text-sm text-gray-600">いいね</span>
-                    </div>
-                    <span className="text-lg font-semibold text-red-600">
-                        {(article.likes_count || 0).toLocaleString()}
-                    </span>
-                </div>
-            )}
 
             {article.view_count !== undefined && article.view_count > 0 && (
                 <div className="flex items-center justify-between">

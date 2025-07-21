@@ -49,8 +49,7 @@ class ArticleControllerTest extends TestCase
                         'url',
                         'author_name',
                         'published_at',
-                        'bookmark_count',
-                        'likes_count',
+                        'engagement_count',
                         'company' => [
                             'id',
                             'name',
@@ -215,8 +214,7 @@ class ArticleControllerTest extends TestCase
                     'url',
                     'author_name',
                     'published_at',
-                    'bookmark_count',
-                    'likes_count',
+                    'engagement_count',
                     'company' => [
                         'id',
                         'name',
@@ -465,7 +463,7 @@ class ArticleControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_いいね数でソートできること()
+    public function test_エンゲージメント数での降順ソートができること()
     {
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
@@ -473,33 +471,33 @@ class ArticleControllerTest extends TestCase
         $article1 = Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'likes_count' => 100,
+            'engagement_count' => 100,
         ]);
         $article2 = Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'likes_count' => 50,
+            'engagement_count' => 50,
         ]);
         $article3 = Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'likes_count' => 200,
+            'engagement_count' => 200,
         ]);
 
-        // いいね数の降順でソート
+        // エンゲージメント数の降順でソート
         $response = $this->actingAs($this->user)
-            ->getJson('/api/articles?sort_by=likes_count&sort_order=desc');
+            ->getJson('/api/articles?sort_by=engagement_count&sort_order=desc');
 
         $response->assertStatus(Response::HTTP_OK);
 
         $data = $response->json('data');
-        $this->assertEquals($article3->id, $data[0]['id']); // 200いいね
-        $this->assertEquals($article1->id, $data[1]['id']); // 100いいね
-        $this->assertEquals($article2->id, $data[2]['id']); // 50いいね
+        $this->assertEquals($article3->id, $data[0]['id']); // 200エンゲージメント
+        $this->assertEquals($article1->id, $data[1]['id']); // 100エンゲージメント
+        $this->assertEquals($article2->id, $data[2]['id']); // 50エンゲージメント
     }
 
     #[Test]
-    public function test_ブックマーク数でソートできること()
+    public function test_エンゲージメント数でソートできること()
     {
         $company = Company::factory()->create();
         $platform = Platform::factory()->create();
@@ -507,28 +505,28 @@ class ArticleControllerTest extends TestCase
         $article1 = Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'bookmark_count' => 30,
+            'engagement_count' => 30,
         ]);
         $article2 = Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'bookmark_count' => 10,
+            'engagement_count' => 10,
         ]);
         $article3 = Article::factory()->create([
             'company_id' => $company->id,
             'platform_id' => $platform->id,
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
         ]);
 
         $response = $this->actingAs($this->user)
-            ->getJson('/api/articles?sort_by=bookmark_count&sort_order=desc');
+            ->getJson('/api/articles?sort_by=engagement_count&sort_order=desc');
 
         $response->assertStatus(Response::HTTP_OK);
 
         $data = $response->json('data');
-        $this->assertEquals($article3->id, $data[0]['id']); // 50ブックマーク
-        $this->assertEquals($article1->id, $data[1]['id']); // 30ブックマーク
-        $this->assertEquals($article2->id, $data[2]['id']); // 10ブックマーク
+        $this->assertEquals($article3->id, $data[0]['id']); // 50エンゲージメント
+        $this->assertEquals($article1->id, $data[1]['id']); // 30エンゲージメント
+        $this->assertEquals($article2->id, $data[2]['id']); // 10エンゲージメント
     }
 
     #[Test]

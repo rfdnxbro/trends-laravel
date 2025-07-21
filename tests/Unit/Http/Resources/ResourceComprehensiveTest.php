@@ -61,7 +61,7 @@ class ResourceComprehensiveTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'author_name' => 'テスト著者',
-            'bookmark_count' => 10,
+            'engagement_count' => 10,
         ]);
 
         $resource = new CompanyArticleResource($article);
@@ -73,7 +73,7 @@ class ResourceComprehensiveTest extends TestCase
         $this->assertEquals('テスト記事', $array['title']);
         $this->assertEquals('https://example.com/article', $array['url']);
         $this->assertEquals('テスト著者', $array['author_name']);
-        $this->assertEquals(10, $array['bookmark_count']);
+        $this->assertEquals(10, $array['engagement_count']);
         $this->assertArrayHasKey('id', $array);
         $this->assertArrayHasKey('published_at', $array);
     }

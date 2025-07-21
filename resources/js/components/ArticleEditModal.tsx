@@ -30,8 +30,7 @@ const ArticleEditModal: React.FC<ArticleEditModalProps> = ({
         author: '',
         author_url: '',
         published_at: '',
-        bookmark_count: 0,
-        likes_count: 0,
+        engagement_count: 0,
         domain: '',
         platform: '',
     });
@@ -49,8 +48,7 @@ const ArticleEditModal: React.FC<ArticleEditModalProps> = ({
                 author: article.author || '',
                 author_url: article.author_url || '',
                 published_at: article.published_at ? article.published_at.split('T')[0] : '',
-                bookmark_count: article.bookmark_count || 0,
-                likes_count: article.likes_count || 0,
+                engagement_count: article.engagement_count || 0,
                 domain: article.domain || '',
                 platform: article.platform?.name || '',
             });
@@ -251,44 +249,23 @@ const ArticleEditModal: React.FC<ArticleEditModalProps> = ({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* ブックマーク数 */}
-                            <div>
-                                <label htmlFor="bookmark_count" className="block text-sm font-medium text-gray-700">
-                                    ブックマーク数
-                                </label>
-                                <input
-                                    type="number"
-                                    id="bookmark_count"
-                                    min="0"
-                                    value={formData.bookmark_count}
-                                    onChange={(e) => handleInputChange('bookmark_count', parseInt(e.target.value) || 0)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    data-testid="bookmark-count-input"
-                                />
-                                {errors.bookmark_count && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.bookmark_count}</p>
-                                )}
-                            </div>
-
-                            {/* いいね数 */}
-                            <div>
-                                <label htmlFor="likes_count" className="block text-sm font-medium text-gray-700">
-                                    いいね数
-                                </label>
-                                <input
-                                    type="number"
-                                    id="likes_count"
-                                    min="0"
-                                    value={formData.likes_count}
-                                    onChange={(e) => handleInputChange('likes_count', parseInt(e.target.value) || 0)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    data-testid="likes-count-input"
-                                />
-                                {errors.likes_count && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.likes_count}</p>
-                                )}
-                            </div>
+                        {/* エンゲージメント数 */}
+                        <div>
+                            <label htmlFor="engagement_count" className="block text-sm font-medium text-gray-700">
+                                エンゲージメント数
+                            </label>
+                            <input
+                                type="number"
+                                id="engagement_count"
+                                min="0"
+                                value={formData.engagement_count}
+                                onChange={(e) => handleInputChange('engagement_count', parseInt(e.target.value) || 0)}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                data-testid="engagement-count-input"
+                            />
+                            {errors.engagement_count && (
+                                <p className="mt-1 text-sm text-red-600">{errors.engagement_count}</p>
+                            )}
                         </div>
                     </div>
 

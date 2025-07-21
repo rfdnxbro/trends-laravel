@@ -25,16 +25,14 @@ class Article extends Model
         'author',
         'author_url',
         'published_at',
-        'bookmark_count',
-        'likes_count',
+        'engagement_count',
         'scraped_at',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
         'scraped_at' => 'datetime',
-        'bookmark_count' => 'integer',
-        'likes_count' => 'integer',
+        'engagement_count' => 'integer',
     ];
 
     public function company(): BelongsTo
@@ -52,9 +50,9 @@ class Article extends Model
         return $query->where('published_at', '>=', now()->subDays($days));
     }
 
-    public function scopePopular($query, $minBookmarks = 10)
+    public function scopePopular($query, $minEngagement = 10)
     {
-        return $query->where('bookmark_count', '>=', $minBookmarks);
+        return $query->where('engagement_count', '>=', $minEngagement);
     }
 
     /**
@@ -106,7 +104,7 @@ class Article extends Model
     public function scopeWithSort($query, $sortBy = 'published_at', $sortOrder = 'desc')
     {
         // 許可されたソートカラムのみ受け付ける
-        $allowedSortColumns = ['published_at', 'likes_count', 'bookmark_count'];
+        $allowedSortColumns = ['published_at', 'engagement_count'];
 
         if (in_array($sortBy, $allowedSortColumns)) {
             $query->orderBy($sortBy, $sortOrder);

@@ -36,8 +36,7 @@ class UpdateArticleRequest extends FormRequest
             'author' => ['sometimes', 'nullable', 'string', 'max:255'],
             'author_url' => ['sometimes', 'nullable', 'string', 'max:500', 'url'],
             'published_at' => ['sometimes', 'nullable', 'date'],
-            'bookmark_count' => ['sometimes', 'integer', 'min:0'],
-            'likes_count' => ['sometimes', 'integer', 'min:0'],
+            'engagement_count' => ['sometimes', 'integer', 'min:0'],
             'scraped_at' => ['sometimes', 'date'],
         ];
     }
@@ -57,8 +56,7 @@ class UpdateArticleRequest extends FormRequest
             'url.url' => '有効なURLを入力してください。',
             'url.unique' => 'このURLの記事は既に存在します。',
             'author_url.url' => '有効な投稿者URLを入力してください。',
-            'bookmark_count.min' => 'ブックマーク数は0以上を入力してください。',
-            'likes_count.min' => 'いいね数は0以上を入力してください。',
+            'engagement_count.min' => 'エンゲージメント数は0以上を入力してください。',
         ];
     }
 }

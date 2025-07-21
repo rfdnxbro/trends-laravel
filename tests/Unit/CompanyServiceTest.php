@@ -164,13 +164,13 @@ class CompanyServiceTest extends TestCase
         Article::factory()->create([
             'company_id' => $this->company->id,
             'platform_id' => $this->platform->id,
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
         ]);
 
         $popularArticles = Article::popular(10)->get();
 
         foreach ($popularArticles as $article) {
-            $this->assertGreaterThanOrEqual(10, $article->bookmark_count);
+            $this->assertGreaterThanOrEqual(10, $article->engagement_count);
         }
     }
 

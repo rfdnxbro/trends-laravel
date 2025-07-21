@@ -147,7 +147,7 @@ class QiitaScraper extends BaseScraper
             return [
                 'title' => $title,
                 'url' => $url,
-                'likes_count' => $this->extractLikesCount($node),
+                'engagement_count' => $this->extractLikesCount($node),
                 'author' => $author,
                 'author_name' => $authorName,
                 'author_url' => $this->extractAuthorUrl($node),
@@ -219,15 +219,35 @@ class QiitaScraper extends BaseScraper
      */
     protected function extractLikesCount(Crawler $node): int
     {
-        $selectors = [
+        // 優先セレクタ: footer内の数字要素（実際のHTML構造に基づく）
+        $prioritySelectors = [
+            'footer div[class*="style-"]',  // footer内のstyle-クラスを持つdiv
+            'footer div',  // footer内の全てのdiv
+            'footer span',  // footer内のspan
+        ];
+
+        // 優先セレクタでいいね数を検索
+        foreach ($prioritySelectors as $selector) {
+            $elements = $node->filter($selector);
+            if ($elements->count() > 0) {
+                foreach ($elements as $element) {
+                    $text = trim($element->textContent);
+                    if (preg_match('/^\d+$/', $text) && strlen($text) <= 4) {
+                        return (int) $text;
+                    }
+                }
+            }
+        }
+
+        // フォールバック: 従来のセレクタ
+        $fallbackSelectors = [
             '[data-testid="like-count"]',
             '[aria-label*="LGTM"]',
             '[aria-label*="いいね"]',
-            '.style-*[aria-label*="LGTM"]',
             'span[aria-label]',
         ];
 
-        return $this->extractNumberBySelectors($node, $selectors);
+        return $this->extractNumberBySelectors($node, $fallbackSelectors);
     }
 
     protected function extractAuthor(Crawler $node): ?string
@@ -360,7 +380,7 @@ class QiitaScraper extends BaseScraper
                         'title' => $article['title'],
                         'platform_id' => $qiitaPlatform?->id,
                         'company_id' => $company?->id,
-                        'likes_count' => $article['likes_count'],
+                        'engagement_count' => $article['engagement_count'],
                         'author' => $article['author'],
                         'author_name' => $authorName,
                         'author_url' => $article['author_url'],
@@ -376,7 +396,7 @@ class QiitaScraper extends BaseScraper
                     'title' => $article['title'],
                     'author' => $article['author'],
                     'company' => $company?->name,
-                    'likes_count' => $article['likes_count'],
+                    'engagement_count' => $article['engagement_count'],
                 ]);
 
             } catch (\Exception $e) {

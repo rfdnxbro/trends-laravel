@@ -30,8 +30,7 @@ class CompanyArticleResource extends JsonResource
             'author_name' => $this->author_name,
             'author_url' => $this->author_url,
             'published_at' => $this->published_at,
-            'bookmark_count' => $this->bookmark_count,
-            'likes_count' => $this->likes_count,
+            'engagement_count' => $this->engagement_count,
             'company' => [
                 'id' => $this->company_id,
                 'name' => $this->whenLoaded('company', function () {

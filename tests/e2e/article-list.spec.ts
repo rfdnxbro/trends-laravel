@@ -60,7 +60,7 @@ test.describe('記事一覧ページ', () => {
     
     // ソートオプションが存在することを確認
     await expect(sortSelect.locator('option:has-text("公開日(新しい順)")').first()).toBeAttached();
-    await expect(sortSelect.locator('option:has-text("ブックマーク数(多い順)")').first()).toBeAttached();
+    await expect(sortSelect.locator('option:has-text("エンゲージメント数(多い順)")').first()).toBeAttached();
   });
 
   test('記事詳細へのリンクが機能する', async ({ page }) => {

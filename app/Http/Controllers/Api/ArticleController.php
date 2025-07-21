@@ -15,7 +15,7 @@ class ArticleController extends Controller
     /**
      * 記事一覧を取得
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request)
     {
@@ -101,7 +101,7 @@ class ArticleController extends Controller
      * company_id後付け対応（nullから具体的なIDへの変更を許可）
      *
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return \App\Http\Resources\ArticleResource|\Illuminate\Http\JsonResponse
      */
     public function update(UpdateArticleRequest $request, $id)
     {

@@ -1,14 +1,14 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { vi } from 'vitest';
-import ArticleList from '../ArticleList';
+import ArticleDetail from '../ArticleDetail';
 
 // APIサービスをモック
 vi.mock('../../services/api', () => ({
     apiService: {
-        getArticles: vi.fn(),
+        getArticleDetail: vi.fn(),
     },
 }));
 
@@ -21,20 +21,21 @@ const createTestQueryClient = () => new QueryClient({
     },
 });
 
-describe('ArticleList', () => {
+describe('ArticleDetail', () => {
     it('コンポーネントがレンダリングされる', () => {
         const queryClient = createTestQueryClient();
         
         render(
             <QueryClientProvider client={queryClient}>
-                <BrowserRouter>
-                    <ArticleList />
-                </BrowserRouter>
+                <MemoryRouter initialEntries={['/articles/1']}>
+                    <Routes>
+                        <Route path="/articles/:id" element={<ArticleDetail />} />
+                    </Routes>
+                </MemoryRouter>
             </QueryClientProvider>
         );
 
-        // タイトルが表示されることを確認
-        expect(screen.getByText('記事一覧')).toBeInTheDocument();
-        expect(screen.getByText('企業別の技術記事を確認できます')).toBeInTheDocument();
+        // ローディング状態が表示されることを確認
+        expect(screen.getByText('記事を読み込み中...')).toBeInTheDocument();
     });
 });

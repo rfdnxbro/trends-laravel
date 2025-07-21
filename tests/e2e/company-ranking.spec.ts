@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('企業ランキング機能', () => {
   test('ランキングデータが表示される', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // ランキングテーブルやリストの存在確認
     const rankingElements = page.locator('table, ul, .ranking, .companies, [data-testid="ranking"]');
@@ -21,7 +21,7 @@ test.describe('企業ランキング機能', () => {
 
   test('期間フィルター機能が動作する', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 期間選択のドロップダウンやボタンを探す
     const periodFilters = page.locator('select, button:has-text("週"), button:has-text("月"), .period-filter');
@@ -37,7 +37,7 @@ test.describe('企業ランキング機能', () => {
 
   test('企業詳細ページへの遷移が動作する', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 企業名のリンクを探す
     const companyLinks = page.locator('a[href*="/companies/"], a[href*="/company/"], .company-link');
@@ -50,14 +50,14 @@ test.describe('企業ランキング機能', () => {
       await firstLink.click();
       
       // ページが変わったことを確認
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       await expect(page).toHaveURL(/\/compan/);
     }
   });
 
   test('レスポンシブデザインが正常に動作する', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // モバイルサイズでの表示確認
     await page.setViewportSize({ width: 375, height: 667 });

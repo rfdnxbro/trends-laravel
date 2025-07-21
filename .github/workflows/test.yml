@@ -206,7 +206,7 @@ jobs:
       
       - name: PHP循環的複雑度チェックを実行
         run: |
-          vendor/bin/phpmetrics --config=phpmetrics.json --report-html=phpmetrics-report app/
+          vendor/bin/phpmetrics --report-html=phpmetrics-report app/
           echo "PHPMetrics report generated at phpmetrics-report/index.html"
       
       - name: PHPMetricsレポートをアップロード

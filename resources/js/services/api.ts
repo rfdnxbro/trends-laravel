@@ -27,10 +27,9 @@ api.interceptors.response.use(
     (response: AxiosResponse) => response,
     (error) => {
         if (error.response?.status === API_CONSTANTS.CSRF_ERROR_STATUS) {
-            // CSRF トークンエラー
-            console.error('CSRF token mismatch. Please refresh the page.');
+            // CSRF トークンエラー - ページの再読み込みが必要
         } else if (error.response?.status >= API_CONSTANTS.SERVER_ERROR_START) {
-            console.error('Server error:', error.response?.data?.message || 'Internal server error');
+            // サーバーエラー
         }
         return Promise.reject(error);
     }
@@ -60,6 +59,21 @@ export const apiService = {
     createCompany: (data: Record<string, unknown>) => api.post('/api/companies', data),
     updateCompany: (id: number, data: Record<string, unknown>) => api.put(`/api/companies/${id}`, data),
     deleteCompany: (id: number) => api.delete(`/api/companies/${id}`),
+    
+    // 記事関連
+    getArticles: (filters?: Record<string, unknown>) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    params.append(key, String(value));
+                }
+            });
+        }
+        const queryString = params.toString();
+        return api.get(`/api/articles${queryString ? '?' + queryString : ''}`);
+    },
+    getArticleDetail: (id: number) => api.get(`/api/articles/${id}`),
     
     // 検索
     search: (query: string, filters?: Record<string, unknown>) => 

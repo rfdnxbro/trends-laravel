@@ -24,6 +24,8 @@ class CacheTimeTest extends TestCase
         $this->assertSame(600, CacheTime::STATISTICS);
         $this->assertSame(300, CacheTime::RANKING);
         $this->assertSame(300, CacheTime::COMPANY_DETAIL);
+        $this->assertSame(600, CacheTime::ARTICLE_LIST);
+        $this->assertSame(600, CacheTime::ARTICLE_DETAIL);
     }
 
     #[Test]
@@ -70,6 +72,19 @@ class CacheTimeTest extends TestCase
             CacheTime::COMPANY_DETAIL,
             '企業詳細キャッシュ時間はデフォルト時間と同じであるべき'
         );
+
+        // 記事一覧と記事詳細は長期キャッシュが妥当
+        $this->assertSame(
+            CacheTime::LONG,
+            CacheTime::ARTICLE_LIST,
+            '記事一覧キャッシュ時間は長期キャッシュと同じであるべき'
+        );
+
+        $this->assertSame(
+            CacheTime::LONG,
+            CacheTime::ARTICLE_DETAIL,
+            '記事詳細キャッシュ時間は長期キャッシュと同じであるべき'
+        );
     }
 
     #[Test]
@@ -91,6 +106,8 @@ class CacheTimeTest extends TestCase
             'STATISTICS' => ['STATISTICS', 600],
             'RANKING' => ['RANKING', 300],
             'COMPANY_DETAIL' => ['COMPANY_DETAIL', 300],
+            'ARTICLE_LIST' => ['ARTICLE_LIST', 600],
+            'ARTICLE_DETAIL' => ['ARTICLE_DETAIL', 600],
         ];
     }
 
@@ -104,6 +121,8 @@ class CacheTimeTest extends TestCase
             CacheTime::STATISTICS,
             CacheTime::RANKING,
             CacheTime::COMPANY_DETAIL,
+            CacheTime::ARTICLE_LIST,
+            CacheTime::ARTICLE_DETAIL,
         ];
 
         foreach ($cacheTimeValues as $cacheTime) {
@@ -145,6 +164,12 @@ class CacheTimeTest extends TestCase
 
         // 企業詳細（5分）：基本情報で適度なキャッシュが適切
         $this->assertSame(300, CacheTime::COMPANY_DETAIL, '企業詳細キャッシュは5分が適切');
+
+        // 記事一覧（10分）：検索結果のキャッシュで長期が適切
+        $this->assertSame(600, CacheTime::ARTICLE_LIST, '記事一覧キャッシュは10分が適切');
+
+        // 記事詳細（10分）：記事内容は変更されないため長期が適切
+        $this->assertSame(600, CacheTime::ARTICLE_DETAIL, '記事詳細キャッシュは10分が適切');
     }
 
     #[Test]
@@ -160,6 +185,8 @@ class CacheTimeTest extends TestCase
             'STATISTICS',
             'RANKING',
             'COMPANY_DETAIL',
+            'ARTICLE_LIST',
+            'ARTICLE_DETAIL',
         ];
 
         foreach ($expectedConstants as $constantName) {
@@ -220,7 +247,7 @@ class CacheTimeTest extends TestCase
         }
 
         // 長期キャッシュに分類されるべき時間
-        $longTermCaches = [CacheTime::LONG, CacheTime::STATISTICS];
+        $longTermCaches = [CacheTime::LONG, CacheTime::STATISTICS, CacheTime::ARTICLE_LIST, CacheTime::ARTICLE_DETAIL];
         foreach ($longTermCaches as $cacheTime) {
             $this->assertGreaterThanOrEqual(600, $cacheTime, '長期キャッシュは10分以上であるべき');
         }
@@ -237,6 +264,8 @@ class CacheTimeTest extends TestCase
             CacheTime::STATISTICS,
             CacheTime::RANKING,
             CacheTime::COMPANY_DETAIL,
+            CacheTime::ARTICLE_LIST,
+            CacheTime::ARTICLE_DETAIL,
         ]);
 
         $this->assertGreaterThanOrEqual(30, $minCacheTime, '最小キャッシュ時間は30秒以上であるべき');
@@ -249,6 +278,8 @@ class CacheTimeTest extends TestCase
             CacheTime::STATISTICS,
             CacheTime::RANKING,
             CacheTime::COMPANY_DETAIL,
+            CacheTime::ARTICLE_LIST,
+            CacheTime::ARTICLE_DETAIL,
         ]);
 
         $this->assertLessThanOrEqual(3600, $maxCacheTime, '最大キャッシュ時間は1時間以下であるべき');

@@ -74,13 +74,15 @@ jobs:
           php artisan key:generate
       
       - name: フロントエンドアセットをビルド
-        run: npm run build
+        run: |
+          npm run build
+          ls -la public/build/
       
       - name: データベースを設定
         run: |
           php artisan config:cache
           php artisan migrate:fresh --force
-          php artisan db:seed --force
+          php artisan db:seed --class=E2ETestSeeder --force
         env:
           DB_CONNECTION: pgsql
           DB_HOST: localhost

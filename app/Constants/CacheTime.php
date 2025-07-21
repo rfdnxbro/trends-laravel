@@ -33,4 +33,14 @@ class CacheTime
      * 企業詳細キャッシュ時間（5分）
      */
     public const COMPANY_DETAIL = 300;
+
+    /**
+     * 記事一覧キャッシュ時間（10分）
+     */
+    public const ARTICLE_LIST = 600;
+
+    /**
+     * 記事詳細キャッシュ時間（10分）
+     */
+    public const ARTICLE_DETAIL = 600;
 }

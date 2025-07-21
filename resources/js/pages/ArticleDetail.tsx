@@ -7,7 +7,6 @@ import {
     BuildingOfficeIcon,
     GlobeAltIcon,
     BookmarkIcon,
-    HeartIcon,
     EyeIcon,
     ShareIcon,
     ArrowTopRightOnSquareIcon

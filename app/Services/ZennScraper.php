@@ -579,8 +579,8 @@ class ZennScraper extends BaseScraper
 
         foreach ($articles as $article) {
             try {
-                // extractAuthorNameで既に処理済みのauthor_nameを使用
-                $authorName = $article['author_name'] ?? null;
+                // extractAuthorNameで既に処理済みのauthor_nameを使用、なければauthorから抽出
+                $authorName = $article['author_name'] ?? $this->extractAuthorName($article['author'] ?? null);
 
                 // 拡張された会社マッチングを使用
                 $articleData = array_merge($article, [

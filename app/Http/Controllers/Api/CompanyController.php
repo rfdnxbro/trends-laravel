@@ -1017,8 +1017,8 @@ class CompanyController extends Controller
                 'scores' => $company->influenceScores()->count(),
             ];
 
-            // 関連データを削除
-            $company->articles()->delete();
+            // 関連データを削除（ソフトデリート対応記事は物理削除）
+            $company->articles()->forceDelete();
             $company->rankings()->delete();
             $company->influenceScores()->delete();
 

@@ -43,12 +43,16 @@ class ArticleResource extends JsonResource
             'company' => $this->when($this->relationLoaded('company'), function () {
                 $companyRelation = $this->getRelation('company');
 
+                if ($companyRelation === null) {
+                    return null;
+                }
+
                 return [
-                    'id' => $companyRelation?->id,
-                    'name' => $companyRelation?->name,
-                    'domain' => $companyRelation?->domain,
-                    'logo_url' => $companyRelation?->logo_url,
-                    'website_url' => $companyRelation?->website_url,
+                    'id' => $companyRelation->id,
+                    'name' => $companyRelation->name,
+                    'domain' => $companyRelation->domain,
+                    'logo_url' => $companyRelation->logo_url,
+                    'website_url' => $companyRelation->website_url,
                 ];
             }),
             'domain' => $this->domain,

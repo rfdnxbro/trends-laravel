@@ -196,13 +196,8 @@ class ArticleResourceTest extends TestCase
         $result = $resource->toArray($this->request);
 
         $this->assertArrayHasKey('company', $result);
-        // company_idがnullの場合でもrelationがロードされているので配列が返される
-        $this->assertIsArray($result['company']);
-        $this->assertNull($result['company']['id']);
-        $this->assertNull($result['company']['name']);
-        $this->assertNull($result['company']['domain']);
-        $this->assertNull($result['company']['logo_url']);
-        $this->assertNull($result['company']['website_url']);
+        // company_idがnullの場合はnullが返される
+        $this->assertNull($result['company']);
     }
 
     #[Test]

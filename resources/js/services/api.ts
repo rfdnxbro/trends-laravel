@@ -74,6 +74,8 @@ export const apiService = {
         return api.get(`/api/articles${queryString ? '?' + queryString : ''}`);
     },
     getArticleDetail: (id: number) => api.get(`/api/articles/${id}`),
+    updateArticle: (id: number, data: Record<string, unknown>) => api.put(`/api/articles/${id}`, data),
+    deleteArticle: (id: number) => api.delete(`/api/articles/${id}`),
     
     // 検索
     search: (query: string, filters?: Record<string, unknown>) => 

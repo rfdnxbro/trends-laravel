@@ -551,8 +551,8 @@ class ArticleControllerTest extends TestCase
         // キャッシュキーを生成
         $cacheKey = 'articles:page=1:per_page=20:search=:platform_id=:company_id=:start_date=:end_date=:sort_by=published_at:sort_order=desc';
 
-        // キャッシュが存在することを確認
-        $this->assertTrue(Cache::has($cacheKey));
+        // tagsを使用しているキャッシュの存在確認
+        $this->assertTrue(Cache::tags(['articles'])->has($cacheKey));
 
         // 2回目のリクエスト（キャッシュから取得）
         $response2 = $this->actingAs($this->user)

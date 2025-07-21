@@ -108,8 +108,7 @@ class CompanyServiceTest extends TestCase
         $this->assertArrayHasKey('title', $array);
         $this->assertArrayHasKey('url', $array);
         $this->assertArrayHasKey('platform', $array);
-        $this->assertArrayHasKey('bookmark_count', $array);
-        $this->assertArrayHasKey('likes_count', $array);
+        $this->assertArrayHasKey('engagement_count', $array);
         $this->assertArrayHasKey('published_at', $array);
         $this->assertArrayHasKey('company', $array);
 

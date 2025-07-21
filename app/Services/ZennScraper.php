@@ -172,7 +172,7 @@ class ZennScraper extends BaseScraper
             $authorName = $this->extractAuthorNameDirect($node);
             $companyName = $this->extractCompanyNameDirect($node);
             $engagementCount = $this->extractLikesCount($node);
-            
+
             // 後方互換性のため、従来の統合テキストも保持
             $author = $authorName ? $authorName : $this->extractAuthor($node);
 
@@ -361,7 +361,7 @@ class ZennScraper extends BaseScraper
                 $element = $node->filter($selector);
                 if ($element->count() > 0) {
                     $text = trim($element->text());
-                    if (!empty($text)) {
+                    if (! empty($text)) {
                         return $text;
                     }
                 }
@@ -370,17 +370,29 @@ class ZennScraper extends BaseScraper
             // フォールバック: 画像のalt属性から抽出
             $imgElements = $node->filter('img');
             if ($imgElements->count() > 0) {
-                foreach ($imgElements as $img) {
-                    $alt = $img->getAttribute('alt');
-                    if (!empty($alt) && !str_contains($alt, 'logo') && !str_contains($alt, 'icon')) {
-                        return $alt;
+                $foundAuthor = null;
+                $imgElements->each(function (Crawler $imgNode) use (&$foundAuthor) {
+                    if ($foundAuthor) {
+                        return false;
+                    } // 既に見つかった場合は処理終了
+
+                    $alt = $imgNode->attr('alt');
+                    if (! empty($alt) && ! str_contains($alt, 'logo') && ! str_contains($alt, 'icon')) {
+                        $foundAuthor = $alt;
+
+                        return false; // 処理終了
                     }
+                });
+
+                if ($foundAuthor) {
+                    return $foundAuthor;
                 }
             }
 
             return null;
         } catch (\Exception $e) {
             Log::debug('著者名の直接抽出エラー', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -405,7 +417,7 @@ class ZennScraper extends BaseScraper
                 $element = $node->filter($selector);
                 if ($element->count() > 0) {
                     $text = trim($element->text());
-                    if (!empty($text)) {
+                    if (! empty($text)) {
                         return $text;
                     }
                 }
@@ -414,14 +426,16 @@ class ZennScraper extends BaseScraper
             return null;
         } catch (\Exception $e) {
             Log::debug('企業名の直接抽出エラー', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
 
     /**
      * authorから詳細情報を抽出（ユーザー名、企業名、いいね数、投稿日）
-     * 
+     *
      * @deprecated 新しいDOM直接抽出メソッドを使用してください
+     *
      * @param  string|null  $author  著者情報
      * @return array 抽出された情報の配列
      */

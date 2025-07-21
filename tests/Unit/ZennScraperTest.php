@@ -73,7 +73,7 @@ class ZennScraperTest extends TestCase
 
         $this->assertEquals('Test Article 1', $articles[0]['title']);
         $this->assertEquals('https://zenn.dev/articles/test-article-1', $articles[0]['url']);
-        $this->assertEquals(10, $articles[0]['likes_count']);
+        $this->assertEquals(10, $articles[0]['engagement_count']);
         $this->assertEquals('/@testuser1', $articles[0]['author']);
         $this->assertEquals('https://zenn.dev/@testuser1', $articles[0]['author_url']);
         $this->assertEquals('2023-01-01T00:00:00Z', $articles[0]['published_at']);
@@ -81,7 +81,7 @@ class ZennScraperTest extends TestCase
 
         $this->assertEquals('Test Article 2', $articles[1]['title']);
         $this->assertEquals('https://zenn.dev/articles/test-article-2', $articles[1]['url']);
-        $this->assertEquals(5, $articles[1]['likes_count']);
+        $this->assertEquals(5, $articles[1]['engagement_count']);
         $this->assertEquals('/@testuser2', $articles[1]['author']);
         $this->assertEquals('https://zenn.dev/@testuser2', $articles[1]['author_url']);
         $this->assertEquals('2023-01-02T00:00:00Z', $articles[1]['published_at']);
@@ -133,7 +133,7 @@ class ZennScraperTest extends TestCase
         $this->assertEquals('テスト記事', $savedArticles[0]->title);
         $this->assertEquals('https://zenn.dev/articles/test-article', $savedArticles[0]->url);
         $this->assertEquals($company->id, $savedArticles[0]->company_id);
-        $this->assertEquals(10, $savedArticles[0]->likes_count);
+        $this->assertEquals(10, $savedArticles[0]->engagement_count);
         $this->assertEquals('/@testcompany', $savedArticles[0]->author);
         $this->assertEquals('https://zenn.dev/@testcompany', $savedArticles[0]->author_url);
         $this->assertEquals('zenn', $savedArticles[0]->platform);

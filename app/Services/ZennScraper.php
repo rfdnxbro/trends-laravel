@@ -168,24 +168,26 @@ class ZennScraper extends BaseScraper
                 return null;
             }
 
-            $author = $this->extractAuthor($node);
-            $authorInfo = $this->parseAuthorInfo($author);
-
-            // authorから抽出したエンゲージメント数を優先し、セレクタで取得できない場合のフォールバック
-            $engagementCount = $authorInfo['engagement_count'] > 0 ? $authorInfo['engagement_count'] : $this->extractLikesCount($node);
+            // DOM構造から直接各要素を抽出（より効率的で正確）
+            $authorName = $this->extractAuthorNameDirect($node);
+            $companyName = $this->extractCompanyNameDirect($node);
+            $engagementCount = $this->extractLikesCount($node);
+            
+            // 後方互換性のため、従来の統合テキストも保持
+            $author = $authorName ? $authorName : $this->extractAuthor($node);
 
             $articleData = [
                 'title' => $title,
                 'url' => $url,
                 'engagement_count' => $engagementCount,
                 'author' => $author,
-                'author_name' => $authorInfo['author_name'],
+                'author_name' => $authorName,
                 'author_url' => $this->extractAuthorUrl($node),
                 'published_at' => $this->extractPublishedAt($node),
                 'scraped_at' => now(),
                 'platform' => 'zenn',
                 // 将来的に企業マッチングで使用する情報
-                'company_name_hint' => $authorInfo['company_name'],
+                'company_name_hint' => $companyName,
             ];
 
             Log::debug('Zenn 抽出結果', [
@@ -340,8 +342,86 @@ class ZennScraper extends BaseScraper
     }
 
     /**
-     * authorから詳細情報を抽出（ユーザー名、企業名、いいね数、投稿日）
+     * DOM構造から著者名を直接抽出
      *
+     * @param  Crawler  $node  記事ノード
+     * @return string|null 著者名またはnull
+     */
+    private function extractAuthorNameDirect(Crawler $node): ?string
+    {
+        try {
+            // Zennの記事リスト固有のクラスから著者名を抽出
+            $userNameSelectors = [
+                '.ArticleList_userName',
+                '[class*="userName"]',
+                '[data-testid="author-name"]',
+            ];
+
+            foreach ($userNameSelectors as $selector) {
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $text = trim($element->text());
+                    if (!empty($text)) {
+                        return $text;
+                    }
+                }
+            }
+
+            // フォールバック: 画像のalt属性から抽出
+            $imgElements = $node->filter('img');
+            if ($imgElements->count() > 0) {
+                foreach ($imgElements as $img) {
+                    $alt = $img->getAttribute('alt');
+                    if (!empty($alt) && !str_contains($alt, 'logo') && !str_contains($alt, 'icon')) {
+                        return $alt;
+                    }
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::debug('著者名の直接抽出エラー', ['error' => $e->getMessage()]);
+            return null;
+        }
+    }
+
+    /**
+     * DOM構造から企業名を直接抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return string|null 企業名またはnull
+     */
+    private function extractCompanyNameDirect(Crawler $node): ?string
+    {
+        try {
+            // Zennの企業情報固有のクラスから企業名を抽出
+            $companySelectors = [
+                '.ArticleList_publicationLink',
+                '[class*="publication"]',
+                '[data-testid="company-name"]',
+            ];
+
+            foreach ($companySelectors as $selector) {
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $text = trim($element->text());
+                    if (!empty($text)) {
+                        return $text;
+                    }
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::debug('企業名の直接抽出エラー', ['error' => $e->getMessage()]);
+            return null;
+        }
+    }
+
+    /**
+     * authorから詳細情報を抽出（ユーザー名、企業名、いいね数、投稿日）
+     * 
+     * @deprecated 新しいDOM直接抽出メソッドを使用してください
      * @param  string|null  $author  著者情報
      * @return array 抽出された情報の配列
      */

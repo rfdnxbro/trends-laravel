@@ -100,7 +100,6 @@ class ArticleController extends Controller
      * 部分更新対応のため、提供されたフィールドのみを更新する
      * company_id後付け対応（nullから具体的なIDへの変更を許可）
      *
-     * @param  UpdateArticleRequest  $request
      * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
      */
@@ -153,18 +152,15 @@ class ArticleController extends Controller
 
     /**
      * 記事関連のキャッシュをクリア
-     *
-     * @param  Article  $article
-     * @return void
      */
     private function clearArticleCache(Article $article): void
     {
         // 詳細キャッシュクリア
         Cache::forget("article_detail_{$article->id}");
-        
+
         // 一覧キャッシュクリア（tagsを使用）
         Cache::tags(['articles'])->flush();
-        
+
         // 会社記事一覧のキャッシュもクリア（簡易的にフラッシュ）
         // テスト環境での確実な動作を優先
         Cache::flush();

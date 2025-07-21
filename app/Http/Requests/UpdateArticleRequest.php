@@ -24,7 +24,7 @@ class UpdateArticleRequest extends FormRequest
     public function rules(): array
     {
         $articleId = $this->route('article'); // ルートパラメータからIDを直接取得
-        
+
         return [
             'platform_id' => ['sometimes', 'integer', 'exists:platforms,id'],
             'company_id' => ['sometimes', 'nullable', 'integer', 'exists:companies,id'],
@@ -41,7 +41,7 @@ class UpdateArticleRequest extends FormRequest
             'scraped_at' => ['sometimes', 'date'],
         ];
     }
-    
+
     /**
      * バリデーションエラー時のカスタムメッセージ
      *

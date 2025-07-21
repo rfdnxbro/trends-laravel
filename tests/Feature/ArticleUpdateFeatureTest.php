@@ -15,8 +15,11 @@ class ArticleUpdateFeatureTest extends TestCase
     use RefreshDatabase;
 
     protected Company $company;
+
     protected Company $anotherCompany;
+
     protected Platform $platform;
+
     protected Article $article;
 
     protected function setUp(): void
@@ -27,7 +30,7 @@ class ArticleUpdateFeatureTest extends TestCase
         $this->company = Company::factory()->create();
         $this->anotherCompany = Company::factory()->create();
         $this->platform = Platform::factory()->create();
-        
+
         $this->article = Article::factory()->create([
             'company_id' => $this->company->id,
             'platform_id' => $this->platform->id,
@@ -125,7 +128,7 @@ class ArticleUpdateFeatureTest extends TestCase
         ]);
     }
 
-    public function test_存在しない記事ID指定時は404エラーが返される()
+    public function test_存在しない記事_i_d指定時は404エラーが返される()
     {
         $nonExistentId = 99999;
         $updateData = [
@@ -166,13 +169,13 @@ class ArticleUpdateFeatureTest extends TestCase
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonValidationErrors([
                 'title',
-                'url', 
+                'url',
                 'bookmark_count',
                 'platform_id',
             ]);
     }
 
-    public function test_URL重複時はバリデーションエラーが返される()
+    public function test_ur_l重複時はバリデーションエラーが返される()
     {
         // 別の記事を作成
         $anotherArticle = Article::factory()->create([
@@ -190,7 +193,7 @@ class ArticleUpdateFeatureTest extends TestCase
             ->assertJsonValidationErrors(['url']);
     }
 
-    public function test_自分のURLでの更新は許可される()
+    public function test_自分の_ur_lでの更新は許可される()
     {
         $updateData = [
             'url' => $this->article->url, // 自分と同じURL

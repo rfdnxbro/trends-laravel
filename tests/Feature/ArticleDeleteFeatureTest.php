@@ -15,7 +15,9 @@ class ArticleDeleteFeatureTest extends TestCase
     use RefreshDatabase;
 
     protected Company $company;
+
     protected Platform $platform;
+
     protected Article $article;
 
     protected function setUp(): void
@@ -25,7 +27,7 @@ class ArticleDeleteFeatureTest extends TestCase
         // テストデータの準備
         $this->company = Company::factory()->create();
         $this->platform = Platform::factory()->create();
-        
+
         $this->article = Article::factory()->create([
             'company_id' => $this->company->id,
             'platform_id' => $this->platform->id,
@@ -57,7 +59,7 @@ class ArticleDeleteFeatureTest extends TestCase
         $this->assertNotNull($deletedArticle->deleted_at);
     }
 
-    public function test_存在しない記事ID指定時は404エラーが返される()
+    public function test_存在しない記事_i_d指定時は404エラーが返される()
     {
         $nonExistentId = 99999;
 
@@ -94,10 +96,10 @@ class ArticleDeleteFeatureTest extends TestCase
 
         // 通常のクエリでは取得されない
         $this->assertEquals(0, Article::count());
-        
+
         // withTrashedでは取得される
         $this->assertEquals(1, Article::withTrashed()->count());
-        
+
         // 物理的にはデータベースに残っている
         $this->assertDatabaseCount('articles', 1);
     }
@@ -121,7 +123,7 @@ class ArticleDeleteFeatureTest extends TestCase
         $this->assertFalse(Cache::tags(['articles'])->has('articles_list_cache'));
     }
 
-    public function test_削除後のAPI経由での詳細取得は404を返す()
+    public function test_削除後の_ap_i経由での詳細取得は404を返す()
     {
         // 記事を削除
         $this->deleteJson("/api/articles/{$this->article->id}");
@@ -135,7 +137,7 @@ class ArticleDeleteFeatureTest extends TestCase
             ]);
     }
 
-    public function test_削除後のAPI経由での一覧取得から除外される()
+    public function test_削除後の_ap_i経由での一覧取得から除外される()
     {
         // 追加記事を作成
         $anotherArticle = Article::factory()->create([
@@ -146,7 +148,7 @@ class ArticleDeleteFeatureTest extends TestCase
         // 削除前の一覧取得
         $responseBefore = $this->getJson('/api/articles');
         $responseBefore->assertStatus(Response::HTTP_OK);
-        
+
         // レスポンス構造をデバッグ
         $responseData = $responseBefore->json();
         $datasBefore = $responseData['data']['data'] ?? $responseData['data'] ?? [];
@@ -160,16 +162,16 @@ class ArticleDeleteFeatureTest extends TestCase
         $responseAfter = $this->getJson('/api/articles');
         $responseAfter->assertStatus(Response::HTTP_OK);
         $responseDataAfter = $responseAfter->json();
-        
+
         // デバッグ用：レスポンス内容を確認
         if (isset($responseDataAfter['data']['data'])) {
             $datasAfter = $responseDataAfter['data']['data'];
         } elseif (isset($responseDataAfter['data']) && is_array($responseDataAfter['data'])) {
             $datasAfter = $responseDataAfter['data'];
         } else {
-            $this->fail('Unexpected response structure: ' . json_encode($responseDataAfter));
+            $this->fail('Unexpected response structure: '.json_encode($responseDataAfter));
         }
-        
+
         $this->assertCount(1, $datasAfter);
 
         // 残っている記事が正しいことを確認

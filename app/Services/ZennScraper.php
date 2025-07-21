@@ -389,24 +389,28 @@ class ZennScraper extends BaseScraper
         }
 
         // ステップ3: 企業名を抽出
-        // パターン1: 「in企業名」形式
-        if (preg_match('/^(.+?)in(.+)$/u', $text, $matches)) {
+        // パターン1: 「in企業名」形式（意図的なin区切りのみ）
+        if (preg_match('/^([a-zA-Z0-9_]+)\s+in\s+(.+)$/u', $text, $matches) ||
+            preg_match('/^([a-zA-Z0-9_]+)\s*in([^a-zA-Z0-9].+)$/u', $text, $matches)) {
             $result['author_name'] = trim($matches[1]);
             $result['company_name'] = trim($matches[2]);
         }
         // パターン2: 直接企業名が含まれる場合
-        elseif (preg_match('/^(.+?)(株式会社.+|有限会社.+|合同会社.+|合資会社.+|合名会社.+)$/u', $text, $matches)) {
+        elseif (preg_match('/^([a-zA-Z0-9_]+)[^a-zA-Z0-9_]*?(株式会社|有限会社|合同会社|合資会社|合名会社)/u', $text, $matches)) {
             $result['author_name'] = trim($matches[1]);
-            $result['company_name'] = trim($matches[2]);
+            // 企業名は残りの部分から抽出
+            $companyPart = substr($text, strlen($matches[1]));
+            $result['company_name'] = trim($companyPart);
         }
         // パターン3: 英語企業名
-        elseif (preg_match('/^(.+?)([A-Z][a-zA-Z\s]+(?:Corporation|Inc|Corp|Ltd|Company|Group|Holdings).*)$/u', $text, $matches)) {
+        elseif (preg_match('/^([a-zA-Z0-9_]+)(.+?(?:Corporation|Inc|Corp|Ltd|Company|Group|Holdings).*)$/u', $text, $matches)) {
             $result['author_name'] = trim($matches[1]);
             $result['company_name'] = trim($matches[2]);
         }
         // パターン4: 企業名なし
         else {
-            $result['author_name'] = $text;
+            // 複数単語がある場合は最初の単語のみを使用（Zennのユーザー名形式を想定）
+            $result['author_name'] = explode(' ', $text)[0];
         }
 
         return $result;

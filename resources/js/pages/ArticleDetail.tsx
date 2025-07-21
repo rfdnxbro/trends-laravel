@@ -6,7 +6,7 @@ import {
     CalendarDaysIcon,
     BuildingOfficeIcon,
     GlobeAltIcon,
-    BookmarkIcon,
+    ChartBarIcon,
     EyeIcon,
     ShareIcon,
     ArrowTopRightOnSquareIcon
@@ -188,7 +188,7 @@ const ArticleStats: React.FC<ArticleStatsProps> = ({ article }) => (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                    <BookmarkIcon className="h-5 w-5 text-orange-500 mr-2" />
+                    <ChartBarIcon className="h-5 w-5 text-orange-500 mr-2" />
                     <span className="text-sm text-gray-600">エンゲージメント</span>
                 </div>
                 <span className="text-lg font-semibold text-orange-600">

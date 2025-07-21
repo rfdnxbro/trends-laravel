@@ -141,11 +141,15 @@ class QiitaScraper extends BaseScraper
                 return null;
             }
 
+            $author = $this->extractAuthor($node);
+            $authorName = $this->extractAuthorName($author);
+
             return [
                 'title' => $title,
                 'url' => $url,
                 'likes_count' => $this->extractLikesCount($node),
-                'author' => $this->extractAuthor($node),
+                'author' => $author,
+                'author_name' => $authorName,
                 'author_url' => $this->extractAuthorUrl($node),
                 'published_at' => $this->extractPublishedAt($node),
                 'scraped_at' => now(),
@@ -246,7 +250,8 @@ class QiitaScraper extends BaseScraper
                     if ($href) {
                         // 記事URLでない場合はユーザーURLとみなす
                         if (strpos($href, '/items/') === false) {
-                            return trim($href);
+                            // スラッシュを除去してユーザー名を返す
+                            return ltrim(trim($href), '/');
                         }
                     }
                 }
@@ -258,13 +263,30 @@ class QiitaScraper extends BaseScraper
         return null;
     }
 
+    /**
+     * authorからuser_nameを抽出
+     *
+     * @param  string|null  $author  著者情報
+     * @return string|null ユーザー名またはnull
+     */
+    private function extractAuthorName(?string $author): ?string
+    {
+        if (! $author) {
+            return null;
+        }
+
+        // スラッシュと@記号を除去してユーザー名を取得
+        return ltrim(trim($author), '/@');
+    }
+
     protected function extractAuthorUrl(Crawler $node): ?string
     {
         try {
             // extractAuthorと同じロジックを使用
             $author = $this->extractAuthor($node);
             if ($author) {
-                return strpos($author, 'http') === 0 ? $author : $this->baseUrl.$author;
+                // authorは既にクリーンなユーザー名なので、URLを構築
+                return $this->baseUrl.'/'.$author;
             }
         } catch (\Exception $e) {
             Log::debug('著者URL抽出エラー', ['error' => $e->getMessage()]);

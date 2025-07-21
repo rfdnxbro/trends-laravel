@@ -163,7 +163,7 @@ class QiitaScraperTest extends TestCase
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
         $author = $method->invokeArgs($this->scraper, [$crawler]);
-        $this->assertEquals('/user123', $author);
+        $this->assertEquals('user123', $author);
     }
 
     public function test_著者urlの抽出が正常に動作する()
@@ -565,7 +565,8 @@ class QiitaScraperTest extends TestCase
             $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
             $author = $method->invokeArgs($this->scraper, [$crawler]);
             $this->assertNotNull($author);
-            $this->assertStringStartsWith('/', $author);
+            // 修正後はクリーンなユーザー名を返すため、スラッシュは含まれない
+            $this->assertStringNotContainsString('/', $author);
         }
     }
 

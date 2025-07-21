@@ -298,7 +298,7 @@ class ZennScraperTest extends TestCase
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
         $authorUrl = $method->invokeArgs($this->scraper, [$crawler]);
-        $this->assertEquals('https://zenn.devtest-user', $authorUrl);
+        $this->assertEquals('https://zenn.dev/test-user', $authorUrl);
     }
 
     public function test_extract_author_url_異常なhtmlでも処理する(): void

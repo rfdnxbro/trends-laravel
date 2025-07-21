@@ -168,11 +168,15 @@ class ZennScraper extends BaseScraper
                 return null;
             }
 
+            $author = $this->extractAuthor($node);
+            $authorName = $this->extractAuthorName($author);
+
             $articleData = [
                 'title' => $title,
                 'url' => $url,
                 'likes_count' => $this->extractLikesCount($node),
-                'author' => $this->extractAuthor($node),
+                'author' => $author,
+                'author_name' => $authorName,
                 'author_url' => $this->extractAuthorUrl($node),
                 'published_at' => $this->extractPublishedAt($node),
                 'scraped_at' => now(),
@@ -308,6 +312,49 @@ class ZennScraper extends BaseScraper
     }
 
     /**
+     * authorからuser_nameを抽出
+     *
+     * @param  string|null  $author  著者情報
+     * @return string|null ユーザー名またはnull
+     */
+    private function extractAuthorName(?string $author): ?string
+    {
+        if (! $author) {
+            return null;
+        }
+
+        // authorがURLの場合は、URLからユーザー名を抽出
+        if (strpos($author, '/') !== false) {
+            // URLパスからユーザー名を抽出（最後のセグメント）
+            $pathParts = explode('/', trim($author, '/'));
+
+            return end($pathParts);
+        }
+
+        // テキストの場合、日時や数字部分を除去
+        // 「Gota2日前 196」→「Gota」のような変換
+        $cleanAuthor = trim($author);
+
+        // 「in 企業名」のような形式から企業名の前の部分を抽出
+        if (preg_match('/^(.+?)(?:in\s+.+)?$/u', $cleanAuthor, $matches)) {
+            $cleanAuthor = trim($matches[1]);
+        }
+
+        // 「n日前」「n時間前」などの日時表現を除去
+        $cleanAuthor = preg_replace('/\d+[日時間分秒週月年]前/', '', $cleanAuthor);
+
+        // 末尾の数字を除去
+        $cleanAuthor = preg_replace('/\s+\d+$/', '', $cleanAuthor);
+
+        // 数字が混在している場合、最初の英数字部分のみを抽出
+        if (preg_match('/^([a-zA-Z][a-zA-Z0-9_-]*?)(?:\d+[日時間分秒週月年]|$)/u', $cleanAuthor, $matches)) {
+            $cleanAuthor = $matches[1];
+        }
+
+        return ! empty($cleanAuthor) ? $cleanAuthor : null;
+    }
+
+    /**
      * フォールバックセレクタから著者情報を抽出
      */
     private function extractAuthorFromFallbackSelectors(Crawler $node): ?string
@@ -362,10 +409,23 @@ class ZennScraper extends BaseScraper
     protected function extractAuthorUrl(Crawler $node): ?string
     {
         try {
-            // extractAuthorと同じロジックを使用
             $author = $this->extractAuthor($node);
             if ($author) {
-                return strpos($author, 'http') === 0 ? $author : $this->baseUrl.$author;
+                // authorが既にURLの場合はそのまま返す
+                if (strpos($author, 'http') === 0) {
+                    return $author;
+                }
+
+                // authorがパス形式の場合はベースURLと結合
+                if (strpos($author, '/') !== false) {
+                    return $this->baseUrl.$author;
+                }
+
+                // テキストの場合はクリーンなユーザー名を使ってURL構築
+                $authorName = $this->extractAuthorName($author);
+                if ($authorName) {
+                    return $this->baseUrl.'/'.$authorName;
+                }
             }
         } catch (\Exception $e) {
             Log::debug('著者URL抽出エラー', ['error' => $e->getMessage()]);

@@ -392,7 +392,7 @@ class ZennScraperTest extends TestCase
 
         $result = $method->invoke($this->scraper, $node);
 
-        $this->assertEquals('https://zenn.devtest_user', $result);
+        $this->assertEquals('https://zenn.dev/test_user', $result);
     }
 
     #[Test]
@@ -412,7 +412,7 @@ class ZennScraperTest extends TestCase
         $result = $method->invoke($this->scraper, $node);
 
         // ZennScraperがauthorから'No author here'を抽出し、それをURLに変換する実際の動作
-        $this->assertEquals('https://zenn.devNo author here', $result);
+        $this->assertEquals('https://zenn.dev/No author here', $result);
     }
 
     #[Test]

@@ -261,7 +261,7 @@ class QiitaScraperTest extends TestCase
 
         $result = $method->invoke($this->scraper, $node);
 
-        $this->assertEquals('/@test_user', $result);
+        $this->assertEquals('@test_user', $result);
     }
 
     #[Test]
@@ -300,7 +300,7 @@ class QiitaScraperTest extends TestCase
 
         $result = $method->invoke($this->scraper, $node);
 
-        $this->assertEquals('/@test_user', $result);
+        $this->assertEquals('@test_user', $result);
     }
 
     #[Test]

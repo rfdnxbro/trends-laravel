@@ -22,6 +22,7 @@ class Article extends Model
         'domain',
         'platform',
         'author_name',
+        'organization_name',
         'author',
         'author_url',
         'published_at',

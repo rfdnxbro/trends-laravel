@@ -182,6 +182,7 @@ class ZennScraper extends BaseScraper
                 'engagement_count' => $engagementCount,
                 'author' => $author,
                 'author_name' => $authorName,
+                'organization_name' => $companyName,
                 'author_url' => $this->extractAuthorUrl($node),
                 'published_at' => $this->extractPublishedAt($node),
                 'scraped_at' => now(),
@@ -680,9 +681,13 @@ class ZennScraper extends BaseScraper
                 // extractAuthorNameで既に処理済みのauthor_nameを使用、なければauthorから抽出
                 $authorName = $article['author_name'] ?? $this->extractAuthorName($article['author'] ?? null);
 
+                // organization_nameを取得（extractCompanyNameDirectで既に処理済み）
+                $organizationName = $article['organization_name'] ?? null;
+
                 // 拡張された会社マッチングを使用
                 $articleData = array_merge($article, [
                     'author_name' => $authorName,
+                    'organization_name' => $organizationName,
                     'platform' => 'zenn',
                 ]);
                 $company = $companyMatcher->identifyCompany($articleData);
@@ -696,6 +701,7 @@ class ZennScraper extends BaseScraper
                         'engagement_count' => $article['engagement_count'],
                         'author' => $article['author'],
                         'author_name' => $authorName,
+                        'organization_name' => $organizationName,
                         'author_url' => $article['author_url'],
                         'published_at' => $article['published_at'],
                         'platform' => $article['platform'],

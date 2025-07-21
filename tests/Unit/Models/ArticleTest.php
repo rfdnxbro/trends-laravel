@@ -59,6 +59,7 @@ class ArticleTest extends TestCase
             'domain',
             'platform',
             'author_name',
+            'organization_name',
             'author',
             'author_url',
             'published_at',

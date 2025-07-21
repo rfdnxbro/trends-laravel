@@ -26,6 +26,7 @@ class ArticleResource extends JsonResource
             'title' => $this->title,
             'url' => $this->url,
             'author_name' => $this->author_name,
+            'organization_name' => $this->organization_name,
             'author' => $this->author,
             'author_url' => $this->author_url,
             'published_at' => $this->published_at?->format('Y-m-d H:i:s'),

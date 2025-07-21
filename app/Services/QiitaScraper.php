@@ -143,6 +143,7 @@ class QiitaScraper extends BaseScraper
 
             $author = $this->extractAuthor($node);
             $authorName = $this->extractAuthorName($author);
+            $organizationName = $this->extractOrganizationNameDirect($node);
 
             return [
                 'title' => $title,
@@ -150,6 +151,7 @@ class QiitaScraper extends BaseScraper
                 'engagement_count' => $this->extractLikesCount($node),
                 'author' => $author,
                 'author_name' => $authorName,
+                'organization_name' => $organizationName,
                 'author_url' => $this->extractAuthorUrl($node),
                 'published_at' => $this->extractPublishedAt($node),
                 'scraped_at' => now(),
@@ -299,6 +301,46 @@ class QiitaScraper extends BaseScraper
         return ltrim(trim($author), '/@');
     }
 
+    /**
+     * DOM構造から組織名を直接抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return string|null 組織名またはnull
+     */
+    private function extractOrganizationNameDirect(Crawler $node): ?string
+    {
+        try {
+            // Qiitaの組織記事の場合、組織名セレクタを試行
+            $organizationSelectors = [
+                '.organizationCard_name',
+                '[data-testid="organization-name"]',
+                '.organization-name',
+                '.OrganizationCard_name',
+                '.u-organization-name',
+            ];
+
+            foreach ($organizationSelectors as $selector) {
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $text = trim($element->text());
+                    if ($text) {
+                        Log::debug("Qiita組織名抽出成功: {$selector} -> {$text}");
+
+                        return $text;
+                    }
+                }
+            }
+
+            Log::debug('Qiita組織名要素が見つかりませんでした');
+
+            return null;
+        } catch (\Exception $e) {
+            Log::debug('Qiita組織名抽出エラー', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
     protected function extractAuthorUrl(Crawler $node): ?string
     {
         try {
@@ -367,9 +409,13 @@ class QiitaScraper extends BaseScraper
                     $authorName = ltrim(trim($article['author']), '/@');
                 }
 
+                // organization_nameを取得（extractOrganizationNameDirectで既に処理済み）
+                $organizationName = $article['organization_name'] ?? null;
+
                 // 拡張された会社マッチングを使用
                 $articleData = array_merge($article, [
                     'author_name' => $authorName,
+                    'organization_name' => $organizationName,
                     'platform' => 'qiita',
                 ]);
                 $company = $companyMatcher->identifyCompany($articleData);
@@ -383,6 +429,7 @@ class QiitaScraper extends BaseScraper
                         'engagement_count' => $article['engagement_count'],
                         'author' => $article['author'],
                         'author_name' => $authorName,
+                        'organization_name' => $organizationName,
                         'author_url' => $article['author_url'],
                         'published_at' => $article['published_at'],
                         'platform' => $article['platform'],

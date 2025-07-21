@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiService } from '../services/api';
-import { ArticlesListResponse, ArticleListFilters, QueryKeys } from '../types';
+import { ArticlesListResponse, ArticleListFilters, QueryKeys, Article, Company, Platform, ArticleFormData } from '../types';
 import ArticleFilters from '../components/ArticleFilters';
 import ArticleListHeader from '../components/ArticleListHeader';
 import ArticleItem from '../components/ArticleItem';
 import ArticlePagination from '../components/ArticlePagination';
 import ArticleEmptyState from '../components/ArticleEmptyState';
+import ArticleEditModal from '../components/ArticleEditModal';
+import ArticleDeleteModal from '../components/ArticleDeleteModal';
 
 const ArticleList: React.FC = () => {
     const [filters, setFilters] = useState<ArticleListFilters>({
@@ -17,11 +19,48 @@ const ArticleList: React.FC = () => {
     });
 
     const [showFilters, setShowFilters] = useState(false);
+    const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+    const [deletingArticle, setDeletingArticle] = useState<Article | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    
+    const queryClient = useQueryClient();
 
     const { data: response, isLoading, error } = useQuery({
         queryKey: QueryKeys.ARTICLES_LIST(filters),
         queryFn: () => apiService.getArticles(filters).then(res => res.data as ArticlesListResponse),
         retry: 1,
+    });
+
+    // 企業の一覧を取得
+    const { data: companiesResponse } = useQuery({
+        queryKey: ['companies-for-articles'],
+        queryFn: () => apiService.getCompanies().then(res => res.data.data as Company[]),
+        staleTime: 5 * 60 * 1000, // 5分
+    });
+
+    // プラットフォーム一覧はAPIがないため空配列で対応
+    const platforms: Platform[] = [];
+
+    // 記事更新ミューテーション
+    const updateArticleMutation = useMutation({
+        mutationFn: ({ id, data }: { id: number; data: ArticleFormData }) => 
+            apiService.updateArticle(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: QueryKeys.ARTICLES_LIST(filters) });
+            setIsEditModalOpen(false);
+            setEditingArticle(null);
+        },
+    });
+
+    // 記事削除ミューテーション
+    const deleteArticleMutation = useMutation({
+        mutationFn: (id: number) => apiService.deleteArticle(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: QueryKeys.ARTICLES_LIST(filters) });
+            setIsDeleteModalOpen(false);
+            setDeletingArticle(null);
+        },
     });
 
     const handleSearchChange = (search: string) => {
@@ -70,6 +109,36 @@ const ArticleList: React.FC = () => {
             sort_by: 'published_at',
             sort_order: 'desc',
         });
+    };
+
+    const handleEditArticle = (article: Article) => {
+        setEditingArticle(article);
+        setIsEditModalOpen(true);
+    };
+
+    const handleDeleteArticle = (article: Article) => {
+        setDeletingArticle(article);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleUpdateSubmit = async (data: ArticleFormData) => {
+        if (!editingArticle) return;
+        await updateArticleMutation.mutateAsync({ id: editingArticle.id, data });
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!deletingArticle) return;
+        await deleteArticleMutation.mutateAsync(deletingArticle.id);
+    };
+
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setEditingArticle(null);
+    };
+
+    const handleCloseDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setDeletingArticle(null);
     };
 
     if (error) {
@@ -131,6 +200,9 @@ const ArticleList: React.FC = () => {
                                     key={article.id}
                                     article={article}
                                     formatDate={formatDate}
+                                    onEdit={handleEditArticle}
+                                    onDelete={handleDeleteArticle}
+                                    showActions={true}
                                 />
                             ))}
                         </div>
@@ -151,6 +223,26 @@ const ArticleList: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* 編集モーダル */}
+            <ArticleEditModal
+                isOpen={isEditModalOpen}
+                article={editingArticle}
+                companies={companiesResponse || []}
+                platforms={platforms} // プラットフォーム一覧APIがないため空配列
+                onClose={handleCloseEditModal}
+                onSubmit={handleUpdateSubmit}
+                loading={updateArticleMutation.isPending}
+            />
+
+            {/* 削除モーダル */}
+            <ArticleDeleteModal
+                isOpen={isDeleteModalOpen}
+                article={deletingArticle}
+                onClose={handleCloseDeleteModal}
+                onConfirm={handleDeleteConfirm}
+                loading={deleteArticleMutation.isPending}
+            />
         </div>
     );
 };

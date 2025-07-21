@@ -57,8 +57,8 @@ Route::middleware(['throttle:60,1'])->group(function () {
         Route::delete('force', [CompanyController::class, 'forceDestroy']);
     });
 
-    // 記事 API (Resource Route - 読み取り専用)
-    Route::apiResource('articles', App\Http\Controllers\Api\ArticleController::class)->only(['index', 'show']);
+    // 記事 API (Resource Route - CRUD対応)
+    Route::apiResource('articles', App\Http\Controllers\Api\ArticleController::class)->only(['index', 'show', 'update', 'destroy']);
 
     // 検索 API
     Route::prefix('search')->group(function () {

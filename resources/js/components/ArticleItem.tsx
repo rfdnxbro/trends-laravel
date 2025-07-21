@@ -3,16 +3,27 @@ import { Link } from 'react-router-dom';
 import { 
     DocumentTextIcon, 
     CalendarDaysIcon,
-    ChevronRightIcon
+    ChevronRightIcon,
+    PencilIcon,
+    TrashIcon
 } from '@heroicons/react/24/outline';
 import { Article } from '../types';
 
 interface ArticleItemProps {
     article: Article;
     formatDate: (dateString: string) => string;
+    onEdit?: (article: Article) => void;
+    onDelete?: (article: Article) => void;
+    showActions?: boolean;
 }
 
-const ArticleItem: React.FC<ArticleItemProps> = ({ article, formatDate }) => {
+const ArticleItem: React.FC<ArticleItemProps> = ({ 
+    article, 
+    formatDate, 
+    onEdit, 
+    onDelete, 
+    showActions = false 
+}) => {
     return (
         <div className="py-4 hover:bg-gray-50" data-testid="article-item">
             <div className="flex items-start justify-between">
@@ -82,7 +93,31 @@ const ArticleItem: React.FC<ArticleItemProps> = ({ article, formatDate }) => {
                     </div>
                 </div>
                 
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 flex items-center space-x-2">
+                    {showActions && (
+                        <>
+                            {onEdit && (
+                                <button
+                                    onClick={() => onEdit(article)}
+                                    className="text-gray-400 hover:text-blue-600 p-1 rounded-md hover:bg-blue-50"
+                                    data-testid="edit-button"
+                                    title="記事を編集"
+                                >
+                                    <PencilIcon className="h-4 w-4" />
+                                </button>
+                            )}
+                            {onDelete && (
+                                <button
+                                    onClick={() => onDelete(article)}
+                                    className="text-gray-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50"
+                                    data-testid="delete-button"
+                                    title="記事を削除"
+                                >
+                                    <TrashIcon className="h-4 w-4" />
+                                </button>
+                            )}
+                        </>
+                    )}
                     <Link
                         to={`/articles/${article.id}`}
                         className="text-blue-600 hover:text-blue-900 text-sm font-medium flex items-center"

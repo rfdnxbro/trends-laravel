@@ -234,6 +234,22 @@ export interface CompanyFormData {
     zenn_username?: string;
 }
 
+export interface ArticleFormData {
+    title?: string;
+    url?: string;
+    company_id?: number | null;
+    platform_id?: number;
+    author_name?: string;
+    author?: string;
+    author_url?: string;
+    published_at?: string;
+    bookmark_count?: number;
+    likes_count?: number;
+    domain?: string;
+    platform?: string;
+    scraped_at?: string;
+}
+
 // エラー型定義
 export interface ApiError {
     message: string;

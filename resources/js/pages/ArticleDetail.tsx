@@ -16,22 +16,44 @@ import { Article, QueryKeys } from '../types';
 
 // ユーティリティ関数
 const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        weekday: 'long'
-    });
+    if (!dateString) {
+        return '日時不明';
+    }
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return '日時不明';
+        }
+        return date.toLocaleDateString('ja-JP', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
+    } catch {
+        return '日時不明';
+    }
 };
 
 const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ja-JP', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    if (!dateString) {
+        return '日時不明';
+    }
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return '日時不明';
+        }
+        return date.toLocaleString('ja-JP', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch {
+        return '日時不明';
+    }
 };
 
 // 共有機能
@@ -308,30 +330,14 @@ const ArticleDetail: React.FC = () => {
                         </div>
 
                         {/* 著者詳細 */}
-                        {(article.author || article.author_url) && (
+                        {article.author && (
                             <div className="bg-gray-50 rounded-lg p-4">
                                 <h3 className="text-sm font-medium text-gray-900 mb-2">著者詳細</h3>
                                 <div className="space-y-2">
-                                    {article.author && (
-                                        <div>
-                                            <span className="text-sm text-gray-600">著者名: </span>
-                                            <span className="text-sm font-medium">{article.author}</span>
-                                        </div>
-                                    )}
-                                    {article.author_url && (
-                                        <div>
-                                            <span className="text-sm text-gray-600">著者URL: </span>
-                                            <a
-                                                href={article.author_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-sm text-blue-600 hover:text-blue-800"
-                                            >
-                                                {article.author_url}
-                                                <ArrowTopRightOnSquareIcon className="h-3 w-3 ml-1 inline" />
-                                            </a>
-                                        </div>
-                                    )}
+                                    <div>
+                                        <span className="text-sm text-gray-600">著者名: </span>
+                                        <span className="text-sm font-medium">{article.author}</span>
+                                    </div>
                                 </div>
                             </div>
                         )}

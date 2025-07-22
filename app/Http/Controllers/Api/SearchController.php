@@ -552,16 +552,7 @@ class SearchController extends Controller
      */
     private function buildCompanyQuery(string $query, int $limit)
     {
-        return Company::active()
-            ->where(function ($q) use ($query) {
-                $q->where('name', 'LIKE', "%{$query}%")
-                    ->orWhere('domain', 'LIKE', "%{$query}%")
-                    ->orWhere('description', 'LIKE', "%{$query}%");
-            })
-            ->with(['rankings' => function ($q) {
-                $q->latest('calculated_at')->limit(SearchConstants::MIN_RANKING_DISPLAY);
-            }])
-            ->limit($limit);
+        return Company::searchForApi($query, $limit);
     }
 
     /**
@@ -575,15 +566,7 @@ class SearchController extends Controller
      */
     private function buildArticleQuery(string $query, int $limit, int $days, int $minEngagement)
     {
-        return Article::with(['company', 'platform'])
-            ->recent($days)
-            ->where('engagement_count', '>=', $minEngagement)
-            ->where(function ($q) use ($query) {
-                $q->where('title', 'LIKE', "%{$query}%")
-                    ->orWhere('author_name', 'LIKE', "%{$query}%");
-            })
-            ->orderBy('published_at', 'desc')
-            ->limit($limit);
+        return Article::searchForApi($query, $limit, $days, $minEngagement);
     }
 
     /**

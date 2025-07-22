@@ -115,4 +115,26 @@ class Article extends Model
 
         return $query;
     }
+
+    /**
+     * 検索用クエリ（関連度スコア計算付き）
+     *
+     * @param  string  $searchQuery  検索クエリ
+     * @param  int  $limit  取得件数
+     * @param  int  $days  検索対象期間（日数）
+     * @param  int  $minEngagement  最小エンゲージメント数
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function searchForApi(string $searchQuery, int $limit, int $days, int $minEngagement)
+    {
+        return self::with(['company', 'platform'])
+            ->recent($days)
+            ->where('engagement_count', '>=', $minEngagement)
+            ->where(function ($q) use ($searchQuery) {
+                $q->where('title', 'LIKE', "%{$searchQuery}%")
+                    ->orWhere('author_name', 'LIKE', "%{$searchQuery}%");
+            })
+            ->orderBy('published_at', 'desc')
+            ->limit($limit);
+    }
 }

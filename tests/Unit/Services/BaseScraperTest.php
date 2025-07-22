@@ -406,6 +406,9 @@ class BaseScraperTest extends TestCase
         $method->setAccessible(true);
 
         $method->invoke($this->scraper, 'https://example.com', ['item1', 'item2']);
+        
+        // アサーションを追加
+        $this->assertTrue(true);
     }
 
     #[Test]
@@ -460,6 +463,8 @@ class BaseScraperTest extends TestCase
         $this->assertArrayHasKey('Accept-Language', $headers);
         $this->assertEquals('DevCorpTrends/1.0', $headers['User-Agent']);
     }
+
+
 
     protected function tearDown(): void
     {

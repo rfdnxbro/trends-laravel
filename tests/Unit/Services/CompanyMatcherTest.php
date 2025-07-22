@@ -784,4 +784,187 @@ class CompanyMatcherTest extends TestCase
         $this->assertEquals($company->id, $result->id);
         $this->assertEquals('日本語キーワード会社', $result->name);
     }
+
+    #[Test]
+    public function test_identify_or_create_company_既存企業が見つかる場合は既存企業を返す()
+    {
+        $company = Company::factory()->create([
+            'name' => '既存テスト会社',
+            'qiita_username' => 'existing_org',
+            'is_active' => true,
+        ]);
+
+        $articleData = [
+            'organization' => 'existing_org',
+            'organization_name' => '既存テスト会社',
+            'platform' => 'qiita',
+            'title' => 'テスト記事',
+        ];
+
+        $result = $this->matcher->identifyOrCreateCompany($articleData);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('既存テスト会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_or_create_company_新規企業を作成する()
+    {
+        $articleData = [
+            'organization' => 'new_org',
+            'organization_name' => '新規テスト会社',
+            'organization_url' => 'https://qiita.com/organizations/new_org',
+            'platform' => 'qiita',
+            'title' => 'テスト記事',
+        ];
+
+        $result = $this->matcher->identifyOrCreateCompany($articleData);
+
+        $this->assertNotNull($result);
+        $this->assertEquals('新規テスト会社', $result->name);
+        $this->assertFalse($result->is_active); // 新規作成企業はis_active=false
+        $this->assertEquals('new_org', $result->qiita_username);
+        $this->assertEquals('https://qiita.com/organizations/new_org', $result->website_url);
+    }
+
+    #[Test]
+    public function test_identify_or_create_company_zenn新規企業を作成する()
+    {
+        $articleData = [
+            'organization' => 'zenn_new_org',
+            'organization_name' => 'Zenn新規企業',
+            'organization_url' => 'https://zenn.dev/zenn_new_org',
+            'platform' => 'zenn',
+            'title' => 'Zennテスト記事',
+        ];
+
+        $result = $this->matcher->identifyOrCreateCompany($articleData);
+
+        $this->assertNotNull($result);
+        $this->assertEquals('Zenn新規企業', $result->name);
+        $this->assertFalse($result->is_active);
+        $this->assertEquals('zenn_new_org', $result->zenn_username);
+        $this->assertEquals(['zenn_new_org'], $result->zenn_organizations);
+        $this->assertEquals('https://zenn.dev/zenn_new_org', $result->website_url);
+    }
+
+    #[Test]
+    public function test_identify_or_create_company_organization情報がない場合はnullを返す()
+    {
+        $articleData = [
+            'title' => 'テスト記事',
+            'author_name' => 'test_user',
+            'platform' => 'qiita',
+        ];
+
+        $result = $this->matcher->identifyOrCreateCompany($articleData);
+
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_identify_or_create_company_同名企業が既に存在する場合は既存企業を返す()
+    {
+        // 既存企業を作成
+        $existingCompany = Company::factory()->create([
+            'name' => '重複テスト会社',
+            'is_active' => true,
+        ]);
+
+        $articleData = [
+            'organization' => 'duplicate_org',
+            'organization_name' => '重複テスト会社',
+            'platform' => 'qiita',
+            'title' => 'テスト記事',
+        ];
+
+        $result = $this->matcher->identifyOrCreateCompany($articleData);
+
+        // 既存企業にマッチングされる（新規作成ではなく既存企業特定）
+        $this->assertNotNull($result);
+        $this->assertEquals($existingCompany->id, $result->id);
+        $this->assertEquals('重複テスト会社', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_organization_organizationスラグでマッチング()
+    {
+        $company = Company::factory()->create([
+            'name' => 'Organization企業',
+            'qiita_username' => 'test_org_slug',
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByOrganization');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'organization' => 'test_org_slug',
+            'platform' => 'qiita',
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('Organization企業', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_organization_organization名でマッチング()
+    {
+        $company = Company::factory()->create([
+            'name' => '組織名マッチング企業',
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByOrganization');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'organization_name' => '組織名マッチング企業',
+            'platform' => 'qiita',
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('組織名マッチング企業', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_company_organizationベースマッチングが最優先()
+    {
+        // URL pattern マッチング用企業（優先度低）
+        $urlCompany = Company::factory()->create([
+            'name' => 'URL企業',
+            'url_patterns' => ['example.com'],
+            'is_active' => true,
+        ]);
+
+        // Organization マッチング用企業（優先度最高）
+        $orgCompany = Company::factory()->create([
+            'name' => 'Organization企業',
+            'qiita_username' => 'priority_org',
+            'is_active' => true,
+        ]);
+
+        $articleData = [
+            'url' => 'https://example.com/article/123',
+            'organization' => 'priority_org',
+            'platform' => 'qiita',
+            'title' => 'テスト記事',
+        ];
+
+        $result = $this->matcher->identifyCompany($articleData);
+
+        // Organization マッチングが優先されるべき
+        $this->assertNotNull($result);
+        $this->assertEquals($orgCompany->id, $result->id);
+        $this->assertEquals('Organization企業', $result->name);
+    }
 }

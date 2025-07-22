@@ -39,8 +39,11 @@ const ArticleList: React.FC = () => {
         staleTime: 5 * 60 * 1000, // 5分
     });
 
-    // プラットフォーム一覧はAPIがないため空配列で対応
-    const platforms: Platform[] = [];
+    // プラットフォーム一覧を取得
+    const { data: platformsResponse } = useQuery({
+        queryKey: ['platforms'],
+        queryFn: () => apiService.getPlatforms().then(res => res.data.data as Platform[]),
+    });
 
     // 記事更新ミューテーション
     const updateArticleMutation = useMutation({
@@ -240,7 +243,7 @@ const ArticleList: React.FC = () => {
                 isOpen={isEditModalOpen}
                 article={editingArticle}
                 companies={companiesResponse || []}
-                platforms={platforms} // プラットフォーム一覧APIがないため空配列
+                platforms={platformsResponse || []}
                 onClose={handleCloseEditModal}
                 onSubmit={handleUpdateSubmit}
                 loading={updateArticleMutation.isPending}

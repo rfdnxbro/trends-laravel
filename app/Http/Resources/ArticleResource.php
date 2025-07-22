@@ -31,6 +31,8 @@ class ArticleResource extends JsonResource
             'author_url' => $this->author_url,
             'published_at' => $this->published_at?->format('Y-m-d H:i:s'),
             'engagement_count' => (int) $this->engagement_count,
+            'platform_id' => $this->platform_id,
+            'company_id' => $this->company_id,
             'platform' => $this->when($this->relationLoaded('platform'), function () {
                 $platformRelation = $this->getRelation('platform');
 

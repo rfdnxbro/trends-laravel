@@ -77,6 +77,9 @@ export const apiService = {
     updateArticle: (id: number, data: Record<string, unknown>) => api.put(`/api/articles/${id}`, data),
     deleteArticle: (id: number) => api.delete(`/api/articles/${id}`),
     
+    // プラットフォーム関連
+    getPlatforms: () => api.get('/api/platforms'),
+    
     // 検索
     search: (query: string, filters?: Record<string, unknown>) => 
         api.post('/api/search', { query, filters }),

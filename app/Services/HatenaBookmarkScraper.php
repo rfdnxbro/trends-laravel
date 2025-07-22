@@ -133,14 +133,11 @@ class HatenaBookmarkScraper extends BaseScraper
     protected function extractPublishedAt(Crawler $node): ?string
     {
         try {
-            // はてなブックマークの日時情報を取得
-            $selectors = [
+            // はてなブックマーク固有セレクタと共通セレクタを組み合わせて日時を抽出
+            $selectors = $this->combineSelectors([
                 '.entrylist-contents-date',
                 '.entrylist-contents-meta time',
-                'time[datetime]',
-                'time',
-                '[datetime]',
-            ];
+            ], 'datetime');
 
             foreach ($selectors as $selector) {
                 $timeElement = $node->filter($selector);

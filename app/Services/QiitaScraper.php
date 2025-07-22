@@ -241,13 +241,11 @@ class QiitaScraper extends BaseScraper
             }
         }
 
-        // フォールバック: 従来のセレクタ
-        $fallbackSelectors = [
+        // フォールバック: 共通セレクタを使用
+        $fallbackSelectors = $this->combineSelectors([
             '[data-testid="like-count"]',
-            '[aria-label*="LGTM"]',
-            '[aria-label*="いいね"]',
             'span[aria-label]',
-        ];
+        ], 'generic_aria');
 
         return $this->extractNumberBySelectors($node, $fallbackSelectors);
     }
@@ -310,14 +308,13 @@ class QiitaScraper extends BaseScraper
     private function extractOrganizationNameDirect(Crawler $node): ?string
     {
         try {
-            // Qiitaの組織記事の場合、組織名セレクタを試行
-            $organizationSelectors = [
+            // Qiita固有セレクタと共通セレクタを組み合わせて組織名を抽出
+            $organizationSelectors = $this->combineSelectors([
                 '.organizationCard_name',
-                '[data-testid="organization-name"]',
                 '.organization-name',
                 '.OrganizationCard_name',
                 '.u-organization-name',
-            ];
+            ], 'generic_testid');
 
             foreach ($organizationSelectors as $selector) {
                 $element = $node->filter($selector);
@@ -360,13 +357,10 @@ class QiitaScraper extends BaseScraper
     protected function extractPublishedAt(Crawler $node): ?string
     {
         try {
-            // 複数のセレクタパターンを試す
-            $selectors = [
-                'time[datetime]',
-                'time',
-                '[datetime]',
-                '.style-*[title]',
-            ];
+            // 共通セレクタを使用して公開日を抽出
+            $selectors = $this->combineSelectors([
+                '[class*="style-"][title]',  // Qiita固有のスタイルクラス（修正）
+            ], 'datetime');
 
             foreach ($selectors as $selector) {
                 $timeElement = $node->filter($selector);

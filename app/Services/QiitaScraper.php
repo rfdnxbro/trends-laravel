@@ -151,7 +151,9 @@ class QiitaScraper extends BaseScraper
                 'engagement_count' => $this->extractLikesCount($node),
                 'author' => $author,
                 'author_name' => $authorName,
+                'organization' => $organizationName,
                 'organization_name' => $organizationName,
+                'organization_url' => $this->extractOrganizationUrl($node, $organizationName),
                 'author_url' => $this->extractAuthorUrl($node),
                 'published_at' => $this->extractPublishedAt($node),
                 'scraped_at' => now(),
@@ -314,6 +316,11 @@ class QiitaScraper extends BaseScraper
                 '.organization-name',
                 '.OrganizationCard_name',
                 '.u-organization-name',
+                // 組織リンクから組織名を抽出
+                'a[href*="/organizations/"]',
+                // 記事詳細ページの組織リンク
+                '.style-1dj16hc a',
+                '.HeaderOrganization_name a',
             ], 'generic_testid');
 
             foreach ($organizationSelectors as $selector) {
@@ -328,6 +335,17 @@ class QiitaScraper extends BaseScraper
                 }
             }
 
+            // 記事URLから組織情報を抽出を試行
+            $url = $this->extractUrl($node);
+            if ($url) {
+                $organizationFromUrl = $this->extractOrganizationFromUrl($url);
+                if ($organizationFromUrl) {
+                    Log::debug("QiitaURL経由組織名抽出成功: {$organizationFromUrl}");
+
+                    return $organizationFromUrl;
+                }
+            }
+
             Log::debug('Qiita組織名要素が見つかりませんでした');
 
             return null;
@@ -336,6 +354,88 @@ class QiitaScraper extends BaseScraper
 
             return null;
         }
+    }
+
+    /**
+     * 組織URLを抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @param  string|null  $organizationName  組織名
+     * @return string|null 組織URLまたはnull
+     */
+    private function extractOrganizationUrl(Crawler $node, ?string $organizationName): ?string
+    {
+        try {
+            // HTMLから組織リンクを直接抽出
+            $organizationLinkSelectors = [
+                'a[href*="/organizations/"]',
+                '.organizationCard a',
+                '.HeaderOrganization_name a',
+                '.style-1dj16hc a[href*="/organizations/"]',
+            ];
+
+            foreach ($organizationLinkSelectors as $selector) {
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $href = $element->attr('href');
+                    if ($href && str_contains($href, '/organizations/')) {
+                        $url = str_starts_with($href, 'http') ? $href : $this->baseUrl.$href;
+                        Log::debug("Qiita組織URL抽出成功: {$selector} -> {$url}");
+
+                        return $url;
+                    }
+                }
+            }
+
+            // 組織名から推定URLを生成
+            if ($organizationName) {
+                $organizationSlug = $this->generateOrganizationSlug($organizationName);
+                if ($organizationSlug) {
+                    $estimatedUrl = $this->baseUrl.'/organizations/'.$organizationSlug;
+                    Log::debug("Qiita組織URL推定生成: {$organizationName} -> {$estimatedUrl}");
+
+                    return $estimatedUrl;
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::debug('Qiita組織URL抽出エラー', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
+     * URLから組織名を抽出
+     *
+     * @param  string  $url  記事URL
+     * @return string|null 組織名またはnull
+     */
+    private function extractOrganizationFromUrl(string $url): ?string
+    {
+        // Qiitaの組織記事URLパターンから組織名を抽出
+        // 例: https://qiita.com/organizations/cybozu/items/xxx
+        if (preg_match('/\/organizations\/([^\/]+)\//', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * 組織名からスラグを生成
+     *
+     * @param  string  $organizationName  組織名
+     * @return string|null スラグまたはnull
+     */
+    private function generateOrganizationSlug(string $organizationName): ?string
+    {
+        // 基本的なスラグ化処理（英数字とハイフンのみ）
+        $slug = strtolower(trim($organizationName));
+        $slug = preg_replace('/[^a-z0-9\-_]/', '', $slug);
+
+        return ! empty($slug) ? $slug : null;
     }
 
     protected function extractAuthorUrl(Crawler $node): ?string
@@ -403,16 +503,20 @@ class QiitaScraper extends BaseScraper
                     $authorName = ltrim(trim($article['author']), '/@');
                 }
 
-                // organization_nameを取得（extractOrganizationNameDirectで既に処理済み）
+                // organization情報を取得（extractOrganizationNameDirectで既に処理済み）
+                $organization = $article['organization'] ?? null;
                 $organizationName = $article['organization_name'] ?? null;
+                $organizationUrl = $article['organization_url'] ?? null;
 
                 // 拡張された会社マッチングを使用
                 $articleData = array_merge($article, [
                     'author_name' => $authorName,
+                    'organization' => $organization,
                     'organization_name' => $organizationName,
+                    'organization_url' => $organizationUrl,
                     'platform' => 'qiita',
                 ]);
-                $company = $companyMatcher->identifyCompany($articleData);
+                $company = $companyMatcher->identifyOrCreateCompany($articleData);
 
                 $savedArticle = Article::updateOrCreate(
                     ['url' => $article['url']],
@@ -424,6 +528,8 @@ class QiitaScraper extends BaseScraper
                         'author' => $article['author'],
                         'author_name' => $authorName,
                         'organization_name' => $organizationName,
+                        'organization' => $organization,
+                        'organization_url' => $organizationUrl,
                         'author_url' => $article['author_url'],
                         'published_at' => $article['published_at'],
                         'platform' => $article['platform'],

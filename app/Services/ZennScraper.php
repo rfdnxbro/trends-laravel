@@ -182,7 +182,9 @@ class ZennScraper extends BaseScraper
                 'engagement_count' => $engagementCount,
                 'author' => $author,
                 'author_name' => $authorName,
+                'organization' => $this->extractOrganizationDirect($node, $authorName),
                 'organization_name' => $companyName,
+                'organization_url' => $this->extractOrganizationUrlFromZenn($node, $companyName),
                 'author_url' => $this->extractAuthorUrl($node),
                 'published_at' => $this->extractPublishedAt($node),
                 'scraped_at' => now(),
@@ -469,6 +471,184 @@ class ZennScraper extends BaseScraper
     }
 
     /**
+     * DOM構造から組織スラグを直接抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @param  string|null  $authorName  著者名
+     * @return string|null 組織スラグまたはnull
+     */
+    private function extractOrganizationDirect(Crawler $node, ?string $authorName): ?string
+    {
+        try {
+            // ZennのURLから組織情報を抽出
+            $url = $this->extractUrl($node);
+            if ($url) {
+                $organizationSlug = $this->extractOrganizationSlugFromUrl($url);
+                if ($organizationSlug && $organizationSlug !== $authorName) {
+                    Log::debug("Zenn組織スラグ抽出成功: {$organizationSlug}");
+
+                    return $organizationSlug;
+                }
+            }
+
+            // publicationLinkから組織スラグを抽出
+            $publicationLink = $node->filter('.ArticleList_publicationLink');
+            if ($publicationLink->count() > 0) {
+                $href = $publicationLink->attr('href');
+                if ($href) {
+                    // Zennの組織URLから組織スラグを抽出
+                    // 例: /username または /organization
+                    $slug = trim($href, '/');
+                    if ($slug && $slug !== $authorName) {
+                        Log::debug("Zenn組織スラグ（Publication）抽出成功: {$slug}");
+
+                        return $slug;
+                    }
+                }
+            }
+
+            // authorから「in 企業名」形式を抽出してスラグ化
+            $author = $this->extractAuthor($node);
+            if ($author) {
+                $organizationFromAuthor = $this->extractOrganizationFromAuthorText($author, $authorName);
+                if ($organizationFromAuthor) {
+                    $slug = $this->generateSlug($organizationFromAuthor);
+                    Log::debug("Zenn組織スラグ（著者テキスト）抽出成功: {$slug}");
+
+                    return $slug;
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::debug('Zenn組織スラグ抽出エラー', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
+     * ZennのURLから組織スラグを抽出
+     *
+     * @param  string  $url  記事URL
+     * @return string|null 組織スラグまたはnull
+     */
+    private function extractOrganizationSlugFromUrl(string $url): ?string
+    {
+        // Zennの組織記事URLパターンから組織スラグを抽出
+        // 例: https://zenn.dev/cybozu/articles/xxx (cybozu が組織)
+        // 例: https://zenn.dev/username/articles/xxx (username は個人)
+        if (preg_match('/zenn\.dev\/([^\/]+)\/articles\//', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * 著者テキストから「in 企業名」形式の組織名を抽出
+     *
+     * @param  string  $authorText  著者テキスト
+     * @param  string|null  $authorName  著者名
+     * @return string|null 組織名またはnull
+     */
+    private function extractOrganizationFromAuthorText(string $authorText, ?string $authorName): ?string
+    {
+        // 「username in 企業名」のパターンをより正確に抽出
+        $patterns = [
+            '/^([a-zA-Z0-9_-]+)\s+in\s+(.+)$/u',  // "username in 企業名"
+            '/^([a-zA-Z0-9_-]+)\s*in\s*([^0-9\s].+)$/u',  // "username in企業名" (スペースなし)
+            '/^([a-zA-Z0-9_-]+)\s+@\s*(.+)$/u',  // "username @ 企業名"
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, trim($authorText), $matches)) {
+                $extractedUsername = trim($matches[1]);
+                $extractedOrganization = trim($matches[2]);
+
+                // 著者名と一致する場合のみ組織名を返す
+                if ($extractedUsername === $authorName && ! empty($extractedOrganization)) {
+                    // 数字のみや短すぎる文字列は除外
+                    if (! preg_match('/^\d+$/', $extractedOrganization) && strlen($extractedOrganization) > 2) {
+                        return $extractedOrganization;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Zennから組織URLを抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @param  string|null  $organizationName  組織名
+     * @return string|null 組織URLまたはnull
+     */
+    private function extractOrganizationUrlFromZenn(Crawler $node, ?string $organizationName): ?string
+    {
+        try {
+            // publicationLinkから直接URLを抽出
+            $publicationLink = $node->filter('.ArticleList_publicationLink');
+            if ($publicationLink->count() > 0) {
+                $href = $publicationLink->attr('href');
+                if ($href) {
+                    $url = str_starts_with($href, 'http') ? $href : $this->baseUrl.$href;
+                    Log::debug("Zenn組織URL抽出成功: {$url}");
+
+                    return $url;
+                }
+            }
+
+            // 記事URLから組織URLを推定
+            $articleUrl = $this->extractUrl($node);
+            if ($articleUrl) {
+                $organizationSlug = $this->extractOrganizationSlugFromUrl($articleUrl);
+                if ($organizationSlug) {
+                    $estimatedUrl = $this->baseUrl.'/'.$organizationSlug;
+                    Log::debug("Zenn組織URL推定生成: {$estimatedUrl}");
+
+                    return $estimatedUrl;
+                }
+            }
+
+            // 組織名からスラグを生成してURLを構築
+            if ($organizationName) {
+                $slug = $this->generateSlug($organizationName);
+                if ($slug) {
+                    $estimatedUrl = $this->baseUrl.'/'.$slug;
+                    Log::debug("Zenn組織URL（組織名ベース）生成: {$estimatedUrl}");
+
+                    return $estimatedUrl;
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::debug('Zenn組織URL抽出エラー', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
+     * 文字列からスラグを生成
+     *
+     * @param  string  $text  変換対象文字列
+     * @return string|null スラグまたはnull
+     */
+    private function generateSlug(string $text): ?string
+    {
+        // 基本的なスラグ化処理
+        $slug = strtolower(trim($text));
+        // 日本語文字や特殊文字を除去、英数字とハイフン・アンダースコアのみ残す
+        $slug = preg_replace('/[^a-z0-9\-_]/', '', $slug);
+
+        return ! empty($slug) ? $slug : null;
+    }
+
+    /**
      * authorから詳細情報を抽出（ユーザー名、企業名、いいね数、投稿日）
      *
      * @deprecated 新しいDOM直接抽出メソッドを使用してください
@@ -717,16 +897,20 @@ class ZennScraper extends BaseScraper
                 // extractAuthorNameで既に処理済みのauthor_nameを使用、なければauthorから抽出
                 $authorName = $article['author_name'] ?? $this->extractAuthorName($article['author'] ?? null);
 
-                // organization_nameを取得（extractCompanyNameDirectで既に処理済み）
+                // organization情報を取得（extractOrganizationDirectで既に処理済み）
+                $organization = $article['organization'] ?? null;
                 $organizationName = $article['organization_name'] ?? null;
+                $organizationUrl = $article['organization_url'] ?? null;
 
                 // 拡張された会社マッチングを使用
                 $articleData = array_merge($article, [
                     'author_name' => $authorName,
+                    'organization' => $organization,
                     'organization_name' => $organizationName,
+                    'organization_url' => $organizationUrl,
                     'platform' => 'zenn',
                 ]);
-                $company = $companyMatcher->identifyCompany($articleData);
+                $company = $companyMatcher->identifyOrCreateCompany($articleData);
 
                 $savedArticle = Article::updateOrCreate(
                     ['url' => $article['url']],
@@ -738,6 +922,8 @@ class ZennScraper extends BaseScraper
                         'author' => $article['author'],
                         'author_name' => $authorName,
                         'organization_name' => $organizationName,
+                        'organization' => $organization,
+                        'organization_url' => $organizationUrl,
                         'author_url' => $article['author_url'],
                         'published_at' => $article['published_at'],
                         'platform' => $article['platform'],

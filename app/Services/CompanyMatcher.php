@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
  * データベースベースの動的検索により、新企業追加時にコード変更不要。
  *
  * マッチング戦略（優先順序）:
+ * 0. Organizationベースマッチング - Qiita/Zennの組織情報（最優先）
  * 1. URLパターンマッチング - 企業ブログ等のURL
  * 2. ドメインマッチング - 企業ドメインでの一致
  * 3. ユーザー名マッチング - QiitaやZennのアカウント名
@@ -23,11 +24,47 @@ use Illuminate\Support\Facades\Log;
 class CompanyMatcher
 {
     /**
+     * 複数の手法を組み合わせて会社を特定または新規作成する
+     *
+     * @param  array  $articleData  記事データ
+     * @return Company|null 特定または新規作成された企業（またはnull）
+     */
+    public function identifyOrCreateCompany(array $articleData): ?Company
+    {
+        // 既存企業との照合を試行
+        $company = $this->identifyCompany($articleData);
+        if ($company) {
+            return $company;
+        }
+
+        // 既存企業が見つからない場合、organization情報がある場合のみ新規作成を検討
+        if (! empty($articleData['organization']) || ! empty($articleData['organization_name'])) {
+            return $this->createNewCompanyFromOrganization($articleData);
+        }
+
+        return null;
+    }
+
+    /**
      * 複数の手法を組み合わせて会社を特定する
      */
     public function identifyCompany(array $articleData): ?Company
     {
-        // 1. 特定のURL/ドメインパターンベースの紐づけ（最優先）
+        // 0. Organizationベースのマッチング（最優先）
+        if (! empty($articleData['organization']) || ! empty($articleData['organization_name'])) {
+            $company = $this->identifyByOrganization($articleData);
+            if ($company) {
+                Log::info("Organizationベースで会社を特定: {$company->name}", [
+                    'organization' => $articleData['organization'] ?? null,
+                    'organization_name' => $articleData['organization_name'] ?? null,
+                    'article_title' => $articleData['title'] ?? null,
+                ]);
+
+                return $company;
+            }
+        }
+
+        // 1. 特定のURL/ドメインパターンベースの紐づけ
         if (! empty($articleData['url'])) {
             $company = $this->identifyBySpecificUrl($articleData['url']);
             if ($company) {
@@ -213,5 +250,202 @@ class CompanyMatcher
         }
 
         return null;
+    }
+
+    /**
+     * Organizationベースの会社識別
+     *
+     * @param  array  $articleData  記事データ
+     * @return Company|null 企業またはnull
+     */
+    private function identifyByOrganization(array $articleData): ?Company
+    {
+        $organization = $articleData['organization'] ?? null;
+        $organizationName = $articleData['organization_name'] ?? null;
+        $platform = $articleData['platform'] ?? null;
+
+        // 1. organization スラグでの直接マッチング
+        if ($organization && $platform) {
+            $company = $this->matchByOrganizationSlug($organization, $platform);
+            if ($company) {
+                return $company;
+            }
+        }
+
+        // 2. organization_name での部分マッチング
+        if ($organizationName) {
+            $company = $this->matchByOrganizationName($organizationName, $platform);
+            if ($company) {
+                return $company;
+            }
+        }
+
+        // 3. 既存のzenn_organizations配列との照合（後方互換性）
+        if ($organization && $platform === 'zenn') {
+            $companies = Company::whereNotNull('zenn_organizations')
+                ->where('is_active', true)
+                ->get();
+
+            foreach ($companies as $company) {
+                $organizations = $company->zenn_organizations ?? [];
+                if (in_array($organization, $organizations)) {
+                    return $company;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * organizationスラグでの企業マッチング
+     *
+     * @param  string  $organizationSlug  組織スラグ
+     * @param  string|null  $platform  プラットフォーム名
+     * @return Company|null 企業またはnull
+     */
+    private function matchByOrganizationSlug(string $organizationSlug, ?string $platform): ?Company
+    {
+        // プラットフォーム別のusernameフィールドでマッチング
+        switch ($platform) {
+            case 'qiita':
+                return Company::where('qiita_username', $organizationSlug)
+                    ->where('is_active', true)
+                    ->first();
+            case 'zenn':
+                return Company::where('zenn_username', $organizationSlug)
+                    ->where('is_active', true)
+                    ->first();
+        }
+
+        return null;
+    }
+
+    /**
+     * organization名での企業マッチング
+     *
+     * @param  string  $organizationName  組織名
+     * @param  string|null  $platform  プラットフォーム名
+     * @return Company|null 企業またはnull
+     */
+    private function matchByOrganizationName(string $organizationName, ?string $platform): ?Company
+    {
+        // 企業名での完全一致
+        $company = Company::where('name', $organizationName)
+            ->where('is_active', true)
+            ->first();
+        if ($company) {
+            return $company;
+        }
+
+        // キーワード配列での部分マッチング
+        $companies = Company::whereNotNull('keywords')
+            ->where('is_active', true)
+            ->get();
+
+        foreach ($companies as $company) {
+            $keywords = $company->keywords ?? [];
+            foreach ($keywords as $keyword) {
+                if (stripos($organizationName, $keyword) !== false || stripos($keyword, $organizationName) !== false) {
+                    return $company;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * organization情報から新規企業を作成
+     *
+     * @param  array  $articleData  記事データ
+     * @return Company|null 新規作成された企業またはnull
+     */
+    private function createNewCompanyFromOrganization(array $articleData): ?Company
+    {
+        try {
+            $organization = $articleData['organization'] ?? null;
+            $organizationName = $articleData['organization_name'] ?? null;
+            $organizationUrl = $articleData['organization_url'] ?? null;
+            $platform = $articleData['platform'] ?? null;
+
+            // 新規企業作成に最低限必要な情報をチェック
+            if (! $organizationName && ! $organization) {
+                return null;
+            }
+
+            // 企業名を決定（organization_name を優先、なければ organization）
+            $companyName = $organizationName ?: $organization;
+
+            // 重複チェック（同じ名前の企業が既に存在しないか）
+            $existingCompany = Company::where('name', $companyName)->first();
+            if ($existingCompany) {
+                Log::info("企業作成スキップ（既存企業と重複）: {$companyName}");
+
+                return null;
+            }
+
+            // 新規企業データを準備
+            $companyData = [
+                'name' => $companyName,
+                'domain' => $this->generateDomainFromName($companyName), // ダミードメイン生成
+                'is_active' => false, // Issue要求: 新規作成企業はis_active=false
+            ];
+
+            // プラットフォーム固有情報を追加
+            if ($platform === 'qiita' && $organization) {
+                $companyData['qiita_username'] = $organization;
+            } elseif ($platform === 'zenn' && $organization) {
+                $companyData['zenn_username'] = $organization;
+                $companyData['zenn_organizations'] = [$organization];
+            }
+
+            // organization_url がある場合はURLとして設定
+            if ($organizationUrl) {
+                $companyData['website_url'] = $organizationUrl;
+            }
+
+            $company = Company::create($companyData);
+
+            Log::info("新規企業を自動作成: {$company->name}", [
+                'platform' => $platform,
+                'organization' => $organization,
+                'organization_name' => $organizationName,
+                'is_active' => false,
+                'article_title' => $articleData['title'] ?? null,
+            ]);
+
+            return $company;
+
+        } catch (\Exception $e) {
+            Log::error('新規企業作成エラー', [
+                'article_data' => $articleData,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * 企業名からダミードメインを生成
+     *
+     * @param  string  $companyName  企業名
+     * @return string ダミードメイン
+     */
+    private function generateDomainFromName(string $companyName): string
+    {
+        // 企業名を英数字のみに変換してドメイン化
+        $domain = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $companyName));
+
+        // 空になった場合やあまりに短い場合は固定プレフィックスを使用
+        if (strlen($domain) < 3) {
+            $domain = 'auto-'.uniqid();
+        }
+
+        // 重複回避のためにタイムスタンプを付加
+        $domain .= '-'.time().'.example.com';
+
+        return $domain;
     }
 }

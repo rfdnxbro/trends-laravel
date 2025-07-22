@@ -82,10 +82,10 @@ const ArticleItem: React.FC<ArticleItemProps> = ({
                                     {formatDate(article.published_at)}
                                 </span>
                                 
-                                {/* ブックマーク数 */}
-                                {article.bookmark_count > 0 && (
+                                {/* エンゲージメント数 */}
+                                {article.engagement_count > 0 && (
                                     <span className="text-green-600 font-medium">
-                                        {article.bookmark_count} ブックマーク
+                                        {article.engagement_count} エンゲージメント
                                     </span>
                                 )}
                             </div>

@@ -26,8 +26,7 @@ class CompanyArticleResourceTest extends TestCase
             'domain' => 'example.com',
             'author_name' => 'テスト著者',
             'author_url' => 'https://example.com/author',
-            'bookmark_count' => 100,
-            'likes_count' => 50,
+            'engagement_count' => 150,
         ]);
 
         $request = new Request;
@@ -40,8 +39,7 @@ class CompanyArticleResourceTest extends TestCase
         $this->assertEquals('example.com', $result['domain']);
         $this->assertEquals('テスト著者', $result['author_name']);
         $this->assertEquals('https://example.com/author', $result['author_url']);
-        $this->assertEquals(100, $result['bookmark_count']);
-        $this->assertEquals(50, $result['likes_count']);
+        $this->assertEquals(150, $result['engagement_count']);
         $this->assertEquals($company->id, $result['company']['id']);
     }
 
@@ -175,7 +173,7 @@ class CompanyArticleResourceTest extends TestCase
 
         $expectedFields = [
             'id', 'title', 'url', 'domain', 'platform', 'author_name',
-            'author_url', 'published_at', 'bookmark_count', 'likes_count',
+            'author_url', 'published_at', 'engagement_count',
             'company', 'scraped_at',
         ];
 
@@ -309,8 +307,7 @@ class CompanyArticleResourceTest extends TestCase
             'author_name' => 'テスト作者',
             'author_url' => 'https://author.example.com',
             'published_at' => now(),
-            'bookmark_count' => 100,
-            'likes_count' => 50,
+            'engagement_count' => 150,
             'scraped_at' => now(),
         ]);
         $article->company_id = $company->id;

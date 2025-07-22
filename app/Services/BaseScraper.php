@@ -27,6 +27,31 @@ abstract class BaseScraper implements ScrapingService
 
     protected string $userAgent = 'DevCorpTrends/1.0';
 
+    /**
+     * 各プラットフォーム共通のDOMセレクタ
+     */
+    protected array $commonSelectors = [
+        'datetime' => [
+            'time[datetime]',
+            '[datetime]',
+            'time',
+        ],
+        'generic_link' => [
+            'a[href]',
+            'a',
+        ],
+        'generic_testid' => [
+            '[data-testid*="author"]',
+            '[data-testid*="company"]',
+            '[data-testid*="organization"]',
+        ],
+        'generic_aria' => [
+            '[aria-label*="いいね"]',
+            '[aria-label*="like"]',
+            '[aria-label*="LGTM"]',
+        ],
+    ];
+
     public function __construct()
     {
         $this->timeout = config('constants.api.timeout_seconds');
@@ -615,6 +640,29 @@ abstract class BaseScraper implements ScrapingService
         }
 
         return 0;
+    }
+
+    /**
+     * 共通セレクタを取得
+     *
+     * @param  string  $type  セレクタタイプ
+     * @return array セレクタ配列
+     */
+    protected function getCommonSelectors(string $type): array
+    {
+        return $this->commonSelectors[$type] ?? [];
+    }
+
+    /**
+     * プラットフォーム固有セレクタと共通セレクタを結合
+     *
+     * @param  array  $platformSelectors  プラットフォーム固有セレクタ
+     * @param  string  $commonType  共通セレクタタイプ
+     * @return array 結合されたセレクタ配列
+     */
+    protected function combineSelectors(array $platformSelectors, string $commonType): array
+    {
+        return array_merge($platformSelectors, $this->getCommonSelectors($commonType));
     }
 
     /**

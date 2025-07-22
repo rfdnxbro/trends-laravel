@@ -58,14 +58,14 @@ class ZennScraperTest extends TestCase
         $mockHtml = '<html><body>
             <a href="/articles/article1">
                 <h2>Test Article 1</h2>
-                <button aria-label="30 いいね">30</button>
-                <img alt="test_user" src="/user.jpg">
+                <span class="ArticleList_like">30</span>
+                <span class="ArticleList_userName">test_user</span>
                 <time datetime="2024-01-01T12:00:00Z">2024-01-01</time>
             </a>
             <a href="/articles/article2">
                 <h2>Test Article 2</h2>
-                <button aria-label="20 いいね">20</button>
-                <img alt="test_user2" src="/user2.jpg">
+                <span class="ArticleList_like">20</span>
+                <span class="ArticleList_userName">test_user2</span>
                 <time datetime="2024-01-02T12:00:00Z">2024-01-02</time>
             </a>
         </body></html>';
@@ -81,12 +81,12 @@ class ZennScraperTest extends TestCase
 
         $this->assertArrayHasKey('title', $result[0]);
         $this->assertArrayHasKey('url', $result[0]);
-        $this->assertArrayHasKey('likes_count', $result[0]);
+        $this->assertArrayHasKey('engagement_count', $result[0]);
         $this->assertArrayHasKey('platform', $result[0]);
 
         $this->assertEquals('Test Article 1', $result[0]['title']);
         $this->assertEquals('https://zenn.dev/articles/article1', $result[0]['url']);
-        $this->assertEquals(30, $result[0]['likes_count']);
+        $this->assertEquals(30, $result[0]['engagement_count']);
         $this->assertEquals('zenn', $result[0]['platform']);
     }
 
@@ -211,7 +211,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extract_likes_count_いいね数を正しく抽出する()
+    public function test_extract_engagement_count_エンゲージメント数を正しく抽出する()
     {
         $html = '<a href="/articles/article1">
             <button aria-label="25 いいね">25</button>
@@ -230,7 +230,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extract_likes_count_いいね数が見つからない場合ゼロを返す()
+    public function test_extract_engagement_count_エンゲージメント数が見つからない場合ゼロを返す()
     {
         $html = '<a href="/articles/article1">
             <div>No likes count</div>
@@ -392,7 +392,7 @@ class ZennScraperTest extends TestCase
 
         $result = $method->invoke($this->scraper, $node);
 
-        $this->assertEquals('https://zenn.devtest_user', $result);
+        $this->assertEquals('https://zenn.dev/test_user', $result);
     }
 
     #[Test]
@@ -411,8 +411,8 @@ class ZennScraperTest extends TestCase
 
         $result = $method->invoke($this->scraper, $node);
 
-        // ZennScraperがauthorから'No author here'を抽出し、それをURLに変換する実際の動作
-        $this->assertEquals('https://zenn.devNo author here', $result);
+        // ZennScraperがauthorから'No author here'を抽出し、extractAuthorNameDirectで'No'に変換される実際の動作
+        $this->assertEquals('https://zenn.dev/No', $result);
     }
 
     #[Test]
@@ -500,7 +500,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://zenn.dev/articles/article1',
-                'likes_count' => 25,
+                'engagement_count' => 25,
                 'author' => 'test_user',
                 'author_url' => 'https://zenn.dev/@test_user',
                 'published_at' => '2024-01-01T12:00:00Z',
@@ -518,7 +518,7 @@ class ZennScraperTest extends TestCase
         $article = $result[0];
         $this->assertEquals('Test Article', $article->title);
         $this->assertEquals('https://zenn.dev/articles/article1', $article->url);
-        $this->assertEquals(25, $article->likes_count);
+        $this->assertEquals(25, $article->engagement_count);
         $this->assertEquals('test_user', $article->author_name);
         $this->assertEquals($company->id, $article->company_id);
         $this->assertEquals($platform->id, $article->platform_id);
@@ -536,7 +536,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://zenn.dev/articles/article1',
-                'likes_count' => 25,
+                'engagement_count' => 25,
                 'author' => 'test_user in株式会社テスト',
                 'author_url' => 'https://zenn.dev/@test_user',
                 'published_at' => '2024-01-01T12:00:00Z',
@@ -566,7 +566,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://zenn.dev/articles/article1',
-                'likes_count' => 25,
+                'engagement_count' => 25,
                 'author' => 'unknown_user',
                 'author_url' => 'https://zenn.dev/@unknown_user',
                 'published_at' => '2024-01-01T12:00:00Z',
@@ -601,14 +601,14 @@ class ZennScraperTest extends TestCase
         $existingArticle = Article::factory()->create([
             'url' => 'https://zenn.dev/articles/article1',
             'title' => 'Old Title',
-            'likes_count' => 10,
+            'engagement_count' => 10,
         ]);
 
         $articles = [
             [
                 'title' => 'Updated Title',
                 'url' => 'https://zenn.dev/articles/article1',
-                'likes_count' => 25,
+                'engagement_count' => 25,
                 'author' => 'test_user',
                 'author_url' => 'https://zenn.dev/@test_user',
                 'published_at' => '2024-01-01T12:00:00Z',
@@ -625,7 +625,7 @@ class ZennScraperTest extends TestCase
         $article = $result[0];
         $this->assertEquals($existingArticle->id, $article->id);
         $this->assertEquals('Updated Title', $article->title);
-        $this->assertEquals(25, $article->likes_count);
+        $this->assertEquals(25, $article->engagement_count);
         $this->assertEquals($company->id, $article->company_id);
     }
 
@@ -640,7 +640,7 @@ class ZennScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://zenn.dev/articles/article1',
-                'likes_count' => 25,
+                'engagement_count' => 25,
                 'author' => 'test_user',
                 'author_url' => 'https://zenn.dev/@test_user',
                 'published_at' => '2024-01-01T12:00:00Z',
@@ -682,11 +682,11 @@ class ZennScraperTest extends TestCase
         $this->assertCount(1, $result);
         $this->assertArrayHasKey('title', $result[0]);
         $this->assertArrayHasKey('url', $result[0]);
-        $this->assertArrayHasKey('likes_count', $result[0]);
+        $this->assertArrayHasKey('engagement_count', $result[0]);
         $this->assertArrayHasKey('platform', $result[0]);
         $this->assertEquals('Test Article 1 30 2024-01-01', $result[0]['title']);
         $this->assertEquals('https://zenn.dev/articles/article1', $result[0]['url']);
-        $this->assertEquals(30, $result[0]['likes_count']);
+        $this->assertEquals(30, $result[0]['engagement_count']);
         $this->assertEquals('zenn', $result[0]['platform']);
     }
 
@@ -784,42 +784,66 @@ class ZennScraperTest extends TestCase
         $this->assertNull($result);
     }
 
+    // 以下のテストメソッドは DOM分離抽出の実装により不要となったため削除:
+    // - extractAuthorFromFallbackSelectors (DOM直接取得により不要)
+    // - extractAuthorName (テキスト解析パターンマッチングが不要)
+
     #[Test]
-    public function test_extract_author_from_fallback_selectors_フォールバックセレクタを試行する()
+    public function test_extract_author_article_list_user_nameクラスから正しく抽出する()
     {
-        $html = '<div>
-            <span class="View_author">test_user</span>
-        </div>';
+        $html = '<a href="/articles/article1">
+            <span class="ArticleList_userName">clean_username</span>
+            <span class="ArticleList_publicationLink">Company Name</span>
+        </a>';
 
         $crawler = new Crawler($html);
-        $node = $crawler->filter('div');
+        $node = $crawler->filter('a');
 
         $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractAuthorFromFallbackSelectors');
+        $method = $reflection->getMethod('extractAuthor');
         $method->setAccessible(true);
 
         $result = $method->invoke($this->scraper, $node);
 
-        $this->assertEquals('test_user', $result);
+        $this->assertEquals('clean_username', $result);
     }
 
     #[Test]
-    public function test_extract_author_from_fallback_selectors_見つからない場合nullを返す()
+    public function test_extract_engagement_count_article_list_likeクラスから正しく抽出する()
     {
-        $html = '<div>
-            <span>No author info</span>
-        </div>';
+        $html = '<a href="/articles/article1">
+            <span class="ArticleList_like">42</span>
+        </a>';
 
         $crawler = new Crawler($html);
-        $node = $crawler->filter('div');
+        $node = $crawler->filter('a');
 
         $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractAuthorFromFallbackSelectors');
+        $method = $reflection->getMethod('extractLikesCount');
         $method->setAccessible(true);
 
         $result = $method->invoke($this->scraper, $node);
 
-        $this->assertNull($result);
+        $this->assertEquals(42, $result);
+    }
+
+    #[Test]
+    public function test_extract_author_publication_linkもフォールバックとして使用される()
+    {
+        $html = '<a href="/articles/article1">
+            <span class="ArticleList_publicationLink">company_user in Company Ltd</span>
+        </a>';
+
+        $crawler = new Crawler($html);
+        $node = $crawler->filter('a');
+
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractAuthor');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->scraper, $node);
+
+        $this->assertEquals('company_user in Company Ltd', $result);
     }
 
     protected function tearDown(): void

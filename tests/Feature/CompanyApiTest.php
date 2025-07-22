@@ -176,7 +176,7 @@ class CompanyApiTest extends TestCase
                 'company_id' => $company->id,
                 'platform_id' => $platform->id,
                 'published_at' => now()->subDays(1),
-                'bookmark_count' => 10,
+                'engagement_count' => 10,
                 'url' => "https://example.com/article-list-{$i}",
             ]);
         }
@@ -193,7 +193,7 @@ class CompanyApiTest extends TestCase
                         'title',
                         'url',
                         'author_name',
-                        'bookmark_count',
+                        'engagement_count',
                         'published_at',
                         'platform',
                     ],
@@ -227,7 +227,7 @@ class CompanyApiTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(35),
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'url' => 'https://example.com/article-old-filter',
         ]);
 
@@ -237,13 +237,13 @@ class CompanyApiTest extends TestCase
                 'company_id' => $company->id,
                 'platform_id' => $platform->id,
                 'published_at' => now()->subDays(3),
-                'bookmark_count' => 15,
+                'engagement_count' => 15,
                 'url' => "https://example.com/article-filter-{$i}",
             ]);
         }
 
         // Act
-        $response = $this->getJson("/api/companies/{$company->id}/articles?days=7&min_bookmarks=10&per_page=10");
+        $response = $this->getJson("/api/companies/{$company->id}/articles?days=7&min_engagement=10&per_page=10");
 
         // Assert
         $response->assertStatus(Response::HTTP_OK)
@@ -254,7 +254,7 @@ class CompanyApiTest extends TestCase
                     'per_page' => 10,
                     'filters' => [
                         'days' => 7,
-                        'min_bookmarks' => 10,
+                        'min_engagement' => 10,
                     ],
                 ],
             ]);
@@ -831,7 +831,7 @@ class CompanyApiTest extends TestCase
     }
 
     #[Test]
-    public function test_company_articles_filter_by_min_bookmarks()
+    public function test_company_articles_filter_by_min_engagement()
     {
         // Arrange
         $company = Company::factory()->create();
@@ -842,7 +842,7 @@ class CompanyApiTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(1),
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'url' => 'https://example.com/article-5-bookmarks',
         ]);
 
@@ -851,12 +851,12 @@ class CompanyApiTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'published_at' => now()->subDays(1),
-            'bookmark_count' => 15,
+            'engagement_count' => 15,
             'url' => 'https://example.com/article-15-bookmarks',
         ]);
 
         // Act - 最小ブックマーク数10で絞り込み
-        $response = $this->getJson("/api/companies/{$company->id}/articles?min_bookmarks=10");
+        $response = $this->getJson("/api/companies/{$company->id}/articles?min_engagement=10");
 
         // Assert
         $response->assertStatus(Response::HTTP_OK)
@@ -864,7 +864,7 @@ class CompanyApiTest extends TestCase
                 'meta' => [
                     'total' => 1, // ブックマーク数10以上の記事は1件のみ
                     'filters' => [
-                        'min_bookmarks' => 10,
+                        'min_engagement' => 10,
                     ],
                 ],
             ]);

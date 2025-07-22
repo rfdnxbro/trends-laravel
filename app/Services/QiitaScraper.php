@@ -141,11 +141,17 @@ class QiitaScraper extends BaseScraper
                 return null;
             }
 
+            $author = $this->extractAuthor($node);
+            $authorName = $this->extractAuthorName($author);
+            $organizationName = $this->extractOrganizationNameDirect($node);
+
             return [
                 'title' => $title,
                 'url' => $url,
-                'likes_count' => $this->extractLikesCount($node),
-                'author' => $this->extractAuthor($node),
+                'engagement_count' => $this->extractLikesCount($node),
+                'author' => $author,
+                'author_name' => $authorName,
+                'organization_name' => $organizationName,
                 'author_url' => $this->extractAuthorUrl($node),
                 'published_at' => $this->extractPublishedAt($node),
                 'scraped_at' => now(),
@@ -215,15 +221,33 @@ class QiitaScraper extends BaseScraper
      */
     protected function extractLikesCount(Crawler $node): int
     {
-        $selectors = [
-            '[data-testid="like-count"]',
-            '[aria-label*="LGTM"]',
-            '[aria-label*="いいね"]',
-            '.style-*[aria-label*="LGTM"]',
-            'span[aria-label]',
+        // 優先セレクタ: footer内の数字要素（実際のHTML構造に基づく）
+        $prioritySelectors = [
+            'footer div[class*="style-"]',  // footer内のstyle-クラスを持つdiv
+            'footer div',  // footer内の全てのdiv
+            'footer span',  // footer内のspan
         ];
 
-        return $this->extractNumberBySelectors($node, $selectors);
+        // 優先セレクタでいいね数を検索
+        foreach ($prioritySelectors as $selector) {
+            $elements = $node->filter($selector);
+            if ($elements->count() > 0) {
+                foreach ($elements as $element) {
+                    $text = trim($element->textContent);
+                    if (preg_match('/^\d+$/', $text) && strlen($text) <= 4) {
+                        return (int) $text;
+                    }
+                }
+            }
+        }
+
+        // フォールバック: 共通セレクタを使用
+        $fallbackSelectors = $this->combineSelectors([
+            '[data-testid="like-count"]',
+            'span[aria-label]',
+        ], 'generic_aria');
+
+        return $this->extractNumberBySelectors($node, $fallbackSelectors);
     }
 
     protected function extractAuthor(Crawler $node): ?string
@@ -246,7 +270,8 @@ class QiitaScraper extends BaseScraper
                     if ($href) {
                         // 記事URLでない場合はユーザーURLとみなす
                         if (strpos($href, '/items/') === false) {
-                            return trim($href);
+                            // スラッシュを除去してユーザー名を返す
+                            return ltrim(trim($href), '/');
                         }
                     }
                 }
@@ -258,13 +283,69 @@ class QiitaScraper extends BaseScraper
         return null;
     }
 
+    /**
+     * authorからuser_nameを抽出
+     *
+     * @param  string|null  $author  著者情報
+     * @return string|null ユーザー名またはnull
+     */
+    private function extractAuthorName(?string $author): ?string
+    {
+        if (! $author) {
+            return null;
+        }
+
+        // スラッシュと@記号を除去してユーザー名を取得
+        return ltrim(trim($author), '/@');
+    }
+
+    /**
+     * DOM構造から組織名を直接抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return string|null 組織名またはnull
+     */
+    private function extractOrganizationNameDirect(Crawler $node): ?string
+    {
+        try {
+            // Qiita固有セレクタと共通セレクタを組み合わせて組織名を抽出
+            $organizationSelectors = $this->combineSelectors([
+                '.organizationCard_name',
+                '.organization-name',
+                '.OrganizationCard_name',
+                '.u-organization-name',
+            ], 'generic_testid');
+
+            foreach ($organizationSelectors as $selector) {
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $text = trim($element->text());
+                    if ($text) {
+                        Log::debug("Qiita組織名抽出成功: {$selector} -> {$text}");
+
+                        return $text;
+                    }
+                }
+            }
+
+            Log::debug('Qiita組織名要素が見つかりませんでした');
+
+            return null;
+        } catch (\Exception $e) {
+            Log::debug('Qiita組織名抽出エラー', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
     protected function extractAuthorUrl(Crawler $node): ?string
     {
         try {
             // extractAuthorと同じロジックを使用
             $author = $this->extractAuthor($node);
             if ($author) {
-                return strpos($author, 'http') === 0 ? $author : $this->baseUrl.$author;
+                // authorは既にクリーンなユーザー名なので、URLを構築
+                return $this->baseUrl.'/'.$author;
             }
         } catch (\Exception $e) {
             Log::debug('著者URL抽出エラー', ['error' => $e->getMessage()]);
@@ -276,13 +357,10 @@ class QiitaScraper extends BaseScraper
     protected function extractPublishedAt(Crawler $node): ?string
     {
         try {
-            // 複数のセレクタパターンを試す
-            $selectors = [
-                'time[datetime]',
-                'time',
-                '[datetime]',
-                '.style-*[title]',
-            ];
+            // 共通セレクタを使用して公開日を抽出
+            $selectors = $this->combineSelectors([
+                '[class*="style-"][title]',  // Qiita固有のスタイルクラス（修正）
+            ], 'datetime');
 
             foreach ($selectors as $selector) {
                 $timeElement = $node->filter($selector);
@@ -325,9 +403,13 @@ class QiitaScraper extends BaseScraper
                     $authorName = ltrim(trim($article['author']), '/@');
                 }
 
+                // organization_nameを取得（extractOrganizationNameDirectで既に処理済み）
+                $organizationName = $article['organization_name'] ?? null;
+
                 // 拡張された会社マッチングを使用
                 $articleData = array_merge($article, [
                     'author_name' => $authorName,
+                    'organization_name' => $organizationName,
                     'platform' => 'qiita',
                 ]);
                 $company = $companyMatcher->identifyCompany($articleData);
@@ -338,9 +420,10 @@ class QiitaScraper extends BaseScraper
                         'title' => $article['title'],
                         'platform_id' => $qiitaPlatform?->id,
                         'company_id' => $company?->id,
-                        'likes_count' => $article['likes_count'],
+                        'engagement_count' => $article['engagement_count'],
                         'author' => $article['author'],
                         'author_name' => $authorName,
+                        'organization_name' => $organizationName,
                         'author_url' => $article['author_url'],
                         'published_at' => $article['published_at'],
                         'platform' => $article['platform'],
@@ -354,7 +437,7 @@ class QiitaScraper extends BaseScraper
                     'title' => $article['title'],
                     'author' => $article['author'],
                     'company' => $company?->name,
-                    'likes_count' => $article['likes_count'],
+                    'engagement_count' => $article['engagement_count'],
                 ]);
 
             } catch (\Exception $e) {

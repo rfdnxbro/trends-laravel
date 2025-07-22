@@ -6,8 +6,7 @@ import {
     CalendarDaysIcon,
     BuildingOfficeIcon,
     GlobeAltIcon,
-    BookmarkIcon,
-    HeartIcon,
+    ChartBarIcon,
     EyeIcon,
     ShareIcon,
     ArrowTopRightOnSquareIcon
@@ -17,22 +16,44 @@ import { Article, QueryKeys } from '../types';
 
 // ユーティリティ関数
 const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        weekday: 'long'
-    });
+    if (!dateString) {
+        return '日時不明';
+    }
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return '日時不明';
+        }
+        return date.toLocaleDateString('ja-JP', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
+    } catch {
+        return '日時不明';
+    }
 };
 
 const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ja-JP', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    if (!dateString) {
+        return '日時不明';
+    }
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return '日時不明';
+        }
+        return date.toLocaleString('ja-JP', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch {
+        return '日時不明';
+    }
 };
 
 // 共有機能
@@ -189,25 +210,13 @@ const ArticleStats: React.FC<ArticleStatsProps> = ({ article }) => (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                    <BookmarkIcon className="h-5 w-5 text-orange-500 mr-2" />
-                    <span className="text-sm text-gray-600">ブックマーク</span>
+                    <ChartBarIcon className="h-5 w-5 text-orange-500 mr-2" />
+                    <span className="text-sm text-gray-600">エンゲージメント</span>
                 </div>
                 <span className="text-lg font-semibold text-orange-600">
-                    {(article.bookmark_count || 0).toLocaleString()}
+                    {(article.engagement_count || 0).toLocaleString()}
                 </span>
             </div>
-
-            {article.likes_count !== undefined && article.likes_count > 0 && (
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                        <HeartIcon className="h-5 w-5 text-red-500 mr-2" />
-                        <span className="text-sm text-gray-600">いいね</span>
-                    </div>
-                    <span className="text-lg font-semibold text-red-600">
-                        {(article.likes_count || 0).toLocaleString()}
-                    </span>
-                </div>
-            )}
 
             {article.view_count !== undefined && article.view_count > 0 && (
                 <div className="flex items-center justify-between">
@@ -321,30 +330,14 @@ const ArticleDetail: React.FC = () => {
                         </div>
 
                         {/* 著者詳細 */}
-                        {(article.author || article.author_url) && (
+                        {article.author && (
                             <div className="bg-gray-50 rounded-lg p-4">
                                 <h3 className="text-sm font-medium text-gray-900 mb-2">著者詳細</h3>
                                 <div className="space-y-2">
-                                    {article.author && (
-                                        <div>
-                                            <span className="text-sm text-gray-600">著者名: </span>
-                                            <span className="text-sm font-medium">{article.author}</span>
-                                        </div>
-                                    )}
-                                    {article.author_url && (
-                                        <div>
-                                            <span className="text-sm text-gray-600">著者URL: </span>
-                                            <a
-                                                href={article.author_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-sm text-blue-600 hover:text-blue-800"
-                                            >
-                                                {article.author_url}
-                                                <ArrowTopRightOnSquareIcon className="h-3 w-3 ml-1 inline" />
-                                            </a>
-                                        </div>
-                                    )}
+                                    <div>
+                                        <span className="text-sm text-gray-600">著者名: </span>
+                                        <span className="text-sm font-medium">{article.author}</span>
+                                    </div>
                                 </div>
                             </div>
                         )}

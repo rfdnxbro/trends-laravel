@@ -71,11 +71,8 @@ class CompanyInfluenceScoreService
         // 基本スコア（記事の存在による基本点）
         $baseScore = self::WEIGHTS['article_base'];
 
-        // ブックマーク数による重み付け
-        $bookmarkScore = $article->bookmark_count * self::WEIGHTS['bookmark_multiplier'];
-
-        // いいね数による重み付け
-        $likesScore = $article->likes_count * self::WEIGHTS['likes_multiplier'];
+        // エンゲージメント数による重み付け
+        $engagementScore = $article->engagement_count * (self::WEIGHTS['bookmark_multiplier'] + self::WEIGHTS['likes_multiplier']);
 
         // プラットフォームによる重み付け
         $platformWeight = $this->getPlatformWeight($article->platform);
@@ -83,7 +80,7 @@ class CompanyInfluenceScoreService
         // 時系列による重み付け（新しい記事ほど高スコア）
         $timeWeight = $this->getTimeWeight($article->published_at, $periodStart, $periodEnd);
 
-        $score = ($baseScore + $bookmarkScore + $likesScore) * $platformWeight * $timeWeight;
+        $score = ($baseScore + $engagementScore) * $platformWeight * $timeWeight;
 
         return $score;
     }
@@ -154,7 +151,7 @@ class CompanyInfluenceScoreService
     ): CompanyInfluenceScore {
         $articles = $this->getArticlesForPeriod($company, $periodStart, $periodEnd);
         $articleCount = $articles->count();
-        $totalBookmarks = $articles->sum('bookmark_count');
+        $totalEngagement = $articles->sum('engagement_count');
 
         return CompanyInfluenceScore::updateOrCreate(
             [
@@ -166,7 +163,7 @@ class CompanyInfluenceScoreService
             [
                 'total_score' => $totalScore,
                 'article_count' => $articleCount,
-                'total_bookmarks' => $totalBookmarks,
+                'total_bookmarks' => $totalEngagement,
                 'calculated_at' => now(),
             ]
         );

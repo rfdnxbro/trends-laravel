@@ -290,7 +290,7 @@ class SearchControllerTest extends TestCase
             'platform_id' => $platform->id,
             'title' => 'Laravel Test Article',
             'author_name' => 'test_author',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'published_at' => Carbon::now()->subDays(5),
         ]);
 
@@ -298,7 +298,7 @@ class SearchControllerTest extends TestCase
             'q' => 'Laravel',
             'limit' => 20,
             'days' => 30,
-            'min_bookmarks' => 10,
+            'min_engagement' => 10,
         ]);
 
         $response = $this->controller->searchArticles($request);
@@ -313,7 +313,7 @@ class SearchControllerTest extends TestCase
         $this->assertArrayHasKey('filters', $data['meta']);
         $this->assertEquals('Laravel', $data['meta']['query']);
         $this->assertEquals(30, $data['meta']['filters']['days']);
-        $this->assertEquals(10, $data['meta']['filters']['min_bookmarks']);
+        $this->assertEquals(10, $data['meta']['filters']['min_engagement']);
     }
 
     #[Test]
@@ -389,11 +389,11 @@ class SearchControllerTest extends TestCase
     }
 
     #[Test]
-    public function test_search_articles_無効なmin_bookmarksでバリデーションエラーが返される()
+    public function test_search_articles_無効なmin_engagementでバリデーションエラーが返される()
     {
         $request = Request::create('/api/search/articles', 'GET', [
             'q' => 'test',
-            'min_bookmarks' => -1,
+            'min_engagement' => -1,
         ]);
 
         $response = $this->controller->searchArticles($request);
@@ -463,7 +463,7 @@ class SearchControllerTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'title' => 'Test Article 1',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(5),
         ]);
 
@@ -472,13 +472,13 @@ class SearchControllerTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'title' => 'Test Article 2',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'published_at' => Carbon::now()->subDays(5),
         ]);
 
         $request = Request::create('/api/search/articles', 'GET', [
             'q' => 'Test',
-            'min_bookmarks' => 20,
+            'min_engagement' => 20,
         ]);
 
         $response = $this->controller->searchArticles($request);
@@ -944,7 +944,7 @@ class SearchControllerTest extends TestCase
         $article = Article::factory()->create([
             'title' => 'Test Article Title',
             'author_name' => 'other_author',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(50),
         ]);
 
@@ -963,7 +963,7 @@ class SearchControllerTest extends TestCase
         $article = Article::factory()->create([
             'title' => 'Other Article',
             'author_name' => 'test_author',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(50),
         ]);
 
@@ -981,7 +981,7 @@ class SearchControllerTest extends TestCase
     {
         $article = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 150,
+            'engagement_count' => 150,
             'published_at' => Carbon::now()->subDays(50),
         ]);
 
@@ -1002,7 +1002,7 @@ class SearchControllerTest extends TestCase
     {
         $article = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 75,
+            'engagement_count' => 75,
             'published_at' => Carbon::now()->subDays(50),
         ]);
 
@@ -1023,7 +1023,7 @@ class SearchControllerTest extends TestCase
     {
         $article = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 15,
+            'engagement_count' => 15,
             'published_at' => Carbon::now()->subDays(50),
         ]);
 
@@ -1044,7 +1044,7 @@ class SearchControllerTest extends TestCase
     {
         $article = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(3),
         ]);
 
@@ -1065,7 +1065,7 @@ class SearchControllerTest extends TestCase
     {
         $article = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(20),
         ]);
 
@@ -1086,7 +1086,7 @@ class SearchControllerTest extends TestCase
     {
         $article = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(150),
         ]);
 
@@ -1108,7 +1108,7 @@ class SearchControllerTest extends TestCase
         $article = Article::factory()->create([
             'title' => 'Test Article',
             'author_name' => 'test_author',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'published_at' => Carbon::now()->subDays(5),
         ]);
 
@@ -1130,13 +1130,13 @@ class SearchControllerTest extends TestCase
     {
         $recentArticle = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'published_at' => Carbon::now()->subDays(3),
         ]);
 
         $oldArticle = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'published_at' => Carbon::now()->subDays(150),
         ]);
 
@@ -1155,13 +1155,13 @@ class SearchControllerTest extends TestCase
     {
         $highBookmarkArticle = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 150,
+            'engagement_count' => 150,
             'published_at' => Carbon::now()->subDays(50),
         ]);
 
         $lowBookmarkArticle = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(50),
         ]);
 
@@ -1181,7 +1181,7 @@ class SearchControllerTest extends TestCase
         $article = Article::factory()->create([
             'title' => 'Test Article',
             'author_name' => 'Test Author',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'published_at' => Carbon::now()->subDays(5),
         ]);
 
@@ -1203,7 +1203,7 @@ class SearchControllerTest extends TestCase
         $article = Article::factory()->create([
             'title' => 'Test Article',
             'author_name' => 'test_author',
-            'bookmark_count' => 150,
+            'engagement_count' => 150,
             'published_at' => Carbon::now()->subDays(3),
         ]);
 
@@ -1231,19 +1231,19 @@ class SearchControllerTest extends TestCase
         // 境界値での判定テスト
         $highArticle = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => ScoringConstants::HIGH_BOOKMARKS_THRESHOLD,
+            'engagement_count' => ScoringConstants::HIGH_BOOKMARKS_THRESHOLD,
             'published_at' => Carbon::now()->subDays(50),
         ]);
 
         $mediumArticle = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => ScoringConstants::MEDIUM_BOOKMARKS_THRESHOLD,
+            'engagement_count' => ScoringConstants::MEDIUM_BOOKMARKS_THRESHOLD,
             'published_at' => Carbon::now()->subDays(50),
         ]);
 
         $lowArticle = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => ScoringConstants::LOW_BOOKMARKS_THRESHOLD,
+            'engagement_count' => ScoringConstants::LOW_BOOKMARKS_THRESHOLD,
             'published_at' => Carbon::now()->subDays(50),
         ]);
 
@@ -1265,19 +1265,19 @@ class SearchControllerTest extends TestCase
         // 境界値での判定テスト
         $recentArticle = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(ScoringConstants::RECENT_DAYS_THRESHOLD),
         ]);
 
         $somewhatRecentArticle = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(ScoringConstants::SOMEWHAT_RECENT_DAYS_THRESHOLD),
         ]);
 
         $oldArticle = Article::factory()->create([
             'title' => 'Test Article',
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'published_at' => Carbon::now()->subDays(ScoringConstants::OLD_DAYS_THRESHOLD + 1),
         ]);
 

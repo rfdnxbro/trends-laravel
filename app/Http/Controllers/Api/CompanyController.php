@@ -154,25 +154,14 @@ class CompanyController extends Controller
         $cacheKey = "companies_list_{$page}_{$perPage}_".md5(json_encode($request->query()));
 
         return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($search, $domain, $isActive, $sortBy, $sortOrder, $perPage, $page) {
-            $query = Company::query();
+            $filters = [
+                'search' => $search,
+                'domain' => $domain,
+                'is_active' => $isActive,
+            ];
 
-            if ($search) {
-                $query->where('name', 'like', "%{$search}%");
-            }
-
-            if ($domain) {
-                $query->where('domain', 'like', "%{$domain}%");
-            }
-
-            if ($isActive !== null) {
-                $query->where('is_active', $isActive);
-            } else {
-                $query->active();
-            }
-
-            $query->orderBy($sortBy, $sortOrder);
-
-            $companies = $query->paginate($perPage, ['*'], 'page', $page);
+            $companies = Company::getForApiList($filters, $sortBy, $sortOrder)
+                ->paginate($perPage, ['*'], 'page', $page);
 
             return response()->json([
                 'data' => CompanyResource::collection($companies),
@@ -269,9 +258,7 @@ class CompanyController extends Controller
         $cacheKey = "company_detail_{$companyId}";
 
         return Cache::remember($cacheKey, CacheTime::COMPANY_DETAIL, function () use ($companyId) {
-            $company = Company::with(['rankings', 'articles' => function ($query) {
-                $query->recent(config('constants.api.default_article_days'))->orderBy('published_at', 'desc')->limit(config('constants.api.default_article_limit'));
-            }])->find($companyId);
+            $company = Company::getForApiDetail($companyId)->first();
 
             if (! $company) {
                 return response()->json([
@@ -329,9 +316,9 @@ class CompanyController extends Controller
      *     ),
      *
      *     @OA\Parameter(
-     *         name="min_bookmarks",
+     *         name="min_engagement",
      *         in="query",
-     *         description="最小ブックマーク数",
+     *         description="最小エンゲージメント数",
      *
      *         @OA\Schema(type="integer", default=0, example=0)
      *     ),
@@ -391,24 +378,18 @@ class CompanyController extends Controller
         $page = $request->get('page', 1);
         $perPage = min($request->get('per_page', config('constants.pagination.default_per_page')), config('constants.pagination.max_per_page'));
         $days = $request->get('days', config('constants.api.default_article_days'));
-        $minBookmarks = $request->get('min_bookmarks', 0);
+        $minEngagement = $request->get('min_engagement', 0);
 
-        $cacheKey = "company_articles_{$companyId}_{$page}_{$perPage}_{$days}_{$minBookmarks}";
+        $cacheKey = "company_articles_{$companyId}_{$page}_{$perPage}_{$days}_{$minEngagement}";
 
-        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($companyId, $page, $perPage, $days, $minBookmarks) {
-            $company = Company::find($companyId);
+        return Cache::remember($cacheKey, CacheTime::DEFAULT, function () use ($companyId, $page, $perPage, $days, $minEngagement) {
+            $query = Company::getArticlesForApi($companyId, $days, $minEngagement);
 
-            if (! $company) {
+            if (! $query) {
                 return response()->json([
                     'error' => '企業が見つかりません',
                 ], Response::HTTP_NOT_FOUND);
             }
-
-            $query = $company->articles()
-                ->with('platform')
-                ->where('published_at', '>=', now()->subDays($days))
-                ->where('bookmark_count', '>=', $minBookmarks)
-                ->orderBy('published_at', 'desc');
 
             $articles = $query->paginate($perPage, ['*'], 'page', $page);
 
@@ -422,7 +403,7 @@ class CompanyController extends Controller
                     'company_id' => $companyId,
                     'filters' => [
                         'days' => $days,
-                        'min_bookmarks' => $minBookmarks,
+                        'min_engagement' => $minEngagement,
                     ],
                 ],
             ]);

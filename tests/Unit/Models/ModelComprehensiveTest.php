@@ -105,7 +105,7 @@ class ModelComprehensiveTest extends TestCase
             'company_id' => $company->id,
             'platform_id' => $platform->id,
             'author' => 'テスト著者',
-            'bookmark_count' => 10,
+            'engagement_count' => 10,
             'published_at' => now(),
         ]);
 
@@ -113,7 +113,7 @@ class ModelComprehensiveTest extends TestCase
         $this->assertEquals('テスト記事', $article->title);
         $this->assertEquals('https://example.com/article', $article->url);
         $this->assertEquals('テスト著者', $article->author);
-        $this->assertEquals(10, $article->bookmark_count);
+        $this->assertEquals(10, $article->engagement_count);
         $this->assertNotNull($article->published_at);
     }
 

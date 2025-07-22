@@ -32,9 +32,7 @@ export interface Article {
     url: string;
     author_name?: string;
     published_at: string;
-    bookmark_count: number;
-    likes_count?: number;
-    like_count?: number;
+    engagement_count: number;
     view_count?: number;
     company_id?: number;
     platform_id?: number;
@@ -243,8 +241,7 @@ export interface ArticleFormData {
     author?: string;
     author_url?: string;
     published_at?: string;
-    bookmark_count?: number;
-    likes_count?: number;
+    engagement_count?: number;
     domain?: string;
     platform?: string;
     scraped_at?: string;

@@ -46,7 +46,7 @@ const mockCompanyData = {
             url: 'https://example.com/article1',
             platform: { name: 'Qiita' },
             published_at: '2024-01-01T00:00:00Z',
-            bookmark_count: 10,
+            engagement_count: 10,
         },
         {
             id: 2,
@@ -54,7 +54,7 @@ const mockCompanyData = {
             url: 'https://example.com/article2',
             platform: { name: 'Zenn' },
             published_at: '2024-01-02T00:00:00Z',
-            bookmark_count: 15,
+            engagement_count: 15,
         },
     ],
 };
@@ -254,8 +254,8 @@ describe('CompanyDetail', () => {
 
         expect(screen.getByText('テスト記事1')).toBeInTheDocument();
         expect(screen.getByText('テスト記事2')).toBeInTheDocument();
-        expect(screen.getByText('ブックマーク: 10')).toBeInTheDocument();
-        expect(screen.getByText('ブックマーク: 15')).toBeInTheDocument();
+        expect(screen.getByText('エンゲージメント: 10')).toBeInTheDocument();
+        expect(screen.getByText('エンゲージメント: 15')).toBeInTheDocument();
     });
 
     it('プラットフォーム連携がない場合のメッセージが表示される', async () => {

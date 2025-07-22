@@ -35,7 +35,7 @@ class ScrapeAllCommandHandleTest extends TestCase
         $this->app->bind(QiitaScraper::class, function () {
             $mock = Mockery::mock(QiitaScraper::class);
             $mock->shouldReceive('scrapeTrendingArticles')->andReturn([
-                ['title' => 'Test Article', 'url' => 'https://test.com', 'likes_count' => 10],
+                ['title' => 'Test Article', 'url' => 'https://test.com', 'engagement_count' => 10],
             ]);
             $mock->shouldReceive('getErrorLog')->andReturn([]);
 
@@ -45,7 +45,7 @@ class ScrapeAllCommandHandleTest extends TestCase
         $this->app->bind(ZennScraper::class, function () {
             $mock = Mockery::mock(ZennScraper::class);
             $mock->shouldReceive('scrapeTrendingArticles')->andReturn([
-                ['title' => 'Test Article', 'url' => 'https://test.com', 'likes_count' => 10],
+                ['title' => 'Test Article', 'url' => 'https://test.com', 'engagement_count' => 10],
             ]);
             $mock->shouldReceive('getErrorLog')->andReturn([]);
 
@@ -55,7 +55,7 @@ class ScrapeAllCommandHandleTest extends TestCase
         $this->app->bind(HatenaBookmarkScraper::class, function () {
             $mock = Mockery::mock(HatenaBookmarkScraper::class);
             $mock->shouldReceive('scrapePopularItEntries')->andReturn([
-                ['title' => 'Test Article', 'url' => 'https://test.com', 'bookmark_count' => 100],
+                ['title' => 'Test Article', 'url' => 'https://test.com', 'engagement_count' => 100],
             ]);
             $mock->shouldReceive('getErrorLog')->andReturn([]);
 
@@ -139,8 +139,8 @@ class ScrapeAllCommandHandleTest extends TestCase
         $this->app->bind(QiitaScraper::class, function () {
             $mock = Mockery::mock(QiitaScraper::class);
             $mock->shouldReceive('scrapeTrendingArticles')->andReturn([
-                ['title' => 'Article 1', 'url' => 'https://test1.com', 'likes_count' => 10],
-                ['title' => 'Article 2', 'url' => 'https://test2.com', 'likes_count' => 20],
+                ['title' => 'Article 1', 'url' => 'https://test1.com', 'engagement_count' => 10],
+                ['title' => 'Article 2', 'url' => 'https://test2.com', 'engagement_count' => 20],
             ]);
             $mock->shouldReceive('normalizeAndSaveData')->andReturn([
                 ['id' => 1], ['id' => 2],
@@ -153,7 +153,7 @@ class ScrapeAllCommandHandleTest extends TestCase
         $this->app->bind(ZennScraper::class, function () {
             $mock = Mockery::mock(ZennScraper::class);
             $mock->shouldReceive('scrapeTrendingArticles')->andReturn([
-                ['title' => 'Article 3', 'url' => 'https://test3.com', 'likes_count' => 15],
+                ['title' => 'Article 3', 'url' => 'https://test3.com', 'engagement_count' => 15],
             ]);
             $mock->shouldReceive('normalizeAndSaveData')->andReturn([
                 ['id' => 3],
@@ -181,7 +181,7 @@ class ScrapeAllCommandHandleTest extends TestCase
         $this->app->bind(QiitaScraper::class, function () {
             $mock = Mockery::mock(QiitaScraper::class);
             $mock->shouldReceive('scrapeTrendingArticles')->andReturn([
-                ['title' => 'Test Article', 'url' => 'https://test.com', 'likes_count' => 10],
+                ['title' => 'Test Article', 'url' => 'https://test.com', 'engagement_count' => 10],
             ]);
             $mock->shouldReceive('normalizeAndSaveData')->andReturn([['id' => 1]]);
             $mock->shouldReceive('getErrorLog')->andReturn([]);
@@ -192,7 +192,7 @@ class ScrapeAllCommandHandleTest extends TestCase
         $this->app->bind(ZennScraper::class, function () {
             $mock = Mockery::mock(ZennScraper::class);
             $mock->shouldReceive('scrapeTrendingArticles')->andReturn([
-                ['title' => 'Test Article', 'url' => 'https://test.com', 'likes_count' => 10],
+                ['title' => 'Test Article', 'url' => 'https://test.com', 'engagement_count' => 10],
             ]);
             $mock->shouldReceive('normalizeAndSaveData')->andReturn([['id' => 1]]);
             $mock->shouldReceive('getErrorLog')->andReturn([]);
@@ -203,7 +203,7 @@ class ScrapeAllCommandHandleTest extends TestCase
         $this->app->bind(HatenaBookmarkScraper::class, function () {
             $mock = Mockery::mock(HatenaBookmarkScraper::class);
             $mock->shouldReceive('scrapePopularItEntries')->andReturn([
-                ['title' => 'Test Article', 'url' => 'https://test.com', 'bookmark_count' => 100],
+                ['title' => 'Test Article', 'url' => 'https://test.com', 'engagement_count' => 100],
             ]);
             $mock->shouldReceive('normalizeAndSaveData')->andReturn([['id' => 1]]);
             $mock->shouldReceive('getErrorLog')->andReturn([]);

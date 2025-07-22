@@ -168,21 +168,33 @@ class ZennScraper extends BaseScraper
                 return null;
             }
 
+            // DOM構造から直接各要素を抽出（より効率的で正確）
+            $authorName = $this->extractAuthorNameDirect($node);
+            $companyName = $this->extractCompanyNameDirect($node);
+            $engagementCount = $this->extractLikesCount($node);
+
+            // 後方互換性のため、従来の統合テキストも保持
+            $author = $authorName ? $authorName : $this->extractAuthor($node);
+
             $articleData = [
                 'title' => $title,
                 'url' => $url,
-                'likes_count' => $this->extractLikesCount($node),
-                'author' => $this->extractAuthor($node),
+                'engagement_count' => $engagementCount,
+                'author' => $author,
+                'author_name' => $authorName,
+                'organization_name' => $companyName,
                 'author_url' => $this->extractAuthorUrl($node),
                 'published_at' => $this->extractPublishedAt($node),
                 'scraped_at' => now(),
                 'platform' => 'zenn',
+                // 将来的に企業マッチングで使用する情報
+                'company_name_hint' => $companyName,
             ];
 
             Log::debug('Zenn 抽出結果', [
                 'title' => $title,
                 'url' => $url,
-                'likes_count' => $articleData['likes_count'],
+                'engagement_count' => $articleData['engagement_count'],
                 'author' => $articleData['author'],
             ]);
 
@@ -260,7 +272,30 @@ class ZennScraper extends BaseScraper
      */
     protected function extractLikesCount(Crawler $node): int
     {
-        // 新しい設定ベースのセレクタ戦略を使用
+        // 最優先: 実際のZennのいいね数セレクタを使用
+        $directSelectors = [
+            '.ArticleList_like__7aNZE',  // 実際のZennのいいね数クラス
+            'span.ArticleList_like__7aNZE',  // スパン要素として
+            '[class*="ArticleList_like"]',  // 部分一致
+        ];
+
+        $likesCount = $this->extractNumberBySelectors($node, $directSelectors);
+        if ($likesCount > 0) {
+            return $likesCount;
+        }
+
+        // 汎用的なセレクタも試行（共通セレクタを使用）
+        $genericSelectors = $this->combineSelectors([
+            '.ArticleList_like',  // 元の汎用セレクタ
+            'svg[aria-label*="いいね"] + *',  // SVGアイコンの次の要素
+        ], 'generic_aria');
+
+        $likesCount = $this->extractNumberBySelectors($node, $genericSelectors);
+        if ($likesCount > 0) {
+            return $likesCount;
+        }
+
+        // 設定ベースのセレクタ戦略をフォールバックとして使用
         $likesCount = $this->extractByStrategies($node, 'engagement', 'number', [
             'min_value' => 0,
         ]);
@@ -269,7 +304,7 @@ class ZennScraper extends BaseScraper
             return $likesCount;
         }
 
-        // フォールバック: 既存のセレクタも試行
+        // 最終フォールバック: 既存のセレクタも試行
         $fallbackSelectors = [
             '.View_likeCount',
             'button[aria-label*="いいね"]',
@@ -281,9 +316,22 @@ class ZennScraper extends BaseScraper
     protected function extractAuthor(Crawler $node): ?string
     {
         try {
-            // 各種抽出方法を試行
+            // 最優先: 具体的なCSSクラス名から直接抽出
+            $directSelectors = [
+                '.ArticleList_userName',  // ユーザー名
+                '.ArticleList_publicationLink',  // 企業名（含む可能性）
+            ];
+
+            foreach ($directSelectors as $selector) {
+                $result = $this->extractAuthorFromElement($node, $selector);
+                if ($result) {
+                    return $result;
+                }
+            }
+
+            // 従来の抽出方法をフォールバックとして使用
             $extractionMethods = [
-                // リンクベースの著者抽出を優先（Zennのテストで期待されている形式）
+                // リンクベースの著者抽出
                 ['type' => 'link', 'options' => ['base_url' => '', 'exclude_patterns' => ['/articles/']]],
                 // テキストベースの著者抽出
                 ['type' => 'text', 'options' => ['max_length' => 50, 'min_length' => 1]],
@@ -298,13 +346,218 @@ class ZennScraper extends BaseScraper
                 }
             }
 
-            // フォールバック: 既存の特殊セレクタも試行
+            // 最終フォールバック
             return $this->extractAuthorFromFallbackSelectors($node);
         } catch (\Exception $e) {
             Log::debug('著者名抽出エラー', ['error' => $e->getMessage()]);
 
             return null;
         }
+    }
+
+    /**
+     * DOM構造から著者名を直接抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return string|null 著者名またはnull
+     */
+    private function extractAuthorNameDirect(Crawler $node): ?string
+    {
+        try {
+            // 著者名を正確に抽出（組織名を除外）
+            $directAuthorSelectors = [
+                '.ArticleList_userName__MlDD5 a:not(.ArticleList_publicationLink__RvZTZ)', // publicationLinkクラスを除外
+                '.ArticleList_userName__MlDD5 > a:first-child', // 直接の子要素の最初のaタグ
+                '.ArticleList_userName a:not([class*="publication"])', // publication関連クラスを除外
+            ];
+
+            foreach ($directAuthorSelectors as $selector) {
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $text = trim($element->first()->text());
+                    if (! empty($text)) {
+                        Log::debug("Zenn著者名抽出成功: {$selector} -> {$text}");
+
+                        return $text;
+                    }
+                }
+            }
+
+            // フォールバック: 旧来のセレクタ（しかし組織名リンクを除外）
+            $userNameSelectors = $this->combineSelectors([
+                '.ArticleList_userName',
+                '[class*="userName"]',
+            ], 'generic_testid');
+
+            foreach ($userNameSelectors as $selector) {
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    // 組織名リンクを除外して著者名のみを抽出
+                    $authorLinks = $element->filter('a:not(.ArticleList_publicationLink__RvZTZ):not([class*="publication"])');
+                    if ($authorLinks->count() > 0) {
+                        $text = trim($authorLinks->first()->text());
+                        if (! empty($text)) {
+                            Log::debug("Zenn著者名抽出（フォールバック）: {$selector} -> {$text}");
+
+                            return $text;
+                        }
+                    }
+                }
+            }
+
+            // フォールバック: 画像のalt属性から抽出
+            $imgElements = $node->filter('img');
+            if ($imgElements->count() > 0) {
+                $foundAuthor = null;
+                $imgElements->each(function (Crawler $imgNode) use (&$foundAuthor) {
+                    if ($foundAuthor) {
+                        return false;
+                    } // 既に見つかった場合は処理終了
+
+                    $alt = $imgNode->attr('alt');
+                    if (! empty($alt) && ! str_contains($alt, 'logo') && ! str_contains($alt, 'icon')) {
+                        $foundAuthor = $alt;
+
+                        return false; // 処理終了
+                    }
+                });
+
+                if ($foundAuthor) {
+                    return $foundAuthor;
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::debug('著者名の直接抽出エラー', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
+     * DOM構造から企業名を直接抽出
+     *
+     * @param  Crawler  $node  記事ノード
+     * @return string|null 企業名またはnull
+     */
+    private function extractCompanyNameDirect(Crawler $node): ?string
+    {
+        try {
+            // Zenn固有セレクタと共通セレクタを組み合わせて企業名を抽出
+            $companySelectors = $this->combineSelectors([
+                '.ArticleList_publicationLink',
+                '[class*="publication"]',
+            ], 'generic_testid');
+
+            foreach ($companySelectors as $selector) {
+                $element = $node->filter($selector);
+                if ($element->count() > 0) {
+                    $text = trim($element->text());
+                    if (! empty($text)) {
+                        return $text;
+                    }
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::debug('企業名の直接抽出エラー', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
+     * authorから詳細情報を抽出（ユーザー名、企業名、いいね数、投稿日）
+     *
+     * @deprecated 新しいDOM直接抽出メソッドを使用してください
+     *
+     * @param  string|null  $author  著者情報
+     * @return array 抽出された情報の配列
+     */
+    private function parseAuthorInfo(?string $author): array
+    {
+        if (! $author) {
+            return [
+                'author_name' => null,
+                'company_name' => null,
+                'engagement_count' => 0,
+                'relative_date' => null,
+            ];
+        }
+
+        // authorがURLの場合は、URLからユーザー名を抽出
+        if (strpos($author, '/') !== false) {
+            $pathParts = explode('/', trim($author, '/'));
+
+            return [
+                'author_name' => end($pathParts),
+                'company_name' => null,
+                'engagement_count' => 0,
+                'relative_date' => null,
+            ];
+        }
+
+        $text = trim($author);
+        $result = [
+            'author_name' => null,
+            'company_name' => null,
+            'engagement_count' => 0,
+            'relative_date' => null,
+        ];
+
+        // ステップ1: 末尾の数字（エンゲージメント数）を抽出
+        if (preg_match('/^(.+?)\s+(\d+)$/', $text, $matches)) {
+            $text = trim($matches[1]);
+            $result['engagement_count'] = (int) $matches[2];
+        }
+
+        // ステップ2: 日時表現を抽出
+        if (preg_match('/^(.+?)(\d+(?:日|時間|分|秒|週間|月|年)前)/', $text, $matches)) {
+            $text = trim($matches[1]);
+            $result['relative_date'] = $matches[2];
+        }
+
+        // ステップ3: 企業名を抽出
+        // パターン1: 「in企業名」形式（意図的なin区切りのみ）
+        if (preg_match('/^([a-zA-Z0-9_]+)\s+in\s+(.+)$/u', $text, $matches) ||
+            preg_match('/^([a-zA-Z0-9_]+)\s*in([^a-zA-Z0-9].+)$/u', $text, $matches)) {
+            $result['author_name'] = trim($matches[1]);
+            $result['company_name'] = trim($matches[2]);
+        }
+        // パターン2: 直接企業名が含まれる場合
+        elseif (preg_match('/^([a-zA-Z0-9_]+)[^a-zA-Z0-9_]*?(株式会社|有限会社|合同会社|合資会社|合名会社)/u', $text, $matches)) {
+            $result['author_name'] = trim($matches[1]);
+            // 企業名は残りの部分から抽出
+            $companyPart = substr($text, strlen($matches[1]));
+            $result['company_name'] = trim($companyPart);
+        }
+        // パターン3: 英語企業名
+        elseif (preg_match('/^([a-zA-Z0-9_]+)(.+?(?:Corporation|Inc|Corp|Ltd|Company|Group|Holdings).*)$/u', $text, $matches)) {
+            $result['author_name'] = trim($matches[1]);
+            $result['company_name'] = trim($matches[2]);
+        }
+        // パターン4: 企業名なし
+        else {
+            // 複数単語がある場合は最初の単語のみを使用（Zennのユーザー名形式を想定）
+            $result['author_name'] = explode(' ', $text)[0];
+        }
+
+        return $result;
+    }
+
+    /**
+     * authorからuser_nameを抽出（後方互換性のため残す）
+     *
+     * @param  string|null  $author  著者情報
+     * @return string|null ユーザー名またはnull
+     */
+    private function extractAuthorName(?string $author): ?string
+    {
+        $info = $this->parseAuthorInfo($author);
+
+        return $info['author_name'];
     }
 
     /**
@@ -362,10 +615,23 @@ class ZennScraper extends BaseScraper
     protected function extractAuthorUrl(Crawler $node): ?string
     {
         try {
-            // extractAuthorと同じロジックを使用
             $author = $this->extractAuthor($node);
             if ($author) {
-                return strpos($author, 'http') === 0 ? $author : $this->baseUrl.$author;
+                // authorが既にURLの場合はそのまま返す
+                if (strpos($author, 'http') === 0) {
+                    return $author;
+                }
+
+                // authorがパス形式の場合はベースURLと結合
+                if (strpos($author, '/') !== false) {
+                    return $this->baseUrl.$author;
+                }
+
+                // テキストの場合はクリーンなユーザー名を使ってURL構築
+                $authorName = $this->extractAuthorName($author);
+                if ($authorName) {
+                    return $this->baseUrl.'/'.$authorName;
+                }
             }
         } catch (\Exception $e) {
             Log::debug('著者URL抽出エラー', ['error' => $e->getMessage()]);
@@ -448,21 +714,16 @@ class ZennScraper extends BaseScraper
 
         foreach ($articles as $article) {
             try {
-                // author_nameを抽出（authorから会社名を除いたユーザー名を取得）
-                $authorName = null;
-                if ($article['author']) {
-                    $authorText = trim($article['author']);
-                    // 「in株式会社」や「in」で区切ってユーザー名を抽出
-                    if (preg_match('/(.+?)(?:in.+)/u', $authorText, $matches)) {
-                        $authorName = trim($matches[1]);
-                    } else {
-                        $authorName = $authorText;
-                    }
-                }
+                // extractAuthorNameで既に処理済みのauthor_nameを使用、なければauthorから抽出
+                $authorName = $article['author_name'] ?? $this->extractAuthorName($article['author'] ?? null);
+
+                // organization_nameを取得（extractCompanyNameDirectで既に処理済み）
+                $organizationName = $article['organization_name'] ?? null;
 
                 // 拡張された会社マッチングを使用
                 $articleData = array_merge($article, [
                     'author_name' => $authorName,
+                    'organization_name' => $organizationName,
                     'platform' => 'zenn',
                 ]);
                 $company = $companyMatcher->identifyCompany($articleData);
@@ -473,9 +734,10 @@ class ZennScraper extends BaseScraper
                         'title' => $article['title'],
                         'platform_id' => $zennPlatform?->id,
                         'company_id' => $company?->id,
-                        'likes_count' => $article['likes_count'],
+                        'engagement_count' => $article['engagement_count'],
                         'author' => $article['author'],
                         'author_name' => $authorName,
+                        'organization_name' => $organizationName,
                         'author_url' => $article['author_url'],
                         'published_at' => $article['published_at'],
                         'platform' => $article['platform'],
@@ -489,7 +751,7 @@ class ZennScraper extends BaseScraper
                     'title' => $article['title'],
                     'author' => $article['author'],
                     'company' => $company?->name,
-                    'likes_count' => $article['likes_count'],
+                    'engagement_count' => $article['engagement_count'],
                 ]);
 
             } catch (\Exception $e) {

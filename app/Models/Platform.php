@@ -34,4 +34,26 @@ class Platform extends Model
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * API用の選択カラムを取得
+     *
+     * @return array APIで返すカラム
+     */
+    public static function getApiColumns(): array
+    {
+        return ['id', 'name', 'base_url'];
+    }
+
+    /**
+     * API用プラットフォーム一覧を取得
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function getForApi()
+    {
+        return self::select(self::getApiColumns())
+            ->orderBy('name')
+            ->get();
+    }
 }

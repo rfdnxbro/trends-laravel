@@ -31,7 +31,7 @@ class ArticleTest extends TestCase
             'url' => $this->faker()->url(),
             'author_name' => $this->faker()->name(),
             'published_at' => now(),
-            'bookmark_count' => $this->faker()->numberBetween(0, 100),
+            'engagement_count' => $this->faker()->numberBetween(0, 100),
             'scraped_at' => now(),
         ]);
 
@@ -59,11 +59,11 @@ class ArticleTest extends TestCase
             'domain',
             'platform',
             'author_name',
+            'organization_name',
             'author',
             'author_url',
             'published_at',
-            'bookmark_count',
-            'likes_count',
+            'engagement_count',
             'scraped_at',
         ];
 
@@ -89,17 +89,14 @@ class ArticleTest extends TestCase
             'url' => $this->faker()->url(),
             'published_at' => '2023-01-01 12:00:00',
             'scraped_at' => '2023-01-01 13:00:00',
-            'bookmark_count' => '50',
-            'likes_count' => '25',
+            'engagement_count' => '75',
         ]);
 
         $article->refresh();
         $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $article->published_at);
         $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $article->scraped_at);
-        $this->assertIsInt($article->bookmark_count);
-        $this->assertEquals(50, $article->bookmark_count);
-        $this->assertIsInt($article->likes_count);
-        $this->assertEquals(25, $article->likes_count);
+        $this->assertIsInt($article->engagement_count);
+        $this->assertEquals(75, $article->engagement_count);
     }
 
     public function test_タイムスタンプの確認()
@@ -228,7 +225,7 @@ class ArticleTest extends TestCase
             'company_id' => $company->id,
             'title' => '人気記事',
             'url' => $this->faker()->url(),
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
             'scraped_at' => now(),
         ]);
 
@@ -237,7 +234,7 @@ class ArticleTest extends TestCase
             'company_id' => $company->id,
             'title' => '人気のない記事',
             'url' => $this->faker()->url(),
-            'bookmark_count' => 5,
+            'engagement_count' => 5,
             'scraped_at' => now(),
         ]);
 
@@ -556,7 +553,7 @@ class ArticleTest extends TestCase
         $this->assertEquals($article2->id, $result->last()->id);
     }
 
-    public function test_with_sortスコープでlikes_countソートができる()
+    public function test_with_sortスコープでengagement_countソートができる()
     {
         $company = Company::create([
             'name' => $this->faker()->company(),
@@ -571,8 +568,8 @@ class ArticleTest extends TestCase
         $article1 = Article::create([
             'platform_id' => $platform->id,
             'company_id' => $company->id,
-            'title' => '人気記事',
-            'likes_count' => 100,
+            'title' => 'エンゲージメント高い記事',
+            'engagement_count' => 200,
             'url' => $this->faker()->url(),
             'scraped_at' => now(),
         ]);
@@ -580,49 +577,13 @@ class ArticleTest extends TestCase
         $article2 = Article::create([
             'platform_id' => $platform->id,
             'company_id' => $company->id,
-            'title' => '普通の記事',
-            'likes_count' => 50,
+            'title' => 'エンゲージメント低い記事',
+            'engagement_count' => 50,
             'url' => $this->faker()->url(),
             'scraped_at' => now(),
         ]);
 
-        $result = Article::withSort('likes_count', 'desc')->get();
-
-        $this->assertEquals($article1->id, $result->first()->id);
-        $this->assertEquals($article2->id, $result->last()->id);
-    }
-
-    public function test_with_sortスコープでbookmark_countソートができる()
-    {
-        $company = Company::create([
-            'name' => $this->faker()->company(),
-            'domain' => $this->faker()->domainName(),
-        ]);
-
-        $platform = Platform::create([
-            'name' => $this->faker()->company(),
-            'base_url' => $this->faker()->url(),
-        ]);
-
-        $article1 = Article::create([
-            'platform_id' => $platform->id,
-            'company_id' => $company->id,
-            'title' => 'ブックマーク多い記事',
-            'bookmark_count' => 200,
-            'url' => $this->faker()->url(),
-            'scraped_at' => now(),
-        ]);
-
-        $article2 = Article::create([
-            'platform_id' => $platform->id,
-            'company_id' => $company->id,
-            'title' => 'ブックマーク少ない記事',
-            'bookmark_count' => 50,
-            'url' => $this->faker()->url(),
-            'scraped_at' => now(),
-        ]);
-
-        $result = Article::withSort('bookmark_count', 'desc')->get();
+        $result = Article::withSort('engagement_count', 'desc')->get();
 
         $this->assertEquals($article1->id, $result->first()->id);
         $this->assertEquals($article2->id, $result->last()->id);

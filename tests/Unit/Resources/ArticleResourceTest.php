@@ -48,8 +48,7 @@ class ArticleResourceTest extends TestCase
         $this->assertEquals($this->article->author, $result['author']);
         $this->assertEquals($this->article->author_url, $result['author_url']);
         $this->assertEquals($this->article->published_at?->format('Y-m-d H:i:s'), $result['published_at']);
-        $this->assertEquals((int) $this->article->bookmark_count, $result['bookmark_count']);
-        $this->assertEquals((int) $this->article->likes_count, $result['likes_count']);
+        $this->assertEquals((int) $this->article->engagement_count, $result['engagement_count']);
         $this->assertEquals($this->article->domain, $result['domain']);
         $this->assertEquals($this->article->platform, $result['platform_name']);
         $this->assertEquals($this->article->scraped_at->format('Y-m-d H:i:s'), $result['scraped_at']);
@@ -142,29 +141,16 @@ class ArticleResourceTest extends TestCase
     }
 
     #[Test]
-    public function test_bookmark_countの型変換が正しく行われる(): void
+    public function test_engagement_countの型変換が正しく行われる(): void
     {
-        $this->article->bookmark_count = '150';
+        $this->article->engagement_count = '150';
         $this->article->save();
 
         $resource = new ArticleResource($this->article);
         $result = $resource->toArray($this->request);
 
-        $this->assertIsInt($result['bookmark_count']);
-        $this->assertEquals(150, $result['bookmark_count']);
-    }
-
-    #[Test]
-    public function test_likes_countの型変換が正しく行われる(): void
-    {
-        $this->article->likes_count = '75';
-        $this->article->save();
-
-        $resource = new ArticleResource($this->article);
-        $result = $resource->toArray($this->request);
-
-        $this->assertIsInt($result['likes_count']);
-        $this->assertEquals(75, $result['likes_count']);
+        $this->assertIsInt($result['engagement_count']);
+        $this->assertEquals(150, $result['engagement_count']);
     }
 
     #[Test]
@@ -211,8 +197,7 @@ class ArticleResourceTest extends TestCase
             'author',
             'author_url',
             'published_at',
-            'bookmark_count',
-            'likes_count',
+            'engagement_count',
             'platform',
             'company',
             'domain',
@@ -267,17 +252,14 @@ class ArticleResourceTest extends TestCase
     #[Test]
     public function test_数値フィールドの境界値テスト(): void
     {
-        $this->article->bookmark_count = 0;
-        $this->article->likes_count = 999999;
+        $this->article->engagement_count = 999999;
         $this->article->save();
 
         $resource = new ArticleResource($this->article);
         $result = $resource->toArray($this->request);
 
-        $this->assertEquals(0, $result['bookmark_count']);
-        $this->assertEquals(999999, $result['likes_count']);
-        $this->assertIsInt($result['bookmark_count']);
-        $this->assertIsInt($result['likes_count']);
+        $this->assertEquals(999999, $result['engagement_count']);
+        $this->assertIsInt($result['engagement_count']);
     }
 
     #[Test]

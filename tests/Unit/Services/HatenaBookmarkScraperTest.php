@@ -84,12 +84,12 @@ class HatenaBookmarkScraperTest extends TestCase
 
         $this->assertArrayHasKey('title', $result[0]);
         $this->assertArrayHasKey('url', $result[0]);
-        $this->assertArrayHasKey('bookmark_count', $result[0]);
+        $this->assertArrayHasKey('engagement_count', $result[0]);
         $this->assertArrayHasKey('platform', $result[0]);
 
         $this->assertEquals('Test Article 1', $result[0]['title']);
         $this->assertEquals('https://example.com/article1', $result[0]['url']);
-        $this->assertEquals(100, $result[0]['bookmark_count']);
+        $this->assertEquals(100, $result[0]['engagement_count']);
         $this->assertEquals('hatena_bookmark', $result[0]['platform']);
     }
 
@@ -174,7 +174,7 @@ class HatenaBookmarkScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extract_bookmark_count_ブックマーク数を正しく抽出する()
+    public function test_extract_engagement_count_エンゲージメント数を正しく抽出する()
     {
         $html = '<div class="entrylist-contents">
             <div class="entrylist-contents-users">
@@ -195,7 +195,7 @@ class HatenaBookmarkScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extract_bookmark_count_ブックマーク数が見つからない場合ゼロを返す()
+    public function test_extract_engagement_count_エンゲージメント数が見つからない場合ゼロを返す()
     {
         $html = '<div class="entrylist-contents">
             <div>No bookmark count</div>
@@ -214,7 +214,7 @@ class HatenaBookmarkScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extract_bookmark_count_文字列混在でも数値を抽出する()
+    public function test_extract_engagement_count_文字列混在でも数値を抽出する()
     {
         $html = '<div class="entrylist-contents">
             <div class="entrylist-contents-users">
@@ -383,7 +383,7 @@ class HatenaBookmarkScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://example.com/article1',
-                'bookmark_count' => 100,
+                'engagement_count' => 100,
                 'domain' => 'example.com',
                 'published_at' => '2024-01-01T12:00:00Z',
                 'scraped_at' => now(),
@@ -400,7 +400,7 @@ class HatenaBookmarkScraperTest extends TestCase
         $article = $result[0];
         $this->assertEquals('Test Article', $article->title);
         $this->assertEquals('https://example.com/article1', $article->url);
-        $this->assertEquals(100, $article->bookmark_count);
+        $this->assertEquals(100, $article->engagement_count);
         $this->assertEquals($company->id, $article->company_id);
         $this->assertEquals($platform->id, $article->platform_id);
         $this->assertEquals('hatena_bookmark', $article->platform);
@@ -417,7 +417,7 @@ class HatenaBookmarkScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://unknown.com/article1',
-                'bookmark_count' => 50,
+                'engagement_count' => 50,
                 'domain' => 'unknown.com',
                 'published_at' => '2024-01-01T12:00:00Z',
                 'scraped_at' => now(),
@@ -452,14 +452,14 @@ class HatenaBookmarkScraperTest extends TestCase
         $existingArticle = Article::factory()->create([
             'url' => 'https://example.com/article1',
             'title' => 'Old Title',
-            'bookmark_count' => 50,
+            'engagement_count' => 50,
         ]);
 
         $entries = [
             [
                 'title' => 'Updated Title',
                 'url' => 'https://example.com/article1',
-                'bookmark_count' => 100,
+                'engagement_count' => 100,
                 'domain' => 'example.com',
                 'published_at' => '2024-01-01T12:00:00Z',
                 'scraped_at' => now(),
@@ -475,7 +475,7 @@ class HatenaBookmarkScraperTest extends TestCase
         $article = $result[0];
         $this->assertEquals($existingArticle->id, $article->id);
         $this->assertEquals('Updated Title', $article->title);
-        $this->assertEquals(100, $article->bookmark_count);
+        $this->assertEquals(100, $article->engagement_count);
         $this->assertEquals($company->id, $article->company_id);
     }
 
@@ -490,7 +490,7 @@ class HatenaBookmarkScraperTest extends TestCase
             [
                 'title' => 'Test Article',
                 'url' => 'https://example.com/article1',
-                'bookmark_count' => 100,
+                'engagement_count' => 100,
                 'domain' => 'example.com',
                 'published_at' => '2024-01-01T12:00:00Z',
                 'scraped_at' => now(),
@@ -535,11 +535,11 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertCount(1, $result);
         $this->assertArrayHasKey('title', $result[0]);
         $this->assertArrayHasKey('url', $result[0]);
-        $this->assertArrayHasKey('bookmark_count', $result[0]);
+        $this->assertArrayHasKey('engagement_count', $result[0]);
         $this->assertArrayHasKey('platform', $result[0]);
         $this->assertEquals('Test Article 1', $result[0]['title']);
         $this->assertEquals('https://example.com/article1', $result[0]['url']);
-        $this->assertEquals(100, $result[0]['bookmark_count']);
+        $this->assertEquals(100, $result[0]['engagement_count']);
         $this->assertEquals('hatena_bookmark', $result[0]['platform']);
     }
 

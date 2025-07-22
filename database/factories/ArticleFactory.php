@@ -34,8 +34,7 @@ class ArticleFactory extends Factory
             'author' => $this->faker->userName(),
             'author_url' => $this->faker->url(),
             'published_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
-            'bookmark_count' => $this->faker->numberBetween(...ArticleEngagement::getNormalBookmarkRange()),
-            'likes_count' => $this->faker->numberBetween(...ArticleEngagement::getNormalLikesRange()),
+            'engagement_count' => $this->faker->numberBetween(...ArticleEngagement::getNormalBookmarkRange()),
             'scraped_at' => $this->faker->dateTimeBetween('-1 day', 'now'),
         ];
     }
@@ -91,8 +90,7 @@ class ArticleFactory extends Factory
     public function popular(): static
     {
         return $this->state(fn (array $attributes) => [
-            'bookmark_count' => $this->faker->numberBetween(...ArticleEngagement::getPopularBookmarkRange()),
-            'likes_count' => $this->faker->numberBetween(...ArticleEngagement::getPopularLikesRange()),
+            'engagement_count' => $this->faker->numberBetween(...ArticleEngagement::getPopularLikesRange()),
         ]);
     }
 
@@ -124,8 +122,7 @@ class ArticleFactory extends Factory
     public function lowEngagement(): static
     {
         return $this->state(fn (array $attributes) => [
-            'bookmark_count' => $this->faker->numberBetween(...ArticleEngagement::getLowBookmarkRange()),
-            'likes_count' => $this->faker->numberBetween(...ArticleEngagement::getLowLikesRange()),
+            'engagement_count' => $this->faker->numberBetween(...ArticleEngagement::getLowBookmarkRange()),
         ]);
     }
 
@@ -135,8 +132,7 @@ class ArticleFactory extends Factory
     public function highEngagement(): static
     {
         return $this->state(fn (array $attributes) => [
-            'bookmark_count' => $this->faker->numberBetween(...ArticleEngagement::getHighBookmarkRange()),
-            'likes_count' => $this->faker->numberBetween(...ArticleEngagement::getHighLikesRange()),
+            'engagement_count' => $this->faker->numberBetween(...ArticleEngagement::getHighLikesRange()),
         ]);
     }
 }

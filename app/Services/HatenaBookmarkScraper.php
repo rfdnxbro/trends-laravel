@@ -59,7 +59,7 @@ class HatenaBookmarkScraper extends BaseScraper
                     $entries[] = [
                         'title' => $title,
                         'url' => $url,
-                        'bookmark_count' => $bookmarkCount,
+                        'engagement_count' => $bookmarkCount,
                         'domain' => $domain,
                         'published_at' => $publishedAt,
                         'scraped_at' => now(),
@@ -133,14 +133,11 @@ class HatenaBookmarkScraper extends BaseScraper
     protected function extractPublishedAt(Crawler $node): ?string
     {
         try {
-            // はてなブックマークの日時情報を取得
-            $selectors = [
+            // はてなブックマーク固有セレクタと共通セレクタを組み合わせて日時を抽出
+            $selectors = $this->combineSelectors([
                 '.entrylist-contents-date',
                 '.entrylist-contents-meta time',
-                'time[datetime]',
-                'time',
-                '[datetime]',
-            ];
+            ], 'datetime');
 
             foreach ($selectors as $selector) {
                 $timeElement = $node->filter($selector);
@@ -195,7 +192,7 @@ class HatenaBookmarkScraper extends BaseScraper
                         'platform_id' => $hatenaPlatform?->id,
                         'company_id' => $company?->id,
                         'domain' => $entry['domain'],
-                        'bookmark_count' => $entry['bookmark_count'],
+                        'engagement_count' => $entry['engagement_count'],
                         'published_at' => $entry['published_at'] ?? null,
                         'platform' => $entry['platform'],
                         'scraped_at' => $entry['scraped_at'],
@@ -207,7 +204,7 @@ class HatenaBookmarkScraper extends BaseScraper
                 Log::debug('記事データを保存', [
                     'title' => $entry['title'],
                     'company' => $company?->name,
-                    'bookmark_count' => $entry['bookmark_count'],
+                    'engagement_count' => $entry['engagement_count'],
                 ]);
 
             } catch (\Exception $e) {

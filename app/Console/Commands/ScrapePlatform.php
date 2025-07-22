@@ -77,14 +77,10 @@ class ScrapePlatform extends Command
                     $this->line('URL: '.$article['url']);
 
                     // プラットフォーム別の表示
-                    if ($platformName === 'はてなブックマーク') {
-                        $this->line('ブックマーク数: '.($article['bookmark_count'] ?? 0));
-                        $this->line('ドメイン: '.($article['domain'] ?? 'N/A'));
-                    } else {
-                        $this->line('いいね数: '.($article['likes_count'] ?? 0));
-                        $this->line('投稿者: '.($article['author'] ?? 'N/A'));
-                        $this->line('投稿日時: '.($article['published_at'] ?? 'N/A'));
-                    }
+                    $this->line('エンゲージメント数: '.($article['engagement_count'] ?? 0));
+                    $this->line('ドメイン: '.($article['domain'] ?? 'N/A'));
+                    $this->line('投稿者: '.($article['author'] ?? 'N/A'));
+                    $this->line('投稿日時: '.($article['published_at'] ?? 'N/A'));
 
                     $this->line('---');
                 }
@@ -99,13 +95,8 @@ class ScrapePlatform extends Command
                     foreach ($savedArticles as $article) {
                         $companyName = $article->company ? $article->company->name : 'その他';
 
-                        if ($platformName === 'はてなブックマーク') {
-                            $count = $article->bookmark_count ?? 0;
-                            $this->line("保存: {$article->title} ({$companyName}) - {$count}ブックマーク");
-                        } else {
-                            $count = $article->likes_count ?? 0;
-                            $this->line("保存: {$article->title} ({$companyName}) - {$count}いいね");
-                        }
+                        $count = $article->engagement_count ?? 0;
+                        $this->line("保存: {$article->title} ({$companyName}) - {$count}エンゲージメント");
                     }
                 }
             }

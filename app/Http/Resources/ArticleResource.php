@@ -26,11 +26,13 @@ class ArticleResource extends JsonResource
             'title' => $this->title,
             'url' => $this->url,
             'author_name' => $this->author_name,
+            'organization_name' => $this->organization_name,
             'author' => $this->author,
             'author_url' => $this->author_url,
             'published_at' => $this->published_at?->format('Y-m-d H:i:s'),
-            'bookmark_count' => (int) $this->bookmark_count,
-            'likes_count' => (int) $this->likes_count,
+            'engagement_count' => (int) $this->engagement_count,
+            'platform_id' => $this->platform_id,
+            'company_id' => $this->company_id,
             'platform' => $this->when($this->relationLoaded('platform'), function () {
                 $platformRelation = $this->getRelation('platform');
 

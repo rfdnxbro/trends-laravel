@@ -35,8 +35,8 @@ const ArticleListHeader: React.FC<ArticleListHeaderProps> = ({
                 >
                     <option value="published_at:desc">公開日(新しい順)</option>
                     <option value="published_at:asc">公開日(古い順)</option>
-                    <option value="bookmark_count:desc">ブックマーク数(多い順)</option>
-                    <option value="bookmark_count:asc">ブックマーク数(少ない順)</option>
+                    <option value="engagement_count:desc">エンゲージメント数(多い順)</option>
+                    <option value="engagement_count:asc">エンゲージメント数(少ない順)</option>
                     <option value="title:asc">タイトル(A-Z)</option>
                     <option value="title:desc">タイトル(Z-A)</option>
                 </select>

@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Http\Controllers\Api;
 
-use App\Http\Controllers\Api\PlatformController;
 use App\Models\Platform;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -24,19 +23,19 @@ class PlatformControllerTest extends TestCase
         $response = $this->getJson('/api/platforms');
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'success',
-                    'data' => [
-                        '*' => [
-                            'id',
-                            'name',
-                            'base_url'
-                        ]
-                    ]
-                ])
-                ->assertJson([
-                    'success' => true
-                ]);
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'base_url',
+                    ],
+                ],
+            ])
+            ->assertJson([
+                'success' => true,
+            ]);
 
         // データが名前順でソートされていることを確認
         $data = $response->json('data');
@@ -54,9 +53,9 @@ class PlatformControllerTest extends TestCase
         $response = $this->getJson('/api/platforms');
 
         $response->assertStatus(200)
-                ->assertJson([
-                    'success' => true,
-                    'data' => []
-                ]);
+            ->assertJson([
+                'success' => true,
+                'data' => [],
+            ]);
     }
 }

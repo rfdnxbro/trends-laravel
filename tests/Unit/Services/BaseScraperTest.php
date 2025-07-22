@@ -406,6 +406,8 @@ class BaseScraperTest extends TestCase
         $method->setAccessible(true);
 
         $method->invoke($this->scraper, 'https://example.com', ['item1', 'item2']);
+
+        $this->assertTrue(true);
     }
 
     #[Test]

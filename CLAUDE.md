@@ -44,6 +44,10 @@ php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memor
 # 個別実行コマンド
 vendor/bin/phpmetrics --report-html=phpmetrics-report app/  # PHP循環的複雑度チェック
 npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0   # TypeScript循環的複雑度チェック
+
+# テストカバレッジ確認（重要：正しいオプション名）
+php artisan test --coverage-html=coverage-html             # HTMLカバレッジレポート生成
+php artisan test --coverage-text --min=90                  # テキストカバレッジ確認（90%閾値）
 ```
 
 #### 4. ドキュメント更新
@@ -62,13 +66,23 @@ npx eslint 'resources/js/**/*.{ts,tsx}' --max-warnings 0   # TypeScript循環的
 ### 開発禁止事項
 - **mainブランチにmerge済みのdatabase/migrationsファイルを後から変更してはいけない**
 - 既存のmigrationファイルを変更する場合は、新しいmigrationファイルを作成する
+- **テストカバレッジ閾値の低下は絶対禁止**: 90%未満への変更は品質低下であり、必ずテスト追加で90%以上を維持する
 
 ### テスト・CI/CD
 - **メモリ制限**: PHPUnit 512M、PHPStan 1G
 - **CI並列実行**: 品質チェック + E2E テスト（約2分）
-- **カバレッジレポート**: phpunit.xmlで`coverage-html`ディレクトリに出力（.gitignoreで除外済み）
+- **カバレッジレポート**: `php artisan test --coverage-html=coverage-html`で生成（.gitignoreで除外済み）
+- **カバレッジ閾値**: **90%必須** - テスト削除時は必ず代替テストを追加してカバレッジを維持
+- **カバレッジ維持原則**: 90%を最低限とし、極力カバレッジを下げないよう十分なテスト実装を心がける
 - **循環的複雑度**: PHPMetrics（PHP）、ESLint（TypeScript）による必須チェック（CI統合済み）
+- **重要な注意**: `--coverage-html`が正しいオプション（`--coverage-text`ではない）
 - **詳細**: [開発フロー.md](docs/wiki/開発フロー.md)、[CI-CD.md](docs/wiki/CI-CD.md)を参照
+
+#### テスト実装ガイドライン
+- **基本方針**: 新機能追加時は対応するテストを必ず作成し、既存のカバレッジレベルを維持または向上させる
+- **リファクタリング時**: コード変更後もテストカバレッジが低下しないよう、必要に応じてテストケースを追加
+- **テスト削除時**: 冗長なテスト削除の際は、削除対象が本当に不要かを慎重に検討し、必要に応じて代替テストを実装
+- **品質優先**: カバレッジ数値だけでなく、エッジケースや例外処理も含む包括的なテストを作成する
 
 ### コード品質基準
 

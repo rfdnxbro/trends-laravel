@@ -91,7 +91,7 @@ class Company extends Model
         }
 
         // アクティブ状態フィルタ
-        if (isset($filters['is_active']) && $filters['is_active'] !== null) {
+        if (isset($filters['is_active'])) {
             $query->where('is_active', $filters['is_active']);
         }
 

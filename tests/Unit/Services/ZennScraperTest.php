@@ -847,7 +847,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationDirect_author_text解析で企業名を抽出する()
+    public function test_extract_organization_direct_author_text解析で企業名を抽出する()
     {
         $html = '<a href="/test-org/articles/article1">
             <span class="ArticleList_publicationLink">user in 株式会社テスト企業</span>
@@ -865,8 +865,8 @@ class ZennScraperTest extends TestCase
         $this->assertEquals('test-org', $result);
     }
 
-    #[Test] 
-    public function test_extractOrganizationDirect_author_nameのみでorganization情報なし()
+    #[Test]
+    public function test_extract_organization_direct_author_nameのみでorganization情報なし()
     {
         $html = '<a href="/articles/article1">
             <span class="ArticleList_publicationLink">simple_user</span>
@@ -885,7 +885,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationFromAuthorText_in記法で企業名を抽出()
+    public function test_extract_organization_from_author_text_in記法で企業名を抽出()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationFromAuthorText');
@@ -897,7 +897,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationFromAuthorText_in記法でない場合はnull()
+    public function test_extract_organization_from_author_text_in記法でない場合はnull()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationFromAuthorText');
@@ -909,7 +909,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationSlugFromUrl_正常なZenn組織URL()
+    public function test_extract_organization_slug_from_url_正常な_zenn組織_url()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationSlugFromUrl');
@@ -921,7 +921,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationSlugFromUrl_非組織URLの場合null()
+    public function test_extract_organization_slug_from_url_非組織_ur_lの場合null()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationSlugFromUrl');
@@ -933,7 +933,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationSlugFromUrl_publication形式のURL()
+    public function test_extract_organization_slug_from_url_publication形式の_url()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationSlugFromUrl');
@@ -945,31 +945,31 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationUrlFromZenn_組織名からURL生成()
+    public function test_extract_organization_url_from_zenn_組織名から_ur_l生成()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationUrlFromZenn');
         $method->setAccessible(true);
 
-        $result = $method->invoke($this->scraper, new Crawler(), 'test-company');
+        $result = $method->invoke($this->scraper, new Crawler, 'test-company');
 
         $this->assertEquals('https://zenn.dev/test-company', $result);
     }
 
     #[Test]
-    public function test_extractOrganizationUrlFromZenn_組織名がnullの場合null()
+    public function test_extract_organization_url_from_zenn_組織名がnullの場合null()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationUrlFromZenn');
         $method->setAccessible(true);
 
-        $result = $method->invoke($this->scraper, new Crawler(), null);
+        $result = $method->invoke($this->scraper, new Crawler, null);
 
         $this->assertNull($result);
     }
 
     #[Test]
-    public function test_extractOrganizationFromAuthorText_author文字列から組織名を抽出()
+    public function test_extract_organization_from_author_text_author文字列から組織名を抽出()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationFromAuthorText');
@@ -983,7 +983,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractAuthorNameDirect_空HTMLノードの場合()
+    public function test_extract_author_name_direct_空_htm_lノードの場合()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractAuthorNameDirect');
@@ -1019,7 +1019,7 @@ class ZennScraperTest extends TestCase
                 'published_at' => '2023-01-01T00:00:00Z',
                 'scraped_at' => now(),
                 'platform' => 'zenn',
-            ]
+            ],
         ];
 
         $savedArticles = $this->scraper->normalizeAndSaveData($articles);
@@ -1032,8 +1032,8 @@ class ZennScraperTest extends TestCase
         $this->assertEquals('user', $article->author_name);
     }
 
-    #[Test] 
-    public function test_normalize_and_save_data_CompanyMatcher新規企業作成()
+    #[Test]
+    public function test_normalize_and_save_data_company_matcher新規企業作成()
     {
         $platform = Platform::factory()->create(['name' => 'Zenn']);
 
@@ -1051,13 +1051,13 @@ class ZennScraperTest extends TestCase
                 'published_at' => '2023-01-01T00:00:00Z',
                 'scraped_at' => now(),
                 'platform' => 'zenn',
-            ]
+            ],
         ];
 
         $savedArticles = $this->scraper->normalizeAndSaveData($articles);
 
         $this->assertCount(1, $savedArticles);
-        
+
         // 新規企業が作成されることを確認
         $company = Company::where('name', '新規Zenn企業')->first();
         $this->assertNotNull($company);
@@ -1074,7 +1074,7 @@ class ZennScraperTest extends TestCase
     public function test_normalize_and_save_data_既存組織企業とのマッチング()
     {
         $platform = Platform::factory()->create(['name' => 'Zenn']);
-        
+
         // 既存企業作成
         $company = Company::factory()->create([
             'name' => '既存Zenn企業',
@@ -1096,13 +1096,13 @@ class ZennScraperTest extends TestCase
                 'published_at' => '2023-02-01T00:00:00Z',
                 'scraped_at' => now(),
                 'platform' => 'zenn',
-            ]
+            ],
         ];
 
         $savedArticles = $this->scraper->normalizeAndSaveData($articles);
 
         $this->assertCount(1, $savedArticles);
-        
+
         // 既存企業が使用されることを確認
         $article = $savedArticles[0];
         $this->assertEquals($company->id, $article->company_id);
@@ -1110,7 +1110,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractSingleArticleData_organization情報込み完全抽出()
+    public function test_extract_single_article_data_organization情報込み完全抽出()
     {
         $html = '<div class="article-item">
             <h2><a href="/p/cybozu/articles/complete-test">完全テスト記事</a></h2>
@@ -1146,7 +1146,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractSingleArticleData_例外発生でnull返却()
+    public function test_extract_single_article_data_例外発生でnull返却()
     {
         Log::shouldReceive('warning')->zeroOrMoreTimes();
         Log::shouldReceive('debug')->zeroOrMoreTimes();
@@ -1154,7 +1154,7 @@ class ZennScraperTest extends TestCase
         // タイトルもURLも無い不完全な記事ノードで例外を発生させる
         $crawler = new Crawler('<div class="invalid-article">不正な記事データ</div>');
         $node = $crawler->filter('div.invalid-article'); // 不完全な記事データ
-        
+
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractSingleArticleData');
         $method->setAccessible(true);
@@ -1165,10 +1165,10 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_isPersonalArticle_個人記事の場合true()
+    public function test_is_personal_article_個人記事の場合true()
     {
         Log::shouldReceive('debug')->zeroOrMoreTimes();
-        
+
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('isPersonalArticle');
         $method->setAccessible(true);
@@ -1183,10 +1183,10 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_isPersonalArticle_組織記事の場合false()
+    public function test_is_personal_article_組織記事の場合false()
     {
         Log::shouldReceive('debug')->zeroOrMoreTimes();
-        
+
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('isPersonalArticle');
         $method->setAccessible(true);
@@ -1197,10 +1197,10 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractSingleArticleData_個人記事でorganization情報null()
+    public function test_extract_single_article_data_個人記事でorganization情報null()
     {
         Log::shouldReceive('debug')->zeroOrMoreTimes();
-        
+
         $html = '<div class="article-item">
             <h2><a href="/@username/articles/personal-article">個人記事</a></h2>
             <div class="ArticleList_userName__MlDD5">
@@ -1229,20 +1229,20 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractAuthor_例外処理でログ出力()
+    public function test_extract_author_例外処理でログ出力()
     {
         Log::shouldReceive('debug')->zeroOrMoreTimes();
 
         // 不正なCrawlerで例外を発生させる
         $scraper = $this->createPartialMock(ZennScraper::class, []);
-        
+
         $reflection = new \ReflectionClass($scraper);
         $method = $reflection->getMethod('extractAuthor');
         $method->setAccessible(true);
 
         // DOM操作で例外が発生するケースをシミュレート
-        $invalidCrawler = new Crawler();
-        
+        $invalidCrawler = new Crawler;
+
         $result = $method->invoke($scraper, $invalidCrawler);
 
         // 実装によってはnullまたは空文字列が返される
@@ -1250,25 +1250,25 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractPublishedAt_例外処理でnull返却()
+    public function test_extract_published_at_例外処理でnull返却()
     {
         Log::shouldReceive('debug')->zeroOrMoreTimes();
 
         // 不正なCrawlerで例外を発生させる
         $scraper = $this->createPartialMock(ZennScraper::class, []);
-        
+
         $reflection = new \ReflectionClass($scraper);
         $method = $reflection->getMethod('extractPublishedAt');
         $method->setAccessible(true);
 
-        $invalidCrawler = new Crawler();
-        
+        $invalidCrawler = new Crawler;
+
         $result = $method->invoke($scraper, $invalidCrawler);
 
         $this->assertNull($result);
     }
 
-    #[Test] 
+    #[Test]
     public function test_normalize_and_save_data_記事保存時のデータベース例外()
     {
         Platform::factory()->create(['name' => 'Zenn']);
@@ -1282,7 +1282,7 @@ class ZennScraperTest extends TestCase
                 'published_at' => '2023-01-01T00:00:00Z',
                 'scraped_at' => now(),
                 'platform' => 'zenn',
-            ]
+            ],
         ];
 
         Log::shouldReceive('error')->once();
@@ -1327,7 +1327,7 @@ class ZennScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationUrlFromZenn_publication形式のURL生成()
+    public function test_extract_organization_url_from_zenn_publication形式の_ur_l生成()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationUrlFromZenn');

@@ -2,13 +2,10 @@
 
 namespace Tests\Unit\Services;
 
-use App\Models\Article;
 use App\Models\Company;
 use App\Models\Platform;
-use App\Services\CompanyMatcher;
 use App\Services\QiitaScraper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use PHPUnit\Framework\Attributes\Test;
@@ -23,11 +20,11 @@ class QiitaScraperTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->scraper = new QiitaScraper();
+        $this->scraper = new QiitaScraper;
     }
 
     #[Test]
-    public function test_extractOrganizationNameDirect_組織カード名から正常に抽出()
+    public function test_extract_organization_name_direct_組織カード名から正常に抽出()
     {
         $html = '
             <article>
@@ -37,7 +34,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
@@ -47,8 +44,8 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('テスト株式会社', $articles[0]['organization_name']);
     }
 
-    #[Test] 
-    public function test_extractOrganizationNameDirect_組織リンクから抽出()
+    #[Test]
+    public function test_extract_organization_name_direct_組織リンクから抽出()
     {
         $html = '
             <article>
@@ -58,7 +55,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
@@ -68,7 +65,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationNameDirect_組織要素が見つからない場合()
+    public function test_extract_organization_name_direct_組織要素が見つからない場合()
     {
         $html = '
             <article>
@@ -78,7 +75,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
@@ -89,7 +86,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationUrl_HTML組織リンクから直接抽出()
+    public function test_extract_organization_url_htm_l組織リンクから直接抽出()
     {
         $html = '
             <article>
@@ -99,7 +96,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
@@ -109,7 +106,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationUrl_組織名からスラグ推定URL生成()
+    public function test_extract_organization_url_組織名からスラグ推定_ur_l生成()
     {
         $html = '
             <article>
@@ -119,7 +116,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
@@ -129,7 +126,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationUrl_組織名がnullの場合()
+    public function test_extract_organization_url_組織名がnullの場合()
     {
         $html = '
             <article>
@@ -138,7 +135,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
@@ -148,7 +145,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationFromUrl_正常な組織URL()
+    public function test_extract_organization_from_url_正常な組織_url()
     {
         // リフレクションを使用してprivateメソッドをテスト
         $reflection = new \ReflectionClass($this->scraper);
@@ -162,7 +159,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationFromUrl_組織パターンが含まれない場合()
+    public function test_extract_organization_from_url_組織パターンが含まれない場合()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationFromUrl');
@@ -175,7 +172,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationFromUrl_空文字列URL()
+    public function test_extract_organization_from_url_空文字列_url()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractOrganizationFromUrl');
@@ -187,7 +184,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_generateOrganizationSlug_正常な英数字処理()
+    public function test_generate_organization_slug_正常な英数字処理()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('generateOrganizationSlug');
@@ -199,7 +196,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_generateOrganizationSlug_特殊文字除去()
+    public function test_generate_organization_slug_特殊文字除去()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('generateOrganizationSlug');
@@ -211,7 +208,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_generateOrganizationSlug_空文字列()
+    public function test_generate_organization_slug_空文字列()
     {
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('generateOrganizationSlug');
@@ -223,7 +220,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractLikesCount_4桁以上の数値は除外()
+    public function test_extract_likes_count_4桁以上の数値は除外()
     {
         $html = '
             <article>
@@ -235,7 +232,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
@@ -245,7 +242,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractLikesCount_非数値文字を含む場合()
+    public function test_extract_likes_count_非数値文字を含む場合()
     {
         $html = '
             <article>
@@ -257,7 +254,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
@@ -267,7 +264,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractLikesCount_footerが存在しない場合()
+    public function test_extract_likes_count_footerが存在しない場合()
     {
         $html = '
             <article>
@@ -276,7 +273,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
@@ -286,7 +283,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractAuthor_例外処理でnullを返す()
+    public function test_extract_author_例外処理でnullを返す()
     {
         $html = '
             <article>
@@ -296,7 +293,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         Log::shouldReceive('info')->zeroOrMoreTimes();
@@ -309,12 +306,12 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractAuthorUrl_author取得例外時にnull()
+    public function test_extract_author_url_author取得例外時にnull()
     {
         // モック作成でextractAuthorが例外をスローする状況を作る
         $scraper = $this->createPartialMock(QiitaScraper::class, ['extractAuthor']);
         $scraper->method('extractAuthor')
-                ->willThrowException(new \Exception('Test exception'));
+            ->willThrowException(new \Exception('Test exception'));
 
         $reflection = new \ReflectionClass($scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
@@ -322,13 +319,13 @@ class QiitaScraperTest extends TestCase
 
         Log::shouldReceive('debug')->zeroOrMoreTimes();
 
-        $result = $method->invoke($scraper, new \Symfony\Component\DomCrawler\Crawler());
+        $result = $method->invoke($scraper, new \Symfony\Component\DomCrawler\Crawler);
 
         $this->assertNull($result);
     }
 
     #[Test]
-    public function test_extractPublishedAt_datetime属性が不正な形式()
+    public function test_extract_published_at_datetime属性が不正な形式()
     {
         $html = '
             <article>
@@ -338,7 +335,7 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
@@ -348,7 +345,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_normalizeAndSaveData_CompanyMatcher新規企業作成()
+    public function test_normalize_and_save_data_company_matcher新規企業作成()
     {
         // プラットフォーム作成
         $platform = Platform::factory()->create(['name' => 'Qiita']);
@@ -366,13 +363,13 @@ class QiitaScraperTest extends TestCase
                 'published_at' => '2023-01-01T00:00:00Z',
                 'scraped_at' => now(),
                 'platform' => 'qiita',
-            ]
+            ],
         ];
 
         $savedArticles = $this->scraper->normalizeAndSaveData($articles);
 
         $this->assertCount(1, $savedArticles);
-        
+
         // 新規企業が作成されることを確認
         $company = Company::where('name', '新規テスト組織')->first();
         $this->assertNotNull($company);
@@ -387,7 +384,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_normalizeAndSaveData_記事保存時のデータベース例外()
+    public function test_normalize_and_save_data_記事保存時のデータベース例外()
     {
         // プラットフォーム作成
         Platform::factory()->create(['name' => 'Qiita']);
@@ -401,7 +398,7 @@ class QiitaScraperTest extends TestCase
                 'published_at' => '2023-01-01T00:00:00Z',
                 'scraped_at' => now(),
                 'platform' => 'qiita',
-            ]
+            ],
         ];
 
         Log::shouldReceive('error')->once();
@@ -413,11 +410,11 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_normalizeAndSaveData_organizationありの既存企業マッチング()
+    public function test_normalize_and_save_data_organizationありの既存企業マッチング()
     {
         // プラットフォーム作成
         $platform = Platform::factory()->create(['name' => 'Qiita']);
-        
+
         // 既存企業作成
         $company = Company::factory()->create([
             'name' => '既存テスト企業',
@@ -438,13 +435,13 @@ class QiitaScraperTest extends TestCase
                 'published_at' => '2023-02-01T00:00:00Z',
                 'scraped_at' => now(),
                 'platform' => 'qiita',
-            ]
+            ],
         ];
 
         $savedArticles = $this->scraper->normalizeAndSaveData($articles);
 
         $this->assertCount(1, $savedArticles);
-        
+
         // 既存企業が使用されることを確認
         $article = $savedArticles[0];
         $this->assertEquals($company->id, $article->company_id);
@@ -453,7 +450,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_normalizeAndSaveData_大量データ処理()
+    public function test_normalize_and_save_data_大量データ処理()
     {
         // プラットフォーム作成
         Platform::factory()->create(['name' => 'Qiita']);
@@ -483,7 +480,7 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_scrapeTrendingArticles_組織情報込み完全フロー()
+    public function test_scrape_trending_articles_組織情報込み完全フロー()
     {
         $html = '
             <article class="style-article">
@@ -499,13 +496,13 @@ class QiitaScraperTest extends TestCase
         ';
 
         Http::fake([
-            'qiita.com' => Http::response($html, 200)
+            'qiita.com' => Http::response($html, 200),
         ]);
 
         $articles = $this->scraper->scrapeTrendingArticles();
 
         $this->assertCount(1, $articles);
-        
+
         $article = $articles[0];
         $this->assertEquals('完全フローテスト', $article['title']);
         $this->assertEquals('https://qiita.com/items/complete-test', $article['url']);
@@ -520,12 +517,12 @@ class QiitaScraperTest extends TestCase
         $this->assertEquals('qiita', $article['platform']);
     }
 
-    #[Test] 
-    public function test_extractSingleArticleData_例外処理でnull返却()
+    #[Test]
+    public function test_extract_single_article_data_例外処理でnull返却()
     {
         // 空のCrawlerで例外を発生させる
         $crawler = new \Symfony\Component\DomCrawler\Crawler('<div></div>');
-        
+
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractSingleArticleData');
         $method->setAccessible(true);
@@ -538,18 +535,18 @@ class QiitaScraperTest extends TestCase
     }
 
     #[Test]
-    public function test_extractOrganizationUrl_DOM例外処理()
+    public function test_extract_organization_url_do_m例外処理()
     {
         // 不正なHTMLでDOM例外を発生させる
         $scraper = $this->createPartialMock(QiitaScraper::class, []);
-        
+
         $reflection = new \ReflectionClass($scraper);
         $method = $reflection->getMethod('extractOrganizationUrl');
         $method->setAccessible(true);
 
         // 不正なCrawlerでDOM例外を発生させる
-        $invalidCrawler = new \Symfony\Component\DomCrawler\Crawler();
-        
+        $invalidCrawler = new \Symfony\Component\DomCrawler\Crawler;
+
         Log::shouldReceive('debug')->zeroOrMoreTimes();
 
         $result = $method->invoke($scraper, $invalidCrawler, null);

@@ -463,10 +463,11 @@ class ZennScraper extends BaseScraper
                 if ($element->count() > 0) {
                     $href = $element->attr('href');
                     $text = trim($element->text());
-                    
+
                     // Publication URLパターンをチェック（/p/organization形式）
-                    if ($href && preg_match('/\/p\/([^\/]+)/', $href) && !empty($text)) {
+                    if ($href && preg_match('/\/p\/([^\/]+)/', $href) && ! empty($text)) {
                         Log::debug("Zenn Publication抽出成功: {$text} (URL: {$href})");
+
                         return $text;
                     }
                 }
@@ -478,9 +479,10 @@ class ZennScraper extends BaseScraper
                 $publicationLinks->each(function (Crawler $link) {
                     $href = $link->attr('href');
                     $text = trim($link->text());
-                    
-                    if (preg_match('/\/p\/([^\/]+)/', $href) && !empty($text)) {
+
+                    if (preg_match('/\/p\/([^\/]+)/', $href) && ! empty($text)) {
                         Log::debug("Zenn Publication フォールバック抽出: {$text} (URL: {$href})");
+
                         return $text;
                     }
                 });
@@ -520,7 +522,7 @@ class ZennScraper extends BaseScraper
                 '.ArticleList_publicationLink__RvZTZ',
                 '.ArticleList_publicationLink',
             ];
-            
+
             foreach ($publicationSelectors as $selector) {
                 $publicationLink = $node->filter($selector);
                 if ($publicationLink->count() > 0) {
@@ -528,8 +530,9 @@ class ZennScraper extends BaseScraper
                     if ($href && preg_match('/\/p\/([^\/]+)/', $href, $matches)) {
                         $slug = $matches[1];
                         // 個人ユーザー（@付き）でないPublicationのみを対象
-                        if ($slug && $slug !== $authorName && !str_starts_with($slug, '@')) {
+                        if ($slug && $slug !== $authorName && ! str_starts_with($slug, '@')) {
                             Log::debug("Zenn組織スラグ（Publication）抽出成功: {$slug}");
+
                             return $slug;
                         }
                     }
@@ -568,18 +571,18 @@ class ZennScraper extends BaseScraper
         // 例: https://zenn.dev/p/cybozu/articles/xxx (cybozu がPublication名)
         // 例: https://zenn.dev/cybozu/articles/xxx (cybozu が組織スラグ - 新形式)
         // 例: https://zenn.dev/@username/articles/xxx (@username は個人ユーザー)
-        
+
         // Publication形式: /p/組織名/articles/
         if (preg_match('/zenn\.dev\/p\/([^\/]+)\/articles\//', $url, $matches)) {
             return $matches[1];
         }
-        
+
         // 組織記事の新形式: /組織名/articles/ (@記号なし)
         if (preg_match('/zenn\.dev\/([^\/]+)\/articles\//', $url, $matches)) {
             $slug = $matches[1];
             // @で始まるものは個人ユーザーなので除外
             // pで始まるものはPublication形式なので除外（上で処理済み）
-            if (!str_starts_with($slug, '@') && $slug !== 'p') {
+            if (! str_starts_with($slug, '@') && $slug !== 'p') {
                 return $slug;
             }
         }
@@ -690,18 +693,18 @@ class ZennScraper extends BaseScraper
     private function isPersonalArticle(string $url, ?string $companyName): bool
     {
         // Publication URLパターンでない場合は個人記事の可能性が高い
-        if (!preg_match('/\/p\/([^\/]+)\//', $url)) {
+        if (! preg_match('/\/p\/([^\/]+)\//', $url)) {
             // さらに企業名が抽出されていない場合は確実に個人記事
             if (empty($companyName)) {
                 return true;
             }
-            
+
             // @で始まるURL（個人ユーザー）の場合
             if (preg_match('/zenn\.dev\/@([^\/]+)\//', $url)) {
                 return true;
             }
         }
-        
+
         // Publication URLパターンで、かつ企業名が抽出されている場合は組織記事
         return false;
     }

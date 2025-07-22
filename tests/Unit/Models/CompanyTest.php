@@ -182,7 +182,7 @@ class CompanyTest extends TestCase
         $this->assertEquals('boolean', $casts['is_active']);
     }
 
-    public function test_getForApiList_全企業を取得する()
+    public function test_get_for_api_list_全企業を取得する()
     {
         Company::create([
             'name' => 'アクティブ企業',
@@ -201,7 +201,7 @@ class CompanyTest extends TestCase
         $this->assertCount(2, $result);
     }
 
-    public function test_getForApiList_is_activeフィルタが機能する()
+    public function test_get_for_api_list_is_activeフィルタが機能する()
     {
         Company::create([
             'name' => 'アクティブ企業',
@@ -230,7 +230,7 @@ class CompanyTest extends TestCase
         $this->assertCount(2, $allCompanies);
     }
 
-    public function test_getForApiList_検索フィルタが機能する()
+    public function test_get_for_api_list_検索フィルタが機能する()
     {
         Company::create([
             'name' => '株式会社テスト',
@@ -253,7 +253,7 @@ class CompanyTest extends TestCase
         $this->assertEquals('サンプル株式会社', $result->first()->name);
     }
 
-    public function test_getForApiList_ソートが機能する()
+    public function test_get_for_api_list_ソートが機能する()
     {
         Company::create([
             'name' => 'B企業',
@@ -274,7 +274,7 @@ class CompanyTest extends TestCase
         $this->assertEquals('B企業', $result->first()->name);
     }
 
-    public function test_getForApiList_複合条件が機能する()
+    public function test_get_for_api_list_複合条件が機能する()
     {
         Company::create([
             'name' => '株式会社テスト',

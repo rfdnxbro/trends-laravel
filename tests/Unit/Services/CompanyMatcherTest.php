@@ -988,23 +988,23 @@ class CompanyMatcherTest extends TestCase
 
         // generateDomainFromNameが同じドメインを生成するようにモック
         $matcher = $this->createPartialMock(CompanyMatcher::class, []);
-        
+
         $reflection = new \ReflectionClass($matcher);
         $method = $reflection->getMethod('generateDomainFromName');
         $method->setAccessible(true);
-        
+
         // 手動でタイムスタンプを固定して重複させる
         $fixedDomain = 'duplicate-domain-1234567890.example.com';
-        
+
         // createNewCompanyFromOrganizationメソッドを直接テスト
         $createMethod = $reflection->getMethod('createNewCompanyFromOrganization');
         $createMethod->setAccessible(true);
-        
+
         // ドメイン生成を手動でオーバーライド
         $testArticleData = array_merge($articleData, ['test_domain' => $fixedDomain]);
-        
+
         $result = $matcher->identifyOrCreateCompany($articleData);
-        
+
         // データベース例外でnullが返される
         $this->assertNull($result);
     }
@@ -1017,7 +1017,7 @@ class CompanyMatcherTest extends TestCase
         $method->setAccessible(true);
 
         $result = $method->invoke($this->matcher, 'AB'); // 2文字の短い名前
-        
+
         $this->assertStringStartsWith('auto-', $result);
         $this->assertStringEndsWith('.example.com', $result);
     }
@@ -1030,7 +1030,7 @@ class CompanyMatcherTest extends TestCase
         $method->setAccessible(true);
 
         $result = $method->invoke($this->matcher, '');
-        
+
         $this->assertStringStartsWith('auto-', $result);
         $this->assertStringEndsWith('.example.com', $result);
     }
@@ -1043,7 +1043,7 @@ class CompanyMatcherTest extends TestCase
         $method->setAccessible(true);
 
         $result = $method->invoke($this->matcher, '日本語のみの企業名');
-        
+
         $this->assertStringStartsWith('auto-', $result);
         $this->assertStringEndsWith('.example.com', $result);
     }
@@ -1056,7 +1056,7 @@ class CompanyMatcherTest extends TestCase
         $method->setAccessible(true);
 
         $result = $method->invoke($this->matcher, 'Test@Company#123!');
-        
+
         $this->assertStringContainsString('testcompany123', $result);
         $this->assertStringEndsWith('.example.com', $result);
     }
@@ -1071,7 +1071,7 @@ class CompanyMatcherTest extends TestCase
         $result1 = $method->invoke($this->matcher, 'TestCompany');
         sleep(1); // タイムスタンプを変更するため
         $result2 = $method->invoke($this->matcher, 'TestCompany');
-        
+
         $this->assertNotEquals($result1, $result2); // 異なるドメインが生成される
     }
 
@@ -1088,7 +1088,7 @@ class CompanyMatcherTest extends TestCase
         $method->setAccessible(true);
 
         $result = $method->invoke($this->matcher, 'test_org', 'unsupported_platform');
-        
+
         $this->assertNull($result);
     }
 
@@ -1106,7 +1106,7 @@ class CompanyMatcherTest extends TestCase
         $method->setAccessible(true);
 
         $result = $method->invoke($this->matcher, '組織内テストキーワード会社', 'qiita');
-        
+
         $this->assertNotNull($result);
         $this->assertEquals($company->id, $result->id);
     }
@@ -1124,7 +1124,7 @@ class CompanyMatcherTest extends TestCase
         $method->setAccessible(true);
 
         $result = $method->invoke($this->matcher, '完全に異なる企業名', 'qiita');
-        
+
         $this->assertNull($result);
     }
 
@@ -1147,7 +1147,7 @@ class CompanyMatcherTest extends TestCase
         ];
 
         $result = $method->invoke($this->matcher, $articleData);
-        
+
         $this->assertNotNull($result);
         $this->assertEquals($company->id, $result->id);
         $this->assertEquals('Zenn配列テスト企業', $result->name);
@@ -1181,7 +1181,7 @@ class CompanyMatcherTest extends TestCase
         ];
 
         $result = $method->invoke($this->matcher, $articleData);
-        
+
         // スラグマッチングが優先されるべき
         $this->assertNotNull($result);
         $this->assertEquals($slugCompany->id, $result->id);
@@ -1202,7 +1202,7 @@ class CompanyMatcherTest extends TestCase
         ];
 
         $result = $method->invoke($this->matcher, $articleData);
-        
+
         $this->assertNull($result);
     }
 
@@ -1221,7 +1221,7 @@ class CompanyMatcherTest extends TestCase
         ];
 
         $result = $method->invoke($this->matcher, $articleData);
-        
+
         $this->assertNotNull($result);
         $this->assertEquals('only-org-slug', $result->name);
         $this->assertEquals('only-org-slug', $result->qiita_username);
@@ -1250,7 +1250,7 @@ class CompanyMatcherTest extends TestCase
         ];
 
         $result = $method->invoke($this->matcher, $articleData);
-        
+
         $this->assertNull($result); // 重複で新規作成されない
     }
 
@@ -1274,7 +1274,7 @@ class CompanyMatcherTest extends TestCase
         ];
 
         $result = $method->invoke($this->matcher, $articleData);
-        
+
         $this->assertNotNull($result);
         $this->assertEquals('ログテスト企業', $result->name);
     }

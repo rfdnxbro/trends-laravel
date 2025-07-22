@@ -26,11 +26,7 @@ class PlatformControllerTest extends TestCase
             ->assertJsonStructure([
                 'success',
                 'data' => [
-                    '*' => [
-                        'id',
-                        'name',
-                        'base_url',
-                    ],
+                    '*' => Platform::getApiColumns(),
                 ],
             ])
             ->assertJson([

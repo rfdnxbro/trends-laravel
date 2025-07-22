@@ -15,9 +15,7 @@ class PlatformController extends Controller
      */
     public function index(): JsonResponse
     {
-        $platforms = Platform::select(['id', 'name', 'base_url'])
-            ->orderBy('name')
-            ->get();
+        $platforms = Platform::getForApi();
 
         return response()->json([
             'success' => true,

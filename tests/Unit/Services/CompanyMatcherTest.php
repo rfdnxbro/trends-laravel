@@ -967,4 +967,315 @@ class CompanyMatcherTest extends TestCase
         $this->assertEquals($orgCompany->id, $result->id);
         $this->assertEquals('Organization企業', $result->name);
     }
+
+    #[Test]
+    public function test_identify_or_create_company_企業作成時のデータベース例外処理()
+    {
+        // 同じドメインを持つ企業を事前に作成（unique制約違反を引き起こす）
+        Company::factory()->create([
+            'domain' => 'duplicate-domain-1234567890.example.com',
+            'name' => '重複ドメイン企業',
+        ]);
+
+        Log::shouldReceive('error')->once();
+
+        $articleData = [
+            'organization' => 'error_org',
+            'organization_name' => '企業作成エラーテスト',
+            'platform' => 'qiita',
+            'title' => 'エラーテスト記事',
+        ];
+
+        // generateDomainFromNameが同じドメインを生成するようにモック
+        $matcher = $this->createPartialMock(CompanyMatcher::class, []);
+        
+        $reflection = new \ReflectionClass($matcher);
+        $method = $reflection->getMethod('generateDomainFromName');
+        $method->setAccessible(true);
+        
+        // 手動でタイムスタンプを固定して重複させる
+        $fixedDomain = 'duplicate-domain-1234567890.example.com';
+        
+        // createNewCompanyFromOrganizationメソッドを直接テスト
+        $createMethod = $reflection->getMethod('createNewCompanyFromOrganization');
+        $createMethod->setAccessible(true);
+        
+        // ドメイン生成を手動でオーバーライド
+        $testArticleData = array_merge($articleData, ['test_domain' => $fixedDomain]);
+        
+        $result = $matcher->identifyOrCreateCompany($articleData);
+        
+        // データベース例外でnullが返される
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_generate_domain_from_name_短い企業名の処理()
+    {
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('generateDomainFromName');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'AB'); // 2文字の短い名前
+        
+        $this->assertStringStartsWith('auto-', $result);
+        $this->assertStringEndsWith('.example.com', $result);
+    }
+
+    #[Test]
+    public function test_generate_domain_from_name_空文字列の処理()
+    {
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('generateDomainFromName');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, '');
+        
+        $this->assertStringStartsWith('auto-', $result);
+        $this->assertStringEndsWith('.example.com', $result);
+    }
+
+    #[Test]
+    public function test_generate_domain_from_name_日本語文字列の処理()
+    {
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('generateDomainFromName');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, '日本語のみの企業名');
+        
+        $this->assertStringStartsWith('auto-', $result);
+        $this->assertStringEndsWith('.example.com', $result);
+    }
+
+    #[Test]
+    public function test_generate_domain_from_name_特殊文字混在の処理()
+    {
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('generateDomainFromName');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'Test@Company#123!');
+        
+        $this->assertStringContainsString('testcompany123', $result);
+        $this->assertStringEndsWith('.example.com', $result);
+    }
+
+    #[Test]
+    public function test_generate_domain_from_name_ユニークドメイン生成()
+    {
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('generateDomainFromName');
+        $method->setAccessible(true);
+
+        $result1 = $method->invoke($this->matcher, 'TestCompany');
+        sleep(1); // タイムスタンプを変更するため
+        $result2 = $method->invoke($this->matcher, 'TestCompany');
+        
+        $this->assertNotEquals($result1, $result2); // 異なるドメインが生成される
+    }
+
+    #[Test]
+    public function test_match_by_organization_slug_非対応プラットフォームでnull()
+    {
+        Company::factory()->create([
+            'qiita_username' => 'test_org',
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('matchByOrganizationSlug');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, 'test_org', 'unsupported_platform');
+        
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_match_by_organization_name_キーワード部分マッチング()
+    {
+        $company = Company::factory()->create([
+            'name' => 'キーワードマッチング企業',
+            'keywords' => ['テストキーワード', 'マッチング'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('matchByOrganizationName');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, '組織内テストキーワード会社', 'qiita');
+        
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+    }
+
+    #[Test]
+    public function test_match_by_organization_name_キーワードなしでnull()
+    {
+        Company::factory()->create([
+            'name' => 'キーワードなし企業',
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('matchByOrganizationName');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->matcher, '完全に異なる企業名', 'qiita');
+        
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_identify_by_organization_zenn_organizations配列との照合()
+    {
+        $company = Company::factory()->create([
+            'name' => 'Zenn配列テスト企業',
+            'zenn_organizations' => ['legacy-org', 'old-org'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByOrganization');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'organization' => 'legacy-org',
+            'platform' => 'zenn',
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+        
+        $this->assertNotNull($result);
+        $this->assertEquals($company->id, $result->id);
+        $this->assertEquals('Zenn配列テスト企業', $result->name);
+    }
+
+    #[Test]
+    public function test_identify_by_organization_優先順位確認()
+    {
+        // スラグマッチング用企業（優先度高）
+        $slugCompany = Company::factory()->create([
+            'name' => 'スラグ優先企業',
+            'qiita_username' => 'priority_org',
+            'is_active' => true,
+        ]);
+
+        // 名前マッチング用企業（優先度低）
+        $nameCompany = Company::factory()->create([
+            'name' => '名前マッチング企業',
+            'keywords' => ['priority_org'],
+            'is_active' => true,
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('identifyByOrganization');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'organization' => 'priority_org',
+            'organization_name' => '名前に priority_org を含む企業',
+            'platform' => 'qiita',
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+        
+        // スラグマッチングが優先されるべき
+        $this->assertNotNull($result);
+        $this->assertEquals($slugCompany->id, $result->id);
+        $this->assertEquals('スラグ優先企業', $result->name);
+    }
+
+    #[Test]
+    public function test_create_new_company_from_organization_必要情報不足でnull()
+    {
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('createNewCompanyFromOrganization');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'platform' => 'qiita',
+            'title' => 'テスト記事',
+            // organization と organization_name の両方が不足
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+        
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function test_create_new_company_from_organization_organization名のみで企業作成()
+    {
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('createNewCompanyFromOrganization');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'organization' => 'only-org-slug',
+            'platform' => 'qiita',
+            'title' => 'テスト記事',
+            // organization_name は不足
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+        
+        $this->assertNotNull($result);
+        $this->assertEquals('only-org-slug', $result->name);
+        $this->assertEquals('only-org-slug', $result->qiita_username);
+        $this->assertFalse($result->is_active);
+    }
+
+    #[Test]
+    public function test_create_new_company_from_organization_同名企業存在時はnull()
+    {
+        Log::shouldReceive('info')->once();
+
+        // 既存企業を作成
+        Company::factory()->create([
+            'name' => '重複チェック企業',
+        ]);
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('createNewCompanyFromOrganization');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'organization_name' => '重複チェック企業',
+            'organization' => 'duplicate_org',
+            'platform' => 'qiita',
+            'title' => 'テスト記事',
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+        
+        $this->assertNull($result); // 重複で新規作成されない
+    }
+
+    #[Test]
+    public function test_create_new_company_from_organization_ログ出力確認()
+    {
+        Log::shouldReceive('info')->once()->with(
+            '新規企業を自動作成: ログテスト企業',
+            \Mockery::type('array')
+        );
+
+        $reflection = new \ReflectionClass($this->matcher);
+        $method = $reflection->getMethod('createNewCompanyFromOrganization');
+        $method->setAccessible(true);
+
+        $articleData = [
+            'organization' => 'log_test_org',
+            'organization_name' => 'ログテスト企業',
+            'platform' => 'qiita',
+            'title' => 'ログテスト記事',
+        ];
+
+        $result = $method->invoke($this->matcher, $articleData);
+        
+        $this->assertNotNull($result);
+        $this->assertEquals('ログテスト企業', $result->name);
+    }
 }

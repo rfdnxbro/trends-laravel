@@ -181,4 +181,127 @@ class CompanyTest extends TestCase
 
         $this->assertEquals('boolean', $casts['is_active']);
     }
+
+    public function test_getForApiList_全企業を取得する()
+    {
+        Company::create([
+            'name' => 'アクティブ企業',
+            'domain' => 'active.example.com',
+            'is_active' => true,
+        ]);
+
+        Company::create([
+            'name' => '非アクティブ企業',
+            'domain' => 'inactive.example.com',
+            'is_active' => false,
+        ]);
+
+        // デフォルト（フィルタなし）では全企業を取得
+        $result = Company::getForApiList()->get();
+        $this->assertCount(2, $result);
+    }
+
+    public function test_getForApiList_is_activeフィルタが機能する()
+    {
+        Company::create([
+            'name' => 'アクティブ企業',
+            'domain' => 'active.example.com',
+            'is_active' => true,
+        ]);
+
+        Company::create([
+            'name' => '非アクティブ企業',
+            'domain' => 'inactive.example.com',
+            'is_active' => false,
+        ]);
+
+        // is_active = true でフィルタ
+        $activeCompanies = Company::getForApiList(['is_active' => true])->get();
+        $this->assertCount(1, $activeCompanies);
+        $this->assertEquals('アクティブ企業', $activeCompanies->first()->name);
+
+        // is_active = false でフィルタ
+        $inactiveCompanies = Company::getForApiList(['is_active' => false])->get();
+        $this->assertCount(1, $inactiveCompanies);
+        $this->assertEquals('非アクティブ企業', $inactiveCompanies->first()->name);
+
+        // is_active = null (未定義と同じ)では全企業を取得
+        $allCompanies = Company::getForApiList(['is_active' => null])->get();
+        $this->assertCount(2, $allCompanies);
+    }
+
+    public function test_getForApiList_検索フィルタが機能する()
+    {
+        Company::create([
+            'name' => '株式会社テスト',
+            'domain' => 'test.example.com',
+        ]);
+
+        Company::create([
+            'name' => 'サンプル株式会社',
+            'domain' => 'sample.example.com',
+        ]);
+
+        // 名前での検索
+        $result = Company::getForApiList(['search' => 'テスト'])->get();
+        $this->assertCount(1, $result);
+        $this->assertEquals('株式会社テスト', $result->first()->name);
+
+        // ドメインでの検索
+        $result = Company::getForApiList(['domain' => 'sample'])->get();
+        $this->assertCount(1, $result);
+        $this->assertEquals('サンプル株式会社', $result->first()->name);
+    }
+
+    public function test_getForApiList_ソートが機能する()
+    {
+        Company::create([
+            'name' => 'B企業',
+            'domain' => 'b.example.com',
+        ]);
+
+        Company::create([
+            'name' => 'A企業',
+            'domain' => 'a.example.com',
+        ]);
+
+        // 名前で昇順ソート（デフォルト）
+        $result = Company::getForApiList()->get();
+        $this->assertEquals('A企業', $result->first()->name);
+
+        // 名前で降順ソート
+        $result = Company::getForApiList([], 'name', 'desc')->get();
+        $this->assertEquals('B企業', $result->first()->name);
+    }
+
+    public function test_getForApiList_複合条件が機能する()
+    {
+        Company::create([
+            'name' => '株式会社テスト',
+            'domain' => 'test.example.com',
+            'is_active' => true,
+        ]);
+
+        Company::create([
+            'name' => '株式会社サンプル',
+            'domain' => 'sample.example.com',
+            'is_active' => false,
+        ]);
+
+        Company::create([
+            'name' => 'テスト有限会社',
+            'domain' => 'test2.example.com',
+            'is_active' => true,
+        ]);
+
+        // 検索とis_activeフィルタの複合条件
+        $result = Company::getForApiList([
+            'search' => 'テスト',
+            'is_active' => true,
+        ])->get();
+
+        $this->assertCount(2, $result);
+        $this->assertTrue($result->every(fn ($company) => $company->is_active));
+        $this->assertTrue($result->every(fn ($company) => str_contains($company->name, 'テスト')));
+    }
 }

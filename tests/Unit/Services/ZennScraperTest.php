@@ -411,7 +411,7 @@ class ZennScraperTest extends TestCase
 
         $result = $method->invoke($this->scraper, $node);
 
-        // ZennScraperがauthorから'No author here'を抽出し、extractAuthorNameで'No'に変換される実際の動作
+        // ZennScraperがauthorから'No author here'を抽出し、extractAuthorNameDirectで'No'に変換される実際の動作
         $this->assertEquals('https://zenn.dev/No', $result);
     }
 

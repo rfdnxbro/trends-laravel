@@ -99,5 +99,4 @@ class UserTest extends TestCase
             'password' => Hash::make('password456'),
         ]);
     }
-
 }

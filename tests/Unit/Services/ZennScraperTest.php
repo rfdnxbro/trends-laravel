@@ -788,7 +788,6 @@ class ZennScraperTest extends TestCase
     // - extractAuthorFromFallbackSelectors (DOM直接取得により不要)
     // - extractAuthorName (テキスト解析パターンマッチングが不要)
 
-
     #[Test]
     public function test_extract_author_article_list_user_nameクラスから正しく抽出する()
     {
@@ -846,7 +845,6 @@ class ZennScraperTest extends TestCase
 
         $this->assertEquals('company_user in Company Ltd', $result);
     }
-
 
     protected function tearDown(): void
     {

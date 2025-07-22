@@ -685,8 +685,6 @@ class QiitaScraperTest extends TestCase
         $this->assertNull($result);
     }
 
-
-
     protected function tearDown(): void
     {
         Mockery::close();

@@ -614,8 +614,6 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertEquals('https://example.com/article1', $result[0]['url']);
     }
 
-
-
     protected function tearDown(): void
     {
         Mockery::close();

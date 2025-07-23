@@ -16,10 +16,13 @@ class HatenaBookmarkScraper extends BaseScraper
 
     protected int $requestsPerMinute;
 
+    protected array $excludedDomains;
+
     public function __construct()
     {
         parent::__construct();
         $this->requestsPerMinute = config('constants.hatena.rate_limit_per_minute');
+        $this->excludedDomains = config('scraping.platforms.hatena_bookmark.excluded_domains', []);
         $this->setHeaders([
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language' => 'ja,en-US;q=0.5,en;q=0.3',
@@ -54,6 +57,15 @@ class HatenaBookmarkScraper extends BaseScraper
                 $bookmarkCount = $this->extractBookmarkCount($node);
                 $domain = $url ? $this->extractDomain($url) : '';
                 $publishedAt = $this->extractPublishedAt($node);
+
+                // 除外ドメインチェック
+                if ($this->isExcludedDomain($domain)) {
+                    Log::debug('除外ドメインのためスキップ', [
+                        'url' => $url,
+                        'domain' => $domain,
+                    ]);
+                    return; // continueと同じ効果
+                }
 
                 if ($title && $url) {
                     $entries[] = [
@@ -128,6 +140,28 @@ class HatenaBookmarkScraper extends BaseScraper
         $parsedUrl = parse_url($url);
 
         return $parsedUrl['host'] ?? '';
+    }
+
+    /**
+     * 指定されたドメインが除外対象かチェック
+     *
+     * @param string $domain チェック対象のドメイン
+     * @return bool 除外対象の場合true
+     */
+    protected function isExcludedDomain(string $domain): bool
+    {
+        if (empty($domain)) {
+            return false;
+        }
+
+        foreach ($this->excludedDomains as $excludedDomain) {
+            // 完全一致またはサブドメインを含む一致をチェック
+            if ($domain === $excludedDomain || str_ends_with($domain, '.' . $excludedDomain)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function extractPublishedAt(Crawler $node): ?string

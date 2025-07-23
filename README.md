@@ -2,9 +2,7 @@
 
 技術コミュニティでの企業影響力を定量化し、エンジニアリングオフィスの採用戦略をデータドリブンでサポートするWebアプリケーションです。
 
-## 概要
-
-はてなブックマーク・Qiita・Zennから企業の技術影響力を分析し、7つの期間でランキング化。企業詳細分析・検索機能・RESTful APIを提供します。
+**詳細**: [プロジェクト概要](docs/wiki/プロジェクト概要.md)を参照
 
 ## 🚀 クイックスタート
 
@@ -19,9 +17,7 @@ php artisan serve & npm run dev  # Laravel API + フロントエンド
 
 ## 技術スタック
 
-Laravel 12 + React 19 + TypeScript + PostgreSQL
-
-**詳細**: [技術スタック](docs/wiki/技術スタック.md)を参照
+Laravel 12 + React 19 + TypeScript + PostgreSQL | [詳細](docs/wiki/技術スタック.md)
 
 ## 📚 ドキュメント
 
@@ -42,4 +38,4 @@ Laravel 12 + React 19 + TypeScript + PostgreSQL
 
 ## License
 
-MIT License# CI並列化テスト
+MIT License

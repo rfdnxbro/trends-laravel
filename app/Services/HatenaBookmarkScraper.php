@@ -64,6 +64,7 @@ class HatenaBookmarkScraper extends BaseScraper
                         'url' => $url,
                         'domain' => $domain,
                     ]);
+
                     return; // continueと同じ効果
                 }
 
@@ -145,7 +146,7 @@ class HatenaBookmarkScraper extends BaseScraper
     /**
      * 指定されたドメインが除外対象かチェック
      *
-     * @param string $domain チェック対象のドメイン
+     * @param  string  $domain  チェック対象のドメイン
      * @return bool 除外対象の場合true
      */
     protected function isExcludedDomain(string $domain): bool
@@ -156,7 +157,7 @@ class HatenaBookmarkScraper extends BaseScraper
 
         foreach ($this->excludedDomains as $excludedDomain) {
             // 完全一致またはサブドメインを含む一致をチェック
-            if ($domain === $excludedDomain || str_ends_with($domain, '.' . $excludedDomain)) {
+            if ($domain === $excludedDomain || str_ends_with($domain, '.'.$excludedDomain)) {
                 return true;
             }
         }

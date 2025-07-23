@@ -71,6 +71,10 @@ return [
             'timeout' => env('HATENA_SCRAPING_TIMEOUT', 30),
             'base_url' => \App\Constants\Platform::getUrl(\App\Constants\Platform::HATENA_BOOKMARK),
             'api_url' => 'https://bookmark.hatenaapis.com',
+            'excluded_domains' => [
+                'qiita.com',
+                'zenn.dev',
+            ],
         ],
 
         'qiita' => [

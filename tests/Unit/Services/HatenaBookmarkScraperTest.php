@@ -32,6 +32,7 @@ class HatenaBookmarkScraperTest extends TestCase
         Config::set('constants.api.retry_delay_seconds', 1);
         Config::set('constants.api.rate_limit_per_minute', 60);
         Config::set('constants.api.rate_limit_window_seconds', 60);
+        Config::set('scraping.platforms.hatena_bookmark.excluded_domains', ['qiita.com', 'zenn.dev']);
 
         $this->scraper = new HatenaBookmarkScraper;
     }
@@ -612,6 +613,99 @@ class HatenaBookmarkScraperTest extends TestCase
         $this->assertCount(1, $result); // 有効な記事のみ
         $this->assertEquals('Valid Article', $result[0]['title']);
         $this->assertEquals('https://example.com/article1', $result[0]['url']);
+    }
+
+    #[Test]
+    public function test_is_excluded_domain_qiitaドメインが除外される()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('isExcludedDomain');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke($this->scraper, 'qiita.com'));
+        $this->assertTrue($method->invoke($this->scraper, 'api.qiita.com'));
+        $this->assertTrue($method->invoke($this->scraper, 'subdomain.qiita.com'));
+    }
+
+    #[Test]
+    public function test_is_excluded_domain_zennドメインが除外される()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('isExcludedDomain');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke($this->scraper, 'zenn.dev'));
+        $this->assertTrue($method->invoke($this->scraper, 'api.zenn.dev'));
+        $this->assertTrue($method->invoke($this->scraper, 'subdomain.zenn.dev'));
+    }
+
+    #[Test]
+    public function test_is_excluded_domain_通常のドメインは除外されない()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('isExcludedDomain');
+        $method->setAccessible(true);
+
+        $this->assertFalse($method->invoke($this->scraper, 'example.com'));
+        $this->assertFalse($method->invoke($this->scraper, 'github.com'));
+        $this->assertFalse($method->invoke($this->scraper, 'google.com'));
+    }
+
+    #[Test]
+    public function test_is_excluded_domain_空のドメインはfalseを返す()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('isExcludedDomain');
+        $method->setAccessible(true);
+
+        $this->assertFalse($method->invoke($this->scraper, ''));
+    }
+
+    #[Test]
+    public function test_parse_response_qiitaとzennの記事が除外される()
+    {
+        $mockHtml = '<html><body>
+            <div class="entrylist-contents">
+                <h3 class="entrylist-contents-title">
+                    <a href="https://qiita.com/article1">Qiita Article</a>
+                </h3>
+                <div class="entrylist-contents-users">
+                    <a href="#" class="entrylist-contents-users-link">100</a>
+                </div>
+            </div>
+            <div class="entrylist-contents">
+                <h3 class="entrylist-contents-title">
+                    <a href="https://zenn.dev/article2">Zenn Article</a>
+                </h3>
+                <div class="entrylist-contents-users">
+                    <a href="#" class="entrylist-contents-users-link">50</a>
+                </div>
+            </div>
+            <div class="entrylist-contents">
+                <h3 class="entrylist-contents-title">
+                    <a href="https://example.com/article3">Regular Article</a>
+                </h3>
+                <div class="entrylist-contents-users">
+                    <a href="#" class="entrylist-contents-users-link">75</a>
+                </div>
+            </div>
+        </body></html>';
+
+        $response = new \Illuminate\Http\Client\Response(
+            new \GuzzleHttp\Psr7\Response(200, [], $mockHtml)
+        );
+
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('parseResponse');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->scraper, $response);
+
+        $this->assertIsArray($result);
+        $this->assertCount(1, $result); // QiitaとZennの記事は除外されるため1件のみ
+        $this->assertEquals('Regular Article', $result[0]['title']);
+        $this->assertEquals('https://example.com/article3', $result[0]['url']);
+        $this->assertEquals('example.com', $result[0]['domain']);
     }
 
     protected function tearDown(): void

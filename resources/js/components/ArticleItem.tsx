@@ -43,6 +43,19 @@ const ArticleItem: React.FC<ArticleItemProps> = ({
                             </h3>
                             
                             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
+                                {/* プラットフォーム */}
+                                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                    {article.platform.name}
+                                </span>
+                                
+                                {/* 著者 */}
+                                {article.author_name && (
+                                    <span className="flex items-center">
+                                        <span className="text-gray-400 mr-1">by</span>
+                                        {article.author_name}
+                                    </span>
+                                )}
+                                
                                 {/* 企業情報 */}
                                 {article.company && (
                                     <div className="flex items-center space-x-1">
@@ -61,19 +74,6 @@ const ArticleItem: React.FC<ArticleItemProps> = ({
                                             {article.company.name}
                                         </Link>
                                     </div>
-                                )}
-                                
-                                {/* プラットフォーム */}
-                                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                    {article.platform.name}
-                                </span>
-                                
-                                {/* 著者 */}
-                                {article.author_name && (
-                                    <span className="flex items-center">
-                                        <span className="text-gray-400 mr-1">by</span>
-                                        {article.author_name}
-                                    </span>
                                 )}
                                 
                                 {/* 公開日 */}

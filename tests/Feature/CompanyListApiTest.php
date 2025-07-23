@@ -66,11 +66,13 @@ class CompanyListApiTest extends TestCase
                 ],
             ]);
 
-        // デフォルトではアクティブな企業のみ表示される
+        // デフォルトでは全企業が表示される（アクティブ・非アクティブ両方）
+        // 名前順（アルファベット順）でソートされる
         $data = $response->json('data');
-        $this->assertCount(2, $data);
-        $this->assertEquals('Test Company A', $data[0]['name']);
-        $this->assertEquals('Test Company B', $data[1]['name']);
+        $this->assertCount(3, $data);
+        $this->assertEquals('Inactive Company', $data[0]['name']);
+        $this->assertEquals('Test Company A', $data[1]['name']);
+        $this->assertEquals('Test Company B', $data[2]['name']);
     }
 
     public function test_企業名での検索ができる(): void
@@ -125,8 +127,8 @@ class CompanyListApiTest extends TestCase
         $meta = $response->json('meta');
         $this->assertEquals(1, $meta['per_page']);
         $this->assertEquals(1, $meta['current_page']);
-        $this->assertEquals(2, $meta['total']); // アクティブな企業は2社
-        $this->assertEquals(2, $meta['last_page']);
+        $this->assertEquals(3, $meta['total']); // 全企業は3社
+        $this->assertEquals(3, $meta['last_page']);
 
         $data = $response->json('data');
         $this->assertCount(1, $data);

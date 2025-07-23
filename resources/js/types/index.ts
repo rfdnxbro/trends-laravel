@@ -31,6 +31,7 @@ export interface Article {
     title: string;
     url: string;
     author_name?: string;
+    organization_name?: string;
     published_at: string;
     engagement_count: number;
     view_count?: number;

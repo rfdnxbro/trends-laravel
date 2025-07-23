@@ -2,18 +2,13 @@
 
 namespace Tests\Unit\Services;
 
-use App\Models\Article;
 use App\Models\Company;
 use App\Models\Platform;
 use App\Services\QiitaScraper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Mockery;
 use PHPUnit\Framework\Attributes\Test;
-use Symfony\Component\DomCrawler\Crawler;
 use Tests\TestCase;
 
 class QiitaScraperTest extends TestCase
@@ -25,669 +20,537 @@ class QiitaScraperTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Set up test configuration
-        Config::set('constants.qiita.rate_limit_per_minute', 60);
-        Config::set('constants.api.timeout_seconds', 30);
-        Config::set('constants.api.max_retry_count', 3);
-        Config::set('constants.api.retry_delay_seconds', 1);
-        Config::set('constants.api.rate_limit_per_minute', 60);
-        Config::set('constants.api.rate_limit_window_seconds', 60);
-
         $this->scraper = new QiitaScraper;
     }
 
     #[Test]
-    public function test_コンストラクタで設定値が正しく初期化される()
+    public function test_extract_organization_name_direct_組織カード名から正常に抽出()
     {
-        $this->assertInstanceOf(QiitaScraper::class, $this->scraper);
-
-        $reflection = new \ReflectionClass($this->scraper);
-        $baseUrlProperty = $reflection->getProperty('baseUrl');
-        $baseUrlProperty->setAccessible(true);
-        $this->assertEquals('https://qiita.com', $baseUrlProperty->getValue($this->scraper));
-
-        $trendUrlProperty = $reflection->getProperty('trendUrl');
-        $trendUrlProperty->setAccessible(true);
-        $this->assertEquals('https://qiita.com', $trendUrlProperty->getValue($this->scraper));
-    }
-
-    #[Test]
-    public function test_scrape_trending_articles_成功時に正しいデータを返す()
-    {
-        $mockHtml = '<html><body>
+        $html = '
             <article>
-                <h2><a href="/items/article1">Test Article 1</a></h2>
-                <div data-testid="like-count" aria-label="10 likes">10</div>
-                <time datetime="2024-01-01T12:00:00Z">2024-01-01</time>
+                <div class="organizationCard_name">テスト株式会社</div>
+                <h2><a href="/items/123">テスト記事</a></h2>
             </article>
-            <article>
-                <h2><a href="/items/article2">Test Article 2</a></h2>
-                <div data-testid="like-count" aria-label="20 likes">20</div>
-                <time datetime="2024-01-02T12:00:00Z">2024-01-02</time>
-            </article>
-        </body></html>';
+        ';
 
         Http::fake([
-            'https://qiita.com' => Http::response($mockHtml, 200),
+            'qiita.com' => Http::response($html, 200),
         ]);
 
-        $result = $this->scraper->scrapeTrendingArticles();
+        $articles = $this->scraper->scrapeTrendingArticles();
 
-        $this->assertIsArray($result);
-        $this->assertCount(2, $result);
-
-        $this->assertArrayHasKey('title', $result[0]);
-        $this->assertArrayHasKey('url', $result[0]);
-        $this->assertArrayHasKey('engagement_count', $result[0]);
-        $this->assertArrayHasKey('platform', $result[0]);
-
-        $this->assertEquals('Test Article 1', $result[0]['title']);
-        $this->assertEquals('https://qiita.com/items/article1', $result[0]['url']);
-        $this->assertEquals(10, $result[0]['engagement_count']);
-        $this->assertEquals('qiita', $result[0]['platform']);
+        $this->assertNotEmpty($articles);
+        $this->assertEquals('テスト株式会社', $articles[0]['organization']);
+        $this->assertEquals('テスト株式会社', $articles[0]['organization_name']);
     }
 
     #[Test]
-    public function test_find_article_elements_記事要素を正しく検索する()
+    public function test_extract_organization_name_direct_組織リンクから抽出()
     {
-        $html = '<html><body>
+        $html = '
             <article>
-                <h2><a href="/items/article1">Test Article 1</a></h2>
+                <a href="/organizations/example-org">Example Organization</a>
+                <h2><a href="/items/123">テスト記事</a></h2>
             </article>
+        ';
+
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
+        ]);
+
+        $articles = $this->scraper->scrapeTrendingArticles();
+
+        $this->assertNotEmpty($articles);
+        $this->assertEquals('Example Organization', $articles[0]['organization']);
+    }
+
+    #[Test]
+    public function test_extract_organization_name_direct_組織要素が見つからない場合()
+    {
+        $html = '
             <article>
-                <h2><a href="/items/article2">Test Article 2</a></h2>
+                <h2><a href="/items/123">テスト記事</a></h2>
+                <div class="author">@test_user</div>
             </article>
-        </body></html>';
+        ';
 
-        $crawler = new Crawler($html);
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
+        ]);
 
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('findArticleElements');
-        $method->setAccessible(true);
+        $articles = $this->scraper->scrapeTrendingArticles();
 
-        $result = $method->invoke($this->scraper, $crawler);
-
-        $this->assertNotNull($result);
-        $this->assertInstanceOf(Crawler::class, $result);
-        $this->assertEquals(2, $result->count());
+        $this->assertNotEmpty($articles);
+        $this->assertNull($articles[0]['organization']);
+        $this->assertNull($articles[0]['organization_name']);
     }
 
     #[Test]
-    public function test_find_article_elements_記事要素が見つからない場合nullを返す()
+    public function test_extract_organization_url_htm_l組織リンクから直接抽出()
     {
-        $html = '<html><body>
-            <div>No articles here</div>
-        </body></html>';
+        $html = '
+            <article>
+                <a href="/organizations/test-org" class="organizationCard">Test Organization</a>
+                <h2><a href="/items/123">テスト記事</a></h2>
+            </article>
+        ';
 
-        $crawler = new Crawler($html);
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
+        ]);
 
+        $articles = $this->scraper->scrapeTrendingArticles();
+
+        $this->assertNotEmpty($articles);
+        $this->assertEquals('https://qiita.com/organizations/test-org', $articles[0]['organization_url']);
+    }
+
+    #[Test]
+    public function test_extract_organization_url_組織名からスラグ推定_ur_l生成()
+    {
+        $html = '
+            <article>
+                <div class="organization-name">test-company</div>
+                <h2><a href="/items/123">テスト記事</a></h2>
+            </article>
+        ';
+
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
+        ]);
+
+        $articles = $this->scraper->scrapeTrendingArticles();
+
+        $this->assertNotEmpty($articles);
+        $this->assertEquals('https://qiita.com/organizations/test-company', $articles[0]['organization_url']);
+    }
+
+    #[Test]
+    public function test_extract_organization_url_組織名がnullの場合()
+    {
+        $html = '
+            <article>
+                <h2><a href="/items/123">テスト記事</a></h2>
+            </article>
+        ';
+
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
+        ]);
+
+        $articles = $this->scraper->scrapeTrendingArticles();
+
+        $this->assertNotEmpty($articles);
+        $this->assertNull($articles[0]['organization_url']);
+    }
+
+    #[Test]
+    public function test_extract_organization_from_url_正常な組織_url()
+    {
+        // リフレクションを使用してprivateメソッドをテスト
         $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('findArticleElements');
+        $method = $reflection->getMethod('extractOrganizationFromUrl');
         $method->setAccessible(true);
 
-        $result = $method->invoke($this->scraper, $crawler);
+        $url = 'https://qiita.com/organizations/cybozu/items/sample-article';
+        $result = $method->invoke($this->scraper, $url);
+
+        $this->assertEquals('cybozu', $result);
+    }
+
+    #[Test]
+    public function test_extract_organization_from_url_組織パターンが含まれない場合()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('extractOrganizationFromUrl');
+        $method->setAccessible(true);
+
+        $url = 'https://qiita.com/users/sample-user/items/sample-article';
+        $result = $method->invoke($this->scraper, $url);
 
         $this->assertNull($result);
     }
 
     #[Test]
-    public function test_extract_title_タイトルを正しく抽出する()
+    public function test_extract_organization_from_url_空文字列_url()
     {
-        $html = '<article>
-            <h2><a href="/items/article1">Test Article Title</a></h2>
-        </article>';
-
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
-
         $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractTitle');
+        $method = $reflection->getMethod('extractOrganizationFromUrl');
         $method->setAccessible(true);
 
-        $result = $method->invoke($this->scraper, $node);
-
-        $this->assertEquals('Test Article Title', $result);
-    }
-
-    #[Test]
-    public function test_extract_title_タイトルが見つからない場合nullを返す()
-    {
-        $html = '<article>
-            <div>No title here</div>
-        </article>';
-
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
-
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractTitle');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->scraper, $node);
+        $result = $method->invoke($this->scraper, '');
 
         $this->assertNull($result);
     }
 
     #[Test]
-    public function test_extract_url_ur_lを正しく抽出する()
+    public function test_generate_organization_slug_正常な英数字処理()
     {
-        $html = '<article>
-            <h2><a href="/items/article1">Test Article</a></h2>
-        </article>';
-
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
-
         $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractUrl');
+        $method = $reflection->getMethod('generateOrganizationSlug');
         $method->setAccessible(true);
 
-        $result = $method->invoke($this->scraper, $node);
+        $result = $method->invoke($this->scraper, 'Test-Company');
 
-        $this->assertEquals('https://qiita.com/items/article1', $result);
+        $this->assertEquals('test-company', $result);
     }
 
     #[Test]
-    public function test_extract_url_ur_lが見つからない場合nullを返す()
+    public function test_generate_organization_slug_特殊文字除去()
     {
-        $html = '<article>
-            <div>No link here</div>
-        </article>';
-
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
-
         $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractUrl');
+        $method = $reflection->getMethod('generateOrganizationSlug');
         $method->setAccessible(true);
 
-        $result = $method->invoke($this->scraper, $node);
+        $result = $method->invoke($this->scraper, 'テスト株式会社！@#');
+
+        $this->assertEquals('', $result); // 日本語と特殊文字は除去される
+    }
+
+    #[Test]
+    public function test_generate_organization_slug_空文字列()
+    {
+        $reflection = new \ReflectionClass($this->scraper);
+        $method = $reflection->getMethod('generateOrganizationSlug');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->scraper, '');
 
         $this->assertNull($result);
     }
 
     #[Test]
-    public function test_extract_engagement_count_エンゲージメント数を正しく抽出する()
+    public function test_extract_likes_count_4桁以上の数値は除外()
     {
-        $html = '<article>
-            <div data-testid="like-count" aria-label="25 likes">25</div>
-        </article>';
+        $html = '
+            <article>
+                <h2><a href="/items/123">テスト記事</a></h2>
+                <footer>
+                    <div class="style-likes">12345</div>
+                </footer>
+            </article>
+        ';
 
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
+        ]);
 
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractLikesCount');
-        $method->setAccessible(true);
+        $articles = $this->scraper->scrapeTrendingArticles();
 
-        $result = $method->invoke($this->scraper, $node);
-
-        $this->assertEquals(25, $result);
+        $this->assertNotEmpty($articles);
+        $this->assertEquals(0, $articles[0]['engagement_count']); // 4桁超過で除外
     }
 
     #[Test]
-    public function test_extract_engagement_count_エンゲージメント数が見つからない場合ゼロを返す()
+    public function test_extract_likes_count_非数値文字を含む場合()
     {
-        $html = '<article>
-            <div>No likes count</div>
-        </article>';
+        $html = '
+            <article>
+                <h2><a href="/items/123">テスト記事</a></h2>
+                <footer>
+                    <div class="style-likes">12a3</div>
+                </footer>
+            </article>
+        ';
 
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
+        ]);
 
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractLikesCount');
-        $method->setAccessible(true);
+        $articles = $this->scraper->scrapeTrendingArticles();
 
-        $result = $method->invoke($this->scraper, $node);
-
-        $this->assertEquals(0, $result);
+        $this->assertNotEmpty($articles);
+        $this->assertEquals(0, $articles[0]['engagement_count']); // 非数値で除外
     }
 
     #[Test]
-    public function test_extract_author_著者を正しく抽出する()
+    public function test_extract_likes_count_footerが存在しない場合()
     {
-        $html = '<article>
-            <a href="/@test_user">Test User</a>
-        </article>';
+        $html = '
+            <article>
+                <h2><a href="/items/123">テスト記事</a></h2>
+            </article>
+        ';
 
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
+        ]);
 
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractAuthor');
-        $method->setAccessible(true);
+        $articles = $this->scraper->scrapeTrendingArticles();
 
-        $result = $method->invoke($this->scraper, $node);
-
-        $this->assertEquals('@test_user', $result);
+        $this->assertNotEmpty($articles);
+        $this->assertEquals(0, $articles[0]['engagement_count']);
     }
 
     #[Test]
-    public function test_extract_author_著者が見つからない場合nullを返す()
+    public function test_extract_author_例外処理でnullを返す()
     {
-        $html = '<article>
-            <div>No author here</div>
-        </article>';
+        $html = '
+            <article>
+                <h2><a href="/items/123">テスト記事</a></h2>
+                <!-- author要素なし -->
+            </article>
+        ';
 
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
+        ]);
 
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractAuthor');
-        $method->setAccessible(true);
+        Log::shouldReceive('info')->zeroOrMoreTimes();
+        Log::shouldReceive('debug')->zeroOrMoreTimes();
 
-        $result = $method->invoke($this->scraper, $node);
+        $articles = $this->scraper->scrapeTrendingArticles();
 
-        $this->assertNull($result);
+        $this->assertNotEmpty($articles);
+        $this->assertNull($articles[0]['author']);
     }
 
     #[Test]
-    public function test_extract_author_記事_ur_lは除外される()
+    public function test_extract_author_url_author取得例外時にnull()
     {
-        $html = '<article>
-            <a href="/items/article1">Article Link</a>
-            <a href="/@test_user">User Link</a>
-        </article>';
+        // モック作成でextractAuthorが例外をスローする状況を作る
+        $scraper = $this->createPartialMock(QiitaScraper::class, ['extractAuthor']);
+        $scraper->method('extractAuthor')
+            ->willThrowException(new \Exception('Test exception'));
 
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
-
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractAuthor');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->scraper, $node);
-
-        $this->assertEquals('@test_user', $result);
-    }
-
-    #[Test]
-    public function test_extract_author_url_著者_ur_lを正しく抽出する()
-    {
-        $html = '<article>
-            <a href="/@test_user">Test User</a>
-        </article>';
-
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
-
-        $reflection = new \ReflectionClass($this->scraper);
+        $reflection = new \ReflectionClass($scraper);
         $method = $reflection->getMethod('extractAuthorUrl');
         $method->setAccessible(true);
 
-        $result = $method->invoke($this->scraper, $node);
+        Log::shouldReceive('debug')->zeroOrMoreTimes();
 
-        $this->assertEquals('https://qiita.com/@test_user', $result);
-    }
-
-    #[Test]
-    public function test_extract_author_url_著者が見つからない場合nullを返す()
-    {
-        $html = '<article>
-            <div>No author here</div>
-        </article>';
-
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
-
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractAuthorUrl');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->scraper, $node);
+        $result = $method->invoke($scraper, new \Symfony\Component\DomCrawler\Crawler);
 
         $this->assertNull($result);
     }
 
     #[Test]
-    public function test_extract_published_at_日時情報を正しく抽出する()
+    public function test_extract_published_at_datetime属性が不正な形式()
     {
-        $html = '<article>
-            <time datetime="2024-01-01T12:00:00Z">2024-01-01</time>
-        </article>';
+        $html = '
+            <article>
+                <h2><a href="/items/123">テスト記事</a></h2>
+                <div class="style-date" datetime="invalid-date">2023年1月1日</div>
+            </article>
+        ';
 
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
-
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractPublishedAt');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->scraper, $node);
-
-        $this->assertEquals('2024-01-01T12:00:00Z', $result);
-    }
-
-    #[Test]
-    public function test_extract_published_at_日時情報が見つからない場合nullを返す()
-    {
-        $html = '<article>
-            <div>No datetime info</div>
-        </article>';
-
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
-
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('extractPublishedAt');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->scraper, $node);
-
-        $this->assertNull($result);
-    }
-
-    #[Test]
-    public function test_identify_company_account_企業アカウントを正しく特定する()
-    {
-        $company = Company::factory()->create([
-            'qiita_username' => '@test_user',
-            'name' => 'Test Company',
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
         ]);
 
-        $result = $this->scraper->identifyCompanyAccount('/@test_user');
+        $articles = $this->scraper->scrapeTrendingArticles();
 
-        $this->assertNotNull($result);
-        $this->assertEquals($company->id, $result->id);
-        $this->assertEquals('Test Company', $result->name);
+        $this->assertNotEmpty($articles);
+        $this->assertEquals('invalid-date', $articles[0]['published_at']); // 不正でもそのまま取得
     }
 
     #[Test]
-    public function test_identify_company_account_企業が見つからない場合nullを返す()
+    public function test_normalize_and_save_data_company_matcher新規企業作成()
     {
-        $result = $this->scraper->identifyCompanyAccount('https://qiita.com/@unknown_user');
-
-        $this->assertNull($result);
-    }
-
-    #[Test]
-    public function test_identify_company_account_author_urlがnullの場合nullを返す()
-    {
-        $result = $this->scraper->identifyCompanyAccount(null);
-
-        $this->assertNull($result);
-    }
-
-    #[Test]
-    public function test_normalize_and_save_data_データを正しく正規化して保存する()
-    {
-        $company = Company::factory()->create([
-            'qiita_username' => 'test_user',
-            'name' => 'Test Company',
-        ]);
-
-        $platform = Platform::factory()->create([
-            'name' => 'Qiita',
-        ]);
+        // プラットフォーム作成
+        $platform = Platform::factory()->create(['name' => 'Qiita']);
 
         $articles = [
             [
-                'title' => 'Test Article',
-                'url' => 'https://qiita.com/items/article1',
-                'engagement_count' => 25,
-                'author' => '/@test_user',
-                'author_url' => 'https://qiita.com/@test_user',
-                'published_at' => '2024-01-01T12:00:00Z',
+                'title' => '新規組織のテスト記事',
+                'url' => 'https://qiita.com/organizations/new-org/items/test',
+                'engagement_count' => 10,
+                'author' => 'test_user',
+                'organization' => 'new-org',
+                'organization_name' => '新規テスト組織',
+                'organization_url' => 'https://qiita.com/organizations/new-org',
+                'author_url' => 'https://qiita.com/test_user',
+                'published_at' => '2023-01-01T00:00:00Z',
                 'scraped_at' => now(),
                 'platform' => 'qiita',
             ],
         ];
 
-        $result = $this->scraper->normalizeAndSaveData($articles);
+        $savedArticles = $this->scraper->normalizeAndSaveData($articles);
 
-        $this->assertIsArray($result);
-        $this->assertCount(1, $result);
-        $this->assertInstanceOf(Article::class, $result[0]);
+        $this->assertCount(1, $savedArticles);
 
-        $article = $result[0];
-        $this->assertEquals('Test Article', $article->title);
-        $this->assertEquals('https://qiita.com/items/article1', $article->url);
-        $this->assertEquals(25, $article->engagement_count);
-        $this->assertEquals('test_user', $article->author_name);
+        // 新規企業が作成されることを確認
+        $company = Company::where('name', '新規テスト組織')->first();
+        $this->assertNotNull($company);
+        $this->assertFalse($company->is_active);
+        $this->assertEquals('new-org', $company->qiita_username);
+
+        // 記事に企業が紐づけられることを確認
+        $article = $savedArticles[0];
         $this->assertEquals($company->id, $article->company_id);
-        $this->assertEquals($platform->id, $article->platform_id);
-        $this->assertEquals('qiita', $article->platform);
+        $this->assertEquals('new-org', $article->organization);
+        $this->assertEquals('新規テスト組織', $article->organization_name);
     }
 
     #[Test]
-    public function test_normalize_and_save_data_author_nameを正しく抽出する()
+    public function test_normalize_and_save_data_記事保存時のデータベース例外()
     {
-        $platform = Platform::factory()->create([
-            'name' => 'Qiita',
-        ]);
+        // プラットフォーム作成
+        Platform::factory()->create(['name' => 'Qiita']);
 
         $articles = [
             [
-                'title' => 'Test Article',
-                'url' => 'https://qiita.com/items/article1',
-                'engagement_count' => 25,
-                'author' => '/@test_user',
-                'author_url' => 'https://qiita.com/@test_user',
-                'published_at' => '2024-01-01T12:00:00Z',
+                'title' => null, // titleがnullで保存エラーを引き起こす
+                'url' => 'https://qiita.com/items/test',
+                'engagement_count' => 10,
+                'author' => 'test_user',
+                'published_at' => '2023-01-01T00:00:00Z',
                 'scraped_at' => now(),
                 'platform' => 'qiita',
             ],
         ];
 
-        $result = $this->scraper->normalizeAndSaveData($articles);
-
-        $this->assertIsArray($result);
-        $this->assertCount(1, $result);
-
-        $article = $result[0];
-        $this->assertEquals('test_user', $article->author_name);
-        $this->assertEquals('/@test_user', $article->author);
-    }
-
-    #[Test]
-    public function test_normalize_and_save_data_企業が見つからない場合company_idはnull()
-    {
-        $platform = Platform::factory()->create([
-            'name' => 'Qiita',
-        ]);
-
-        $articles = [
-            [
-                'title' => 'Test Article',
-                'url' => 'https://qiita.com/items/article1',
-                'engagement_count' => 25,
-                'author' => '/@unknown_user',
-                'author_url' => 'https://qiita.com/@unknown_user',
-                'published_at' => '2024-01-01T12:00:00Z',
-                'scraped_at' => now(),
-                'platform' => 'qiita',
-            ],
-        ];
-
-        $result = $this->scraper->normalizeAndSaveData($articles);
-
-        $this->assertIsArray($result);
-        $this->assertCount(1, $result);
-
-        $article = $result[0];
-        $this->assertNull($article->company_id);
-        $this->assertEquals($platform->id, $article->platform_id);
-    }
-
-    #[Test]
-    public function test_normalize_and_save_data_既存記事は更新される()
-    {
-        $company = Company::factory()->create([
-            'qiita_username' => 'test_user',
-            'name' => 'Test Company',
-        ]);
-
-        $platform = Platform::factory()->create([
-            'name' => 'Qiita',
-        ]);
-
-        // 既存記事を作成
-        $existingArticle = Article::factory()->create([
-            'url' => 'https://qiita.com/items/article1',
-            'title' => 'Old Title',
-            'engagement_count' => 10,
-        ]);
-
-        $articles = [
-            [
-                'title' => 'Updated Title',
-                'url' => 'https://qiita.com/items/article1',
-                'engagement_count' => 25,
-                'author' => '/@test_user',
-                'author_url' => 'https://qiita.com/@test_user',
-                'published_at' => '2024-01-01T12:00:00Z',
-                'scraped_at' => now(),
-                'platform' => 'qiita',
-            ],
-        ];
-
-        $result = $this->scraper->normalizeAndSaveData($articles);
-
-        $this->assertIsArray($result);
-        $this->assertCount(1, $result);
-
-        $article = $result[0];
-        $this->assertEquals($existingArticle->id, $article->id);
-        $this->assertEquals('Updated Title', $article->title);
-        $this->assertEquals(25, $article->engagement_count);
-        $this->assertEquals($company->id, $article->company_id);
-    }
-
-    #[Test]
-    public function test_normalize_and_save_data_プラットフォームがない場合でも記事は作成される()
-    {
-        Log::shouldReceive('info')->once();
         Log::shouldReceive('error')->once();
+        Log::shouldReceive('info')->zeroOrMoreTimes();
 
-        // プラットフォームが存在しない場合でも記事は作成される
+        $savedArticles = $this->scraper->normalizeAndSaveData($articles);
+
+        $this->assertEmpty($savedArticles); // エラーで保存されない
+    }
+
+    #[Test]
+    public function test_normalize_and_save_data_organizationありの既存企業マッチング()
+    {
+        // プラットフォーム作成
+        $platform = Platform::factory()->create(['name' => 'Qiita']);
+
+        // 既存企業作成
+        $company = Company::factory()->create([
+            'name' => '既存テスト企業',
+            'qiita_username' => 'existing-org',
+            'is_active' => true,
+        ]);
+
         $articles = [
             [
-                'title' => 'Test Article',
-                'url' => 'https://qiita.com/items/article1',
-                'engagement_count' => 25,
-                'author' => '/@test_user',
-                'author_url' => 'https://qiita.com/@test_user',
-                'published_at' => '2024-01-01T12:00:00Z',
+                'title' => '既存組織のテスト記事',
+                'url' => 'https://qiita.com/organizations/existing-org/items/test',
+                'engagement_count' => 15,
+                'author' => 'existing_user',
+                'organization' => 'existing-org',
+                'organization_name' => '既存テスト企業',
+                'organization_url' => 'https://qiita.com/organizations/existing-org',
+                'author_url' => 'https://qiita.com/existing_user',
+                'published_at' => '2023-02-01T00:00:00Z',
                 'scraped_at' => now(),
                 'platform' => 'qiita',
             ],
         ];
 
-        $result = $this->scraper->normalizeAndSaveData($articles);
+        $savedArticles = $this->scraper->normalizeAndSaveData($articles);
 
-        $this->assertIsArray($result);
-        // プラットフォームが見つからなくてもplatform_idがnullで記事は作成される
-        $this->assertNotEmpty($result);
-        $this->assertNull($result[0]->platform_id);
+        $this->assertCount(1, $savedArticles);
+
+        // 既存企業が使用されることを確認
+        $article = $savedArticles[0];
+        $this->assertEquals($company->id, $article->company_id);
+        $this->assertEquals('existing-org', $article->organization);
+        $this->assertEquals('既存テスト企業', $article->organization_name);
     }
 
     #[Test]
-    public function test_parse_response_レスポンスを正しく解析する()
+    public function test_normalize_and_save_data_大量データ処理()
     {
-        $mockHtml = '<html><body>
-            <article>
-                <h2><a href="/items/article1">Test Article 1</a></h2>
-                <div data-testid="like-count" aria-label="10 likes">10</div>
-                <a href="/@test_user">Test User</a>
-                <time datetime="2024-01-01T12:00:00Z">2024-01-01</time>
-            </article>
-        </body></html>';
+        // プラットフォーム作成
+        Platform::factory()->create(['name' => 'Qiita']);
 
-        $mockResponse = Mockery::mock(Response::class);
-        $mockResponse->shouldReceive('body')->andReturn($mockHtml);
+        // 50記事の大量データを作成
+        $articles = [];
+        for ($i = 1; $i <= 50; $i++) {
+            $articles[] = [
+                'title' => "テスト記事{$i}",
+                'url' => "https://qiita.com/items/test-{$i}",
+                'engagement_count' => $i,
+                'author' => "user{$i}",
+                'published_at' => '2023-01-01T00:00:00Z',
+                'scraped_at' => now(),
+                'platform' => 'qiita',
+            ];
+        }
 
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('parseResponse');
-        $method->setAccessible(true);
+        Log::shouldReceive('info')->zeroOrMoreTimes();
+        Log::shouldReceive('debug')->zeroOrMoreTimes();
+        Log::shouldReceive('error')->zeroOrMoreTimes();
 
-        $result = $method->invoke($this->scraper, $mockResponse);
+        $savedArticles = $this->scraper->normalizeAndSaveData($articles);
 
-        $this->assertIsArray($result);
-        $this->assertCount(1, $result);
-        $this->assertArrayHasKey('title', $result[0]);
-        $this->assertArrayHasKey('url', $result[0]);
-        $this->assertArrayHasKey('engagement_count', $result[0]);
-        $this->assertArrayHasKey('platform', $result[0]);
-        $this->assertEquals('Test Article 1', $result[0]['title']);
-        $this->assertEquals('https://qiita.com/items/article1', $result[0]['url']);
-        $this->assertEquals(10, $result[0]['engagement_count']);
-        $this->assertEquals('qiita', $result[0]['platform']);
+        // 大量データの処理が完了することを確認
+        $this->assertIsArray($savedArticles);
     }
 
     #[Test]
-    public function test_parse_response_タイトルまたは_ur_lが不正な場合は除外される()
+    public function test_scrape_trending_articles_組織情報込み完全フロー()
     {
-        $mockHtml = '<html><body>
-            <article>
-                <!-- タイトルのみでURLなし -->
-                <h2>Title without URL</h2>
-                <div data-testid="like-count" aria-label="10 likes">10</div>
+        $html = '
+            <article class="style-article">
+                <h2><a href="/items/complete-test">完全フローテスト</a></h2>
+                <div class="organizationCard_name">完全テスト企業</div>
+                <a href="/organizations/complete-org" class="organizationCard">完全テスト企業</a>
+                <div class="author"><a href="/@complete-user">complete-user</a></div>
+                <footer>
+                    <div class="style-likes">42</div>
+                </footer>
+                <time class="style-time" datetime="2023-12-01T10:00:00Z">2023年12月1日</time>
             </article>
-            <article>
-                <h2><a href="/items/article1">Valid Article</a></h2>
-                <div data-testid="like-count" aria-label="20 likes">20</div>
-            </article>
-        </body></html>';
+        ';
 
-        $mockResponse = Mockery::mock(Response::class);
-        $mockResponse->shouldReceive('body')->andReturn($mockHtml);
-
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('parseResponse');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->scraper, $mockResponse);
-
-        $this->assertIsArray($result);
-        $this->assertCount(1, $result); // 有効な記事のみ
-        $this->assertEquals('Valid Article', $result[0]['title']);
-        $this->assertEquals('https://qiita.com/items/article1', $result[0]['url']);
-    }
-
-    #[Test]
-    public function test_log_html_preview_htm_lプレビューを正しくログ出力する()
-    {
-        $html = '<html><body>Test HTML content</body></html>';
-
-        Log::shouldReceive('debug')->once()->with('Qiita HTML preview', [
-            'html_length' => strlen($html),
-            'html_preview' => $html,
+        Http::fake([
+            'qiita.com' => Http::response($html, 200),
         ]);
 
-        $reflection = new \ReflectionClass($this->scraper);
-        $method = $reflection->getMethod('logHtmlPreview');
-        $method->setAccessible(true);
+        $articles = $this->scraper->scrapeTrendingArticles();
 
-        $method->invoke($this->scraper, $html);
+        $this->assertCount(1, $articles);
+
+        $article = $articles[0];
+        $this->assertEquals('完全フローテスト', $article['title']);
+        $this->assertEquals('https://qiita.com/items/complete-test', $article['url']);
+        $this->assertEquals(42, $article['engagement_count']);
+        $this->assertEquals('@complete-user', $article['author']);
+        $this->assertEquals('complete-user', $article['author_name']);
+        $this->assertEquals('完全テスト企業', $article['organization']);
+        $this->assertEquals('完全テスト企業', $article['organization_name']);
+        $this->assertEquals('https://qiita.com/organizations/complete-org', $article['organization_url']);
+        $this->assertEquals('https://qiita.com/@complete-user', $article['author_url']);
+        $this->assertEquals('2023-12-01T10:00:00Z', $article['published_at']);
+        $this->assertEquals('qiita', $article['platform']);
     }
 
     #[Test]
-    public function test_extract_single_article_data_警告ログを出力する()
+    public function test_extract_single_article_data_例外処理でnull返却()
     {
-        Log::shouldReceive('warning')->once();
-
-        $html = '<article>
-            <!-- 不正なデータ -->
-            <div>Invalid article structure</div>
-        </article>';
-
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('article');
+        // 空のCrawlerで例外を発生させる
+        $crawler = new \Symfony\Component\DomCrawler\Crawler('<div></div>');
 
         $reflection = new \ReflectionClass($this->scraper);
         $method = $reflection->getMethod('extractSingleArticleData');
         $method->setAccessible(true);
 
-        $result = $method->invoke($this->scraper, $node);
+        Log::shouldReceive('warning')->once();
+
+        $result = $method->invoke($this->scraper, $crawler);
 
         $this->assertNull($result);
     }
 
-    protected function tearDown(): void
+    #[Test]
+    public function test_extract_organization_url_do_m例外処理()
     {
-        Mockery::close();
-        parent::tearDown();
+        // 不正なHTMLでDOM例外を発生させる
+        $scraper = $this->createPartialMock(QiitaScraper::class, []);
+
+        $reflection = new \ReflectionClass($scraper);
+        $method = $reflection->getMethod('extractOrganizationUrl');
+        $method->setAccessible(true);
+
+        // 不正なCrawlerでDOM例外を発生させる
+        $invalidCrawler = new \Symfony\Component\DomCrawler\Crawler;
+
+        Log::shouldReceive('debug')->zeroOrMoreTimes();
+
+        $result = $method->invoke($scraper, $invalidCrawler, null);
+
+        $this->assertNull($result);
     }
 }

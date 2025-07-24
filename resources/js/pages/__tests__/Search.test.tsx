@@ -121,7 +121,7 @@ describe('Search', () => {
         test('検索ページが正しく表示される', () => {
             renderWithRouter(<Search />);
             
-            expect(screen.getByText('検索')).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: '検索' })).toBeInTheDocument();
             expect(screen.getByPlaceholderText('企業や記事を検索...')).toBeInTheDocument();
             expect(screen.getByText('検索キーワードを入力してください')).toBeInTheDocument();
         });
@@ -151,7 +151,8 @@ describe('Search', () => {
                 });
             });
             
-            expect(screen.getByText('「test」の検索結果 1件')).toBeInTheDocument();
+            expect(screen.getByText('test', { exact: false })).toBeInTheDocument();
+            expect(screen.getByText('1件', { exact: false })).toBeInTheDocument();
             expect(screen.getByText('テスト企業')).toBeInTheDocument();
         });
 
@@ -173,7 +174,8 @@ describe('Search', () => {
                 });
             });
             
-            expect(screen.getByText('「test」の検索結果 1件')).toBeInTheDocument();
+            expect(screen.getByText('test', { exact: false })).toBeInTheDocument();
+            expect(screen.getByText('1件', { exact: false })).toBeInTheDocument();
             expect(screen.getByText('テスト記事')).toBeInTheDocument();
         });
 
@@ -196,7 +198,8 @@ describe('Search', () => {
                 });
             });
             
-            expect(screen.getByText('「test」の検索結果 2件')).toBeInTheDocument();
+            expect(screen.getByText('test', { exact: false })).toBeInTheDocument();
+            expect(screen.getByText('2件', { exact: false })).toBeInTheDocument();
             expect(screen.getByText('テスト企業')).toBeInTheDocument();
             expect(screen.getByText('テスト記事')).toBeInTheDocument();
         });

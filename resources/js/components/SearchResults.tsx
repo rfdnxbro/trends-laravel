@@ -21,7 +21,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 }) => {
     if (loading) {
         return (
-            <div className="flex justify-center items-center py-12">
+            <div className="flex justify-center items-center py-12" role="status" aria-hidden>
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 <span className="ml-2 text-gray-600">検索中...</span>
             </div>
@@ -92,8 +92,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     );
 };
 
+interface CompanyWithScore extends Company {
+    match_score?: number;
+}
+
 const CompanySearchResult: React.FC<{ company: Company }> = ({ company }) => {
-    const matchScore = (company as any).match_score;
+    const matchScore = (company as CompanyWithScore).match_score;
     
     return (
         <Link
@@ -109,7 +113,7 @@ const CompanySearchResult: React.FC<{ company: Company }> = ({ company }) => {
                     />
                 ) : (
                     <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                        <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" role="img" aria-hidden>
                             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm3 1h6v4H7V5zm8 8v2a1 1 0 01-1 1H6a1 1 0 01-1-1v-2h10z" clipRule="evenodd" />
                         </svg>
                     </div>
@@ -137,8 +141,12 @@ const CompanySearchResult: React.FC<{ company: Company }> = ({ company }) => {
     );
 };
 
+interface ArticleWithScore extends Article {
+    match_score?: number;
+}
+
 const ArticleSearchResult: React.FC<{ article: Article }> = ({ article }) => {
-    const matchScore = (article as any).match_score;
+    const matchScore = (article as ArticleWithScore).match_score;
     
     return (
         <div className="p-4 bg-white border border-gray-200 rounded-lg">

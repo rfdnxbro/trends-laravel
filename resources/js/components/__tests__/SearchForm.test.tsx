@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import SearchForm from '../SearchForm';
@@ -121,7 +121,10 @@ describe('SearchForm', () => {
             const input = screen.getByPlaceholderText('企業や記事を検索...');
             
             fireEvent.change(input, { target: { value: 'test query' } });
-            fireEvent.submit(input.closest('form') as HTMLFormElement);
+            const form = input.closest('form');
+            if (form) {
+                fireEvent.submit(form);
+            }
             
             expect(mockOnSearch).toHaveBeenCalledWith('test query', 'all');
         });

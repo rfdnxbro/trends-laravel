@@ -25,28 +25,17 @@ $ARGUMENTS について開発実装を進めます。
 
 ## 3. 開発実装
 
-### 実装前テスト
+### 品質チェック
 ```bash
+# 実装前テスト
 !php artisan test
-```
 
-### 開発中の品質チェック
-```bash
-# コードスタイル自動修正
+# 開発中の品質チェック（詳細は /test コマンド参照）
 !vendor/bin/pint
-
-# 静的解析
 !vendor/bin/phpstan analyse --memory-limit=1G
 
-# テスト実行
-!php artisan test
-!npm test
-!npm run build
-```
-
-### 実装完了後の統合チェック
-```bash
-!php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memory-limit=1G && npm test && npm run build
+# 実装完了後の統合チェック（/test コマンド推奨）
+!/test
 ```
 
 ### コミット
@@ -77,14 +66,8 @@ $ARGUMENTS について開発実装を進めます。
 
 ### 基本チェック
 ```bash
-# テスト実行
-!php artisan test
-
-# コードスタイル
-!vendor/bin/pint
-
-# 静的解析
-!vendor/bin/phpstan analyse --memory-limit=1G
+# 包括的品質チェック
+!/test
 ```
 
 ### 変更内容の確認
@@ -97,7 +80,7 @@ $ARGUMENTS について開発実装を進めます。
 ```
 
 ## 注意事項
-- **開発に専念**: このコマンドは実装に集中（テストは`/test`、PRは`/pr`を使用）
+- **コマンド役割分担**: 実装専用（品質チェック=`/test`、PR作成=`/pr`）
 - **Issue駆動**: 可能な限りIssueベースで開発
 - **テスト併記**: 実装と同時にテストも作成
 - **既存コード尊重**: スタイルと構造を維持

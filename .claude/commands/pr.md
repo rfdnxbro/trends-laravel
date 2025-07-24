@@ -33,8 +33,8 @@ $ARGUMENTS について品質チェックを実行し、プルリクエストを
 
 ### 必須チェック実行
 ```bash
-# PR作成前の包括的チェック
-!php artisan test && vendor/bin/pint --test && vendor/bin/phpstan analyse --memory-limit=1G && npm test && npm run build && npm run test:e2e
+# PR作成前の包括的チェック（/test コマンド実行）
+!/test
 ```
 
 ### チェック結果確認
@@ -48,13 +48,7 @@ $ARGUMENTS について品質チェックを実行し、プルリクエストを
 ## 3. ドキュメント更新確認
 
 ### 更新必要箇所チェック
-変更内容に応じて以下を確認・更新：
-- **技術変更**: `docs/wiki/技術スタック.md`
-- **環境変更**: `docs/wiki/開発環境.md`
-- **CI/CD変更**: `docs/wiki/CI-CD.md`
-- **DB変更**: `docs/wiki/データベース設計.md`
-- **機能追加**: `docs/wiki/機能仕様.md`
-- **開発フロー**: `docs/wiki/開発フロー.md`
+変更内容に応じてドキュメント更新を確認（詳細は `/dev` コマンドのガイドライン参照）
 
 ## 4. コミット作成
 

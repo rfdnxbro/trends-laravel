@@ -1,6 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
 import { API_CONSTANTS } from '../constants/api';
-import { CompanyListFilters } from '../types';
+import { 
+    CompanyListFilters, 
+    SearchCompanyParams, 
+    SearchArticleParams, 
+    SearchUnifiedParams 
+} from '../types';
 
 // Axios インスタンスの作成
 export const api = axios.create({
@@ -55,7 +60,14 @@ export const apiService = {
     },
     getTopCompanies: (limit = API_CONSTANTS.DEFAULT_LIMIT) => api.get(`/api/companies/top?limit=${limit}`),
     getCompanyDetail: (id: number) => api.get(`/api/companies/${id}`),
-    searchCompanies: (query: string) => api.get(`/api/companies/search?q=${query}`),
+    searchCompanies: (params: SearchCompanyParams) => {
+        const queryParams = new URLSearchParams();
+        queryParams.append('q', params.q);
+        if (params.limit) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        return api.get(`/api/search/companies?${queryParams.toString()}`);
+    },
     createCompany: (data: Record<string, unknown>) => api.post('/api/companies', data),
     updateCompany: (id: number, data: Record<string, unknown>) => api.put(`/api/companies/${id}`, data),
     deleteCompany: (id: number) => api.delete(`/api/companies/${id}`),
@@ -81,6 +93,40 @@ export const apiService = {
     getPlatforms: () => api.get('/api/platforms'),
     
     // 検索
+    searchArticles: (params: SearchArticleParams) => {
+        const queryParams = new URLSearchParams();
+        queryParams.append('q', params.q);
+        if (params.limit) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params.days) {
+            queryParams.append('days', params.days.toString());
+        }
+        if (params.min_engagement !== undefined) {
+            queryParams.append('min_engagement', params.min_engagement.toString());
+        }
+        return api.get(`/api/search/articles?${queryParams.toString()}`);
+    },
+    
+    searchUnified: (params: SearchUnifiedParams) => {
+        const queryParams = new URLSearchParams();
+        queryParams.append('q', params.q);
+        if (params.type) {
+            queryParams.append('type', params.type);
+        }
+        if (params.limit) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params.days) {
+            queryParams.append('days', params.days.toString());
+        }
+        if (params.min_engagement !== undefined) {
+            queryParams.append('min_engagement', params.min_engagement.toString());
+        }
+        return api.get(`/api/search?${queryParams.toString()}`);
+    },
+    
+    // 汎用検索（後方互換性のため残す）
     search: (query: string, filters?: Record<string, unknown>) => 
         api.post('/api/search', { query, filters }),
 };

@@ -15,6 +15,9 @@ const Header: React.FC = () => {
                         <Link to="/" className="text-gray-500 hover:text-gray-900">
                             ダッシュボード
                         </Link>
+                        <Link to="/search" className="text-gray-500 hover:text-gray-900">
+                            検索
+                        </Link>
                         <Link to="/rankings" className="text-gray-500 hover:text-gray-900">
                             ランキング
                         </Link>

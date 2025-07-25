@@ -24,6 +24,7 @@ describe('Header', () => {
     
     // ダッシュボードリンクが表示されることを確認
     expect(screen.getByText('ダッシュボード')).toBeInTheDocument()
+    expect(screen.getByText('検索')).toBeInTheDocument()
     expect(screen.getByText('ランキング')).toBeInTheDocument()
     expect(screen.getByText('企業一覧')).toBeInTheDocument()
   })

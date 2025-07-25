@@ -187,6 +187,82 @@ export interface SearchResult {
     total: number;
 }
 
+// 検索APIレスポンス型定義
+export interface SearchCompanyResponse {
+    data: {
+        companies: Company[];
+    };
+    meta: {
+        total_results: number;
+        search_time: number;
+        query: string;
+    };
+}
+
+export interface SearchArticleResponse {
+    data: {
+        articles: Article[];
+    };
+    meta: {
+        total_results: number;
+        search_time: number;
+        query: string;
+        filters: {
+            days: number;
+            min_engagement: number;
+        };
+    };
+}
+
+export interface SearchUnifiedResponse {
+    data: {
+        companies?: Company[];
+        articles?: Article[];
+    };
+    meta: {
+        total_results: number;
+        search_time: number;
+        query: string;
+        type: string;
+        filters: {
+            days: number;
+            min_engagement: number;
+        };
+    };
+}
+
+// 検索パラメータ型定義
+export interface SearchCompanyParams {
+    q: string;
+    limit?: number;
+}
+
+export interface SearchArticleParams {
+    q: string;
+    limit?: number;
+    days?: number;
+    min_engagement?: number;
+}
+
+export interface SearchUnifiedParams {
+    q: string;
+    type?: 'companies' | 'articles' | 'all';
+    limit?: number;
+    days?: number;
+    min_engagement?: number;
+}
+
+// 検索結果表示用の拡張型
+export interface SearchResultItem {
+    type: 'company' | 'article';
+    id: number;
+    title: string;
+    subtitle?: string;
+    url?: string;
+    match_score: number;
+    data: Company | Article;
+}
+
 // API レスポンス型定義
 export interface ApiResponse<T> {
     data: T;
@@ -359,7 +435,9 @@ export const QueryKeys = {
     COMPANY_DETAIL: (id: number) => ['company-detail', id] as const,
     ARTICLES_LIST: (filters?: ArticleListFilters) => ['articles-list', filters] as const,
     ARTICLE_DETAIL: (id: number) => ['article-detail', id] as const,
-    SEARCH_COMPANIES: (query: string) => ['search-companies', query] as const,
+    SEARCH_COMPANIES: (query: string, limit?: number) => ['search-companies', query, limit] as const,
+    SEARCH_ARTICLES: (query: string, params?: SearchArticleParams) => ['search-articles', query, params] as const,
+    SEARCH_UNIFIED: (query: string, params?: SearchUnifiedParams) => ['search-unified', query, params] as const,
     SEARCH_RESULTS: (query: string, filters?: SearchFilters) => ['search-results', query, filters] as const,
     COMPANY_RANKINGS: (filters: RankingFilters) => ['company-rankings', filters] as const,
     INFLUENCE_CHART: (companyIds: number[], period: string) => ['influence-chart', companyIds, period] as const,

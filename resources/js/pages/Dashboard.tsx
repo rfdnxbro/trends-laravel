@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { RankingStatsResponse, TopCompaniesResponse, TopCompany, QueryKeys, OverallStatisticsResponse } from '../types';
+import { TopCompaniesResponse, TopCompany, QueryKeys, OverallStatisticsResponse } from '../types';
 
 // ヘルパーコンポーネント: 統計メトリックカード
 const MetricCard: React.FC<{ label: string; value: string | number; isLoading: boolean }> = ({ 

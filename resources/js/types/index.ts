@@ -77,18 +77,6 @@ export interface PeriodStats {
     last_calculated: string;
 }
 
-export interface RankingStatsResponse {
-    data: {
-        "1w": PeriodStats;
-        "1m": PeriodStats;
-        "3m": PeriodStats;
-        "6m": PeriodStats;
-        "1y": PeriodStats;
-        "3y": PeriodStats;
-        "all": PeriodStats;
-    };
-}
-
 export interface OverallStatistics {
     total_companies: number;
     total_articles: number;

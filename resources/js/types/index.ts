@@ -89,6 +89,17 @@ export interface RankingStatsResponse {
     };
 }
 
+export interface OverallStatistics {
+    total_companies: number;
+    total_articles: number;
+    total_engagements: number;
+    last_updated: string;
+}
+
+export interface OverallStatisticsResponse {
+    data: OverallStatistics;
+}
+
 export interface TopCompany {
     id: number | null;
     company: {
@@ -430,6 +441,7 @@ export interface RankingHistoryChartProps {
 
 export const QueryKeys = {
     DASHBOARD_STATS: ['dashboard-stats'] as const,
+    OVERALL_STATISTICS: ['overall-statistics'] as const,
     TOP_COMPANIES: ['top-companies'] as const,
     COMPANIES_LIST: (filters?: CompanyListFilters) => ['companies-list', filters] as const,
     COMPANY_DETAIL: (id: number) => ['company-detail', id] as const,

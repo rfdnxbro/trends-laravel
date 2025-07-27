@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { RankingStatsResponse, TopCompaniesResponse, TopCompany, QueryKeys } from '../types';
+import { TopCompaniesResponse, TopCompany, QueryKeys, OverallStatisticsResponse } from '../types';
 
 // ヘルパーコンポーネント: 統計メトリックカード
 const MetricCard: React.FC<{ label: string; value: string | number; isLoading: boolean }> = ({ 
@@ -84,10 +84,10 @@ const RankingTable: React.FC<{ companies: TopCompany[]; isLoading: boolean }> = 
 };
 
 const Dashboard: React.FC = () => {
-    // ダッシュボード統計データの取得
-    const { data: statsResponse, isLoading: statsLoading } = useQuery({
-        queryKey: QueryKeys.DASHBOARD_STATS,
-        queryFn: () => api.get<RankingStatsResponse>('/api/rankings/statistics').then(res => res.data),
+    // 全体統計データの取得
+    const { data: overallStatsResponse, isLoading: overallStatsLoading } = useQuery({
+        queryKey: QueryKeys.OVERALL_STATISTICS,
+        queryFn: () => api.get<OverallStatisticsResponse>('/api/statistics/overall').then(res => res.data),
         retry: 1,
     });
 
@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
         retry: 1,
     });
 
-    const statsData = statsResponse?.data?.['1m'];
+    const overallStats = overallStatsResponse?.data;
 
     return (
         <div>
@@ -111,18 +111,18 @@ const Dashboard: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <MetricCard 
                     label="総企業数" 
-                    value={statsData?.total_companies || '0'} 
-                    isLoading={statsLoading} 
+                    value={overallStats?.total_companies?.toLocaleString() || '0'} 
+                    isLoading={overallStatsLoading} 
                 />
                 <MetricCard 
                     label="記事総数" 
-                    value={statsData?.total_articles || '0'} 
-                    isLoading={statsLoading} 
+                    value={overallStats?.total_articles?.toLocaleString() || '0'} 
+                    isLoading={overallStatsLoading} 
                 />
                 <MetricCard 
-                    label="総ブックマーク数" 
-                    value={statsData?.total_bookmarks || '0'} 
-                    isLoading={statsLoading} 
+                    label="総エンゲージメント数" 
+                    value={overallStats?.total_engagements?.toLocaleString() || '0'} 
+                    isLoading={overallStatsLoading} 
                 />
             </div>
 

@@ -52,6 +52,6 @@ describe('Dashboard', () => {
     // 統計項目が表示されることを確認
     expect(screen.getByText('総企業数')).toBeInTheDocument()
     expect(screen.getByText('記事総数')).toBeInTheDocument()
-    expect(screen.getByText('総ブックマーク数')).toBeInTheDocument()
+    expect(screen.getByText('総エンゲージメント数')).toBeInTheDocument()
   })
 })

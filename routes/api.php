@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\CompanyRankingController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\StatisticsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -73,5 +74,11 @@ Route::middleware(['throttle:60,1'])->group(function () {
 
         // 統合検索
         Route::get('', [SearchController::class, 'search']);
+    });
+
+    // 統計 API
+    Route::prefix('statistics')->group(function () {
+        // 全体統計
+        Route::get('overall', [StatisticsController::class, 'overall']);
     });
 });

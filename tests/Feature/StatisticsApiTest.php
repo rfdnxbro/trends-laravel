@@ -16,7 +16,7 @@ class StatisticsApiTest extends TestCase
     #[Test]
     public function test_全体統計_apiが正しいデータを返す()
     {
-        // Arrange
+        // テストデータの準備
         $this->seed(\Database\Seeders\PlatformSeeder::class);
 
         Company::factory()->count(10)->create(['is_active' => true]);
@@ -25,10 +25,10 @@ class StatisticsApiTest extends TestCase
         Article::factory()->count(20)->create(['engagement_count' => 150]);
         Article::factory()->count(8)->create(['engagement_count' => 300, 'deleted_at' => now()]);
 
-        // Act
+        // テスト実行
         $response = $this->getJson('/api/statistics/overall');
 
-        // Assert
+        // 結果検証
         $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
@@ -48,10 +48,10 @@ class StatisticsApiTest extends TestCase
     #[Test]
     public function test_データがない場合も正常にレスポンスを返す()
     {
-        // Act
+        // テスト実行
         $response = $this->getJson('/api/statistics/overall');
 
-        // Assert
+        // 結果検証
         $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
@@ -73,7 +73,7 @@ class StatisticsApiTest extends TestCase
     #[Test]
     public function test_エンゲージメント数がnullの記事も正しく処理される()
     {
-        // Arrange
+        // テストデータの準備
         $this->seed(\Database\Seeders\PlatformSeeder::class);
 
         $beforeArticles = Article::whereNull('deleted_at')->count();
@@ -82,34 +82,34 @@ class StatisticsApiTest extends TestCase
         Article::factory()->count(5)->create(['engagement_count' => 100]);
         Article::factory()->count(3)->create(['engagement_count' => 0]);
 
-        // Act
+        // テスト実行
         $response = $this->getJson('/api/statistics/overall');
 
-        // Assert
+        // 結果検証
         $response->assertStatus(Response::HTTP_OK);
 
         $data = $response->json('data');
         $this->assertEquals($beforeArticles + 8, $data['total_articles']);
-        $this->assertEquals($beforeEngagements + 500, $data['total_engagements']); // 5 * 100 + 3 * 0
+        $this->assertEquals($beforeEngagements + 500, $data['total_engagements']); // 5 * 100 + 3 * 0 = 500
     }
 
     #[Test]
     public function test_レスポンスタイムが適切である()
     {
-        // Arrange
+        // テストデータの準備
         $this->seed(\Database\Seeders\PlatformSeeder::class);
 
         Company::factory()->count(10)->create(['is_active' => true]);
         Article::factory()->count(100)->create(['engagement_count' => 50]);
 
-        // Act
+        // テスト実行
         $startTime = microtime(true);
         $response = $this->getJson('/api/statistics/overall');
         $endTime = microtime(true);
 
-        $responseTime = ($endTime - $startTime) * 1000; // milliseconds
+        $responseTime = ($endTime - $startTime) * 1000; // ミリ秒単位
 
-        // Assert
+        // 結果検証
         $response->assertStatus(Response::HTTP_OK);
         $this->assertLessThan(1000, $responseTime, 'Response time exceeds 1 second');
     }

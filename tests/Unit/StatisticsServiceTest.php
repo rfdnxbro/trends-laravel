@@ -25,20 +25,19 @@ class StatisticsServiceTest extends TestCase
     #[Test]
     public function test_全体統計を正しく取得する()
     {
-        // テストデータの準備
         Cache::forget('overall_statistics');
         $this->seed(\Database\Seeders\PlatformSeeder::class);
 
+        // 非アクティブ企業が除外されることを検証するため
         Company::factory()->count(5)->create(['is_active' => true]);
         Company::factory()->count(3)->create(['is_active' => false]);
 
+        // 削除済み記事が除外されることを検証するため
         Article::factory()->count(10)->create(['engagement_count' => 100]);
         Article::factory()->count(5)->create(['engagement_count' => 200, 'deleted_at' => now()]);
 
-        // テスト実行
         $statistics = $this->service->getOverallStatistics();
 
-        // 結果検証
         $actualActiveCompanies = Company::where('is_active', true)->count();
         $actualArticles = Article::whereNull('deleted_at')->count();
         $actualEngagements = Article::whereNull('deleted_at')->sum('engagement_count');
@@ -48,7 +47,7 @@ class StatisticsServiceTest extends TestCase
         $this->assertEquals($actualEngagements, $statistics['total_engagements']);
         $this->assertArrayHasKey('last_updated', $statistics);
 
-        // 最小値の検証
+        // シードデータとテストデータが合算されていることを確認
         $this->assertGreaterThanOrEqual(5, $statistics['total_companies']);
         $this->assertGreaterThanOrEqual(10, $statistics['total_articles']);
         $this->assertGreaterThanOrEqual(1000, $statistics['total_engagements']);
@@ -57,36 +56,30 @@ class StatisticsServiceTest extends TestCase
     #[Test]
     public function test_統計結果がキャッシュされる()
     {
-        // テストデータの準備
         Cache::forget('overall_statistics');
         $this->seed(\Database\Seeders\PlatformSeeder::class);
 
         Company::factory()->count(3)->create(['is_active' => true]);
         Article::factory()->count(5)->create(['engagement_count' => 50]);
 
-        // テスト実行
-        // 初回呼び出し
         $statistics1 = $this->service->getOverallStatistics();
 
-        // データを追加
+        // パフォーマンス向上のためキャッシュが効いていることを確認
         Company::factory()->count(2)->create(['is_active' => true]);
         Article::factory()->count(3)->create(['engagement_count' => 100]);
 
-        // 2回目の呼び出し（キャッシュから）
         $statistics2 = $this->service->getOverallStatistics();
 
-        // 結果検証 - キャッシュにより値が変わらないこと
+        // キャッシュが効いているので値は変わらない
         $this->assertEquals($statistics1['total_companies'], $statistics2['total_companies']);
         $this->assertEquals($statistics1['total_articles'], $statistics2['total_articles']);
         $this->assertEquals($statistics1['total_engagements'], $statistics2['total_engagements']);
 
-        // キャッシュをクリア
         Cache::forget('overall_statistics');
 
-        // 3回目の呼び出し（新しいデータで）
         $statistics3 = $this->service->getOverallStatistics();
 
-        // 結果検証 - 新しいデータが反映されていることを実際の値で検証
+        // キャッシュクリア後は新しいデータが反映される
         $actualCompanies = Company::where('is_active', true)->count();
         $actualArticles = Article::whereNull('deleted_at')->count();
         $actualEngagements = Article::whereNull('deleted_at')->sum('engagement_count');
@@ -95,7 +88,6 @@ class StatisticsServiceTest extends TestCase
         $this->assertEquals($actualArticles, $statistics3['total_articles']);
         $this->assertEquals($actualEngagements, $statistics3['total_engagements']);
 
-        // データが増加していることを検証
         $this->assertGreaterThan($statistics1['total_companies'], $statistics3['total_companies']);
         $this->assertGreaterThan($statistics1['total_articles'], $statistics3['total_articles']);
     }
@@ -103,44 +95,40 @@ class StatisticsServiceTest extends TestCase
     #[Test]
     public function test_削除済み記事を除外する()
     {
-        // テストデータの準備
         Cache::forget('overall_statistics');
         $this->seed(\Database\Seeders\PlatformSeeder::class);
 
         $beforeArticles = Article::whereNull('deleted_at')->count();
         $beforeEngagements = Article::whereNull('deleted_at')->sum('engagement_count');
 
+        // ソフトデリート機能が正しく動作することを確認
         Article::factory()->count(5)->create(['engagement_count' => 100, 'deleted_at' => null]);
         Article::factory()->count(3)->create(['engagement_count' => 200, 'deleted_at' => now()]);
 
-        // テスト実行
         $statistics = $this->service->getOverallStatistics();
 
-        // 結果検証
         $expectedArticles = $beforeArticles + 5;
         $expectedEngagements = $beforeEngagements + (5 * 100);
 
         $this->assertEquals($expectedArticles, $statistics['total_articles']);
-        $this->assertEquals($expectedEngagements, $statistics['total_engagements']); // 削除済みを除く
+        $this->assertEquals($expectedEngagements, $statistics['total_engagements']);
     }
 
     #[Test]
     public function test_非アクティブ企業を除外する()
     {
-        // テストデータの準備
         Cache::forget('overall_statistics');
         $this->seed(\Database\Seeders\PlatformSeeder::class);
 
         $beforeActive = Company::where('is_active', true)->count();
 
+        // is_activeフラグが正しく機能することを確認
         Company::factory()->count(7)->create(['is_active' => true]);
         Company::factory()->count(4)->create(['is_active' => false]);
 
-        // テスト実行
         $statistics = $this->service->getOverallStatistics();
 
-        // 結果検証
         $expectedCompanies = $beforeActive + 7;
-        $this->assertEquals($expectedCompanies, $statistics['total_companies']); // 非アクティブを除く
+        $this->assertEquals($expectedCompanies, $statistics['total_companies']);
     }
 }

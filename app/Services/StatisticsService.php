@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cache;
 class StatisticsService
 {
     /**
-     * Get overall statistics
+     * 全体統計を取得する
      */
     public function getOverallStatistics(): array
     {
@@ -25,7 +25,7 @@ class StatisticsService
     }
 
     /**
-     * Get total number of active companies
+     * アクティブな企業の総数を取得する
      */
     private function getTotalCompanies(): int
     {
@@ -33,7 +33,7 @@ class StatisticsService
     }
 
     /**
-     * Get total number of articles (excluding deleted)
+     * 記事の総数を取得する（削除済みを除く）
      */
     private function getTotalArticles(): int
     {
@@ -41,7 +41,7 @@ class StatisticsService
     }
 
     /**
-     * Get total engagements (excluding deleted)
+     * 総エンゲージメント数を取得する（削除済みを除く）
      */
     private function getTotalEngagements(): int
     {

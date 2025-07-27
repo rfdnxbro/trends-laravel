@@ -48,7 +48,7 @@ class StatisticsServiceTest extends TestCase
         $this->assertEquals($actualEngagements, $statistics['total_engagements']);
         $this->assertArrayHasKey('last_updated', $statistics);
 
-        // 最低限の数値確認
+        // Verify minimum values
         $this->assertGreaterThanOrEqual(5, $statistics['total_companies']);
         $this->assertGreaterThanOrEqual(10, $statistics['total_articles']);
         $this->assertGreaterThanOrEqual(1000, $statistics['total_engagements']);
@@ -65,28 +65,28 @@ class StatisticsServiceTest extends TestCase
         Article::factory()->count(5)->create(['engagement_count' => 50]);
 
         // Act
-        // 1回目の呼び出し
+        // First call
         $statistics1 = $this->service->getOverallStatistics();
 
-        // データを追加
+        // Add more data
         Company::factory()->count(2)->create(['is_active' => true]);
         Article::factory()->count(3)->create(['engagement_count' => 100]);
 
-        // 2回目の呼び出し（キャッシュから取得）
+        // Second call (from cache)
         $statistics2 = $this->service->getOverallStatistics();
 
-        // Assert - キャッシュから取得したため、値は変わらない
+        // Assert - Values unchanged due to cache
         $this->assertEquals($statistics1['total_companies'], $statistics2['total_companies']);
         $this->assertEquals($statistics1['total_articles'], $statistics2['total_articles']);
         $this->assertEquals($statistics1['total_engagements'], $statistics2['total_engagements']);
 
-        // キャッシュをクリア
+        // Clear cache
         Cache::forget('overall_statistics');
 
-        // 3回目の呼び出し（新しいデータを反映）
+        // Third call (with new data)
         $statistics3 = $this->service->getOverallStatistics();
 
-        // Assert - 新しいデータが反映される（実際の値で確認）
+        // Assert - New data reflected (verify with actual values)
         $actualCompanies = Company::where('is_active', true)->count();
         $actualArticles = Article::whereNull('deleted_at')->count();
         $actualEngagements = Article::whereNull('deleted_at')->sum('engagement_count');
@@ -95,7 +95,7 @@ class StatisticsServiceTest extends TestCase
         $this->assertEquals($actualArticles, $statistics3['total_articles']);
         $this->assertEquals($actualEngagements, $statistics3['total_engagements']);
 
-        // データが増えていることを確認
+        // Verify data has increased
         $this->assertGreaterThan($statistics1['total_companies'], $statistics3['total_companies']);
         $this->assertGreaterThan($statistics1['total_articles'], $statistics3['total_articles']);
     }
@@ -121,7 +121,7 @@ class StatisticsServiceTest extends TestCase
         $expectedEngagements = $beforeEngagements + (5 * 100);
 
         $this->assertEquals($expectedArticles, $statistics['total_articles']);
-        $this->assertEquals($expectedEngagements, $statistics['total_engagements']); // 削除済みを除外
+        $this->assertEquals($expectedEngagements, $statistics['total_engagements']); // Excluding deleted
     }
 
     #[Test]
@@ -141,6 +141,6 @@ class StatisticsServiceTest extends TestCase
 
         // Assert
         $expectedCompanies = $beforeActive + 7;
-        $this->assertEquals($expectedCompanies, $statistics['total_companies']); // 非アクティブを除外
+        $this->assertEquals($expectedCompanies, $statistics['total_companies']); // Excluding inactive
     }
 }

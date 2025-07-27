@@ -14,7 +14,7 @@ class StatisticsApiTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function test_全体統計_ap_iが正しいデータを返す()
+    public function test_全体統計_apiが正しいデータを返す()
     {
         // Arrange
         $this->seed(\Database\Seeders\PlatformSeeder::class);
@@ -107,10 +107,10 @@ class StatisticsApiTest extends TestCase
         $response = $this->getJson('/api/statistics/overall');
         $endTime = microtime(true);
 
-        $responseTime = ($endTime - $startTime) * 1000; // ミリ秒
+        $responseTime = ($endTime - $startTime) * 1000; // milliseconds
 
         // Assert
         $response->assertStatus(Response::HTTP_OK);
-        $this->assertLessThan(1000, $responseTime, 'レスポンスタイムが1秒を超えています');
+        $this->assertLessThan(1000, $responseTime, 'Response time exceeds 1 second');
     }
 }

@@ -18,21 +18,21 @@ class StatisticsController extends Controller
     /**
      * @OA\Get(
      *     path="/api/statistics/overall",
-     *     tags={"統計"},
-     *     summary="全体統計情報取得",
-     *     description="システム全体の統計情報（総企業数、記事総数、総エンゲージメント数）を取得します。",
+     *     tags={"Statistics"},
+     *     summary="Get overall statistics",
+     *     description="Get overall system statistics including total companies, articles, and engagements.",
      *
      *     @OA\Response(
      *         response=200,
-     *         description="全体統計情報",
+     *         description="Overall statistics",
      *
      *         @OA\JsonContent(
      *
      *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="total_companies", type="integer", example=100, description="アクティブな企業の総数"),
-     *                 @OA\Property(property="total_articles", type="integer", example=1000, description="記事の総数（削除済みを除く）"),
-     *                 @OA\Property(property="total_engagements", type="integer", example=50000, description="エンゲージメントの総数（削除済みを除く）"),
-     *                 @OA\Property(property="last_updated", type="string", format="date-time", description="最終更新日時")
+     *                 @OA\Property(property="total_companies", type="integer", example=100, description="Total number of active companies"),
+     *                 @OA\Property(property="total_articles", type="integer", example=1000, description="Total number of articles (excluding deleted)"),
+     *                 @OA\Property(property="total_engagements", type="integer", example=50000, description="Total engagements (excluding deleted)"),
+     *                 @OA\Property(property="last_updated", type="string", format="date-time", description="Last updated timestamp")
      *             )
      *         )
      *     )

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cache;
 class StatisticsService
 {
     /**
-     * hSqí÷ó
+     * Get overall statistics
      */
     public function getOverallStatistics(): array
     {
@@ -25,7 +25,7 @@ class StatisticsService
     }
 
     /**
-     * ¢Ø∆£÷jmnœpí÷ó
+     * Get total number of active companies
      */
     private function getTotalCompanies(): int
     {
@@ -33,7 +33,7 @@ class StatisticsService
     }
 
     /**
-     * ãnœpí÷óJdídO
+     * Get total number of articles (excluding deleted)
      */
     private function getTotalArticles(): int
     {
@@ -41,7 +41,7 @@ class StatisticsService
     }
 
     /**
-     * ®Û≤¸∏·Û»nœpí÷óJdídO
+     * Get total engagements (excluding deleted)
      */
     private function getTotalEngagements(): int
     {
